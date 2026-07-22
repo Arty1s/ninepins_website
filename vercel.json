@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/import/kolky",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}

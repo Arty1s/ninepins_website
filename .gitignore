@@ -1,0 +1,11 @@
+.next/
+node_modules/
+*.log
+*.err.log
+tsconfig.tsbuildinfo
+.env
+.env.*
+!.env.example
+.cache/
+.npm-cache/
+.pnpm-home/
