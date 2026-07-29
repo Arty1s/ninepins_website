@@ -27,8 +27,11 @@ import {
 import { AdminCrudDashboard, type AdminTab } from "@/components/admin-crud-dashboard";
 import {
   defaultLiveData,
+  persistTournamentRegistrationsToBackend,
   readLiveData,
   readTournamentRegistrations,
+  refreshLiveDataFromBackend,
+  refreshTournamentRegistrationsFromBackend,
   subscribeLiveData,
   subscribeTournamentRegistrations,
   writeTournamentRegistrations,
@@ -65,6 +68,8 @@ export function AdminDashboardShell() {
   useEffect(() => {
     setData(readLiveData());
     setRegistrations(readTournamentRegistrations());
+    refreshLiveDataFromBackend().then(setData).catch(() => undefined);
+    refreshTournamentRegistrationsFromBackend().then(setRegistrations).catch(() => undefined);
     const unsubData = subscribeLiveData(setData);
     const unsubRegistrations = subscribeTournamentRegistrations(setRegistrations);
     return () => {
@@ -500,6 +505,7 @@ function RegistrationsManager({
     const next = registrations.filter((registration) => registration.id !== id);
     setRegistrations(next);
     writeTournamentRegistrations(next);
+    persistTournamentRegistrationsToBackend(next).catch(() => undefined);
   };
 
   return (

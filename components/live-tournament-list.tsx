@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Bell, CalendarDays, CheckCircle2, CreditCard, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  createTournamentRegistrationInBackend,
   readLiveData,
   readTournamentRegistrations,
+  refreshLiveDataFromBackend,
+  refreshTournamentRegistrationsFromBackend,
   subscribeLiveData,
   subscribeTournamentRegistrations,
   writeTournamentRegistrations,
@@ -43,8 +46,14 @@ export function LiveTournamentList() {
   const [registrations, setRegistrations] = useState<TournamentRegistration[]>(() => readTournamentRegistrations());
   const [activeTournamentId, setActiveTournamentId] = useState<number | null>(null);
 
-  useEffect(() => subscribeLiveData(setData), []);
-  useEffect(() => subscribeTournamentRegistrations(setRegistrations), []);
+  useEffect(() => {
+    refreshLiveDataFromBackend().then(setData).catch(() => undefined);
+    return subscribeLiveData(setData);
+  }, []);
+  useEffect(() => {
+    refreshTournamentRegistrationsFromBackend().then(setRegistrations).catch(() => undefined);
+    return subscribeTournamentRegistrations(setRegistrations);
+  }, []);
 
   const updateRegistrations = (next: TournamentRegistration[]) => {
     setRegistrations(next);
@@ -76,7 +85,10 @@ export function LiveTournamentList() {
                     registrations={registrations.filter((row) => row.tournamentId === tournament.id)}
                     active={activeTournamentId === tournament.id}
                     onToggle={() => setActiveTournamentId(activeTournamentId === tournament.id ? null : tournament.id)}
-                    onRegister={(registration) => updateRegistrations([{ ...registration, id: Date.now(), createdAt: new Date().toISOString() }, ...registrations])}
+                    onRegister={async (registration) => {
+                      const saved = await createTournamentRegistrationInBackend(registration);
+                      updateRegistrations([saved || { ...registration, id: Date.now(), createdAt: new Date().toISOString() }, ...registrations]);
+                    }}
                   />
                 ))}
               </div>

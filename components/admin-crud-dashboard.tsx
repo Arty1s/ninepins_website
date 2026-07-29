@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Download, LogOut, Pencil, Plus, Save, Shield, Trash2, Trophy, Users, Images, Swords } from "lucide-react";
 import {
   defaultLiveData,
+  persistLiveDataToBackend,
   readLiveData,
+  refreshLiveDataFromBackend,
   subscribeLiveData,
   writeLiveData,
   type LiveClubData,
@@ -27,6 +29,7 @@ export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = 
 
   useEffect(() => {
     setData(readLiveData());
+    refreshLiveDataFromBackend().then(setData).catch(() => undefined);
     return subscribeLiveData(setData);
   }, []);
 
@@ -42,6 +45,7 @@ export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = 
   const updateData = (next: LiveClubData) => {
     setData(next);
     writeLiveData(next);
+    persistLiveDataToBackend(next).catch(() => undefined);
   };
 
   const logout = async () => {
@@ -350,25 +354,37 @@ function KolkyImport({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: Liv
   const [url, setUrl] = useState("https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A");
   const [message, setMessage] = useState("");
 
-  const importMatch = () => {
+  const importMatch = async () => {
     if (!url.includes("vysledky.kolky.sk")) {
       setMessage("Použi link z vysledky.kolky.sk.");
       return;
     }
 
-    const imported: LiveMatch = url.includes("43531")
-      ? { id: Date.now(), sourceUrl: url, league: "Extraliga muži", round: "22. kolo", date: "18.04.2026", location: "Žarnovica", home: "KO Žarnovica", away: "KKZ Hlohovec A", score: "7.0 : 1.0", pins: "3 586 : 3 372", status: "odohrané", importedAt: new Date().toISOString(), importStatus: "auto", detailRows: "Jančovič Martin | 629 | Novosad Róbert | 537\nNasvetr Dalibor | 574 | Poláčik Roman | 588\nTkáč Ján | 582 | Vlčko Jaroslav | 573\nKlubert Dávid | 592 | Jaderko Róbert | 574\nFúska Radoslav st. | 590 | Šišan Michal | 541\nPašiak Tomáš | 619 | Kadlečík Matúš | 559" }
-      : { id: Date.now(), sourceUrl: url, league: "Import z kolky.sk", round: "Čaká na parser", date: new Date().toLocaleDateString("sk-SK"), location: "Doplní import", home: "Hlohovec / súper", away: "Doplní import", score: "import", pins: "import", status: "import", importedAt: new Date().toISOString(), importStatus: "auto", detailRows: "" };
-
-    setRows([imported, ...rows.filter((row) => row.sourceUrl !== url)]);
-    setMessage("Import uložený. Admin ho môže upraviť v sekcii Zápasy.");
+    setMessage("Importujem zo zdroja...");
+    try {
+      const response = await fetch(`/api/import/kolky?url=${encodeURIComponent(url)}`, { method: "POST" });
+      const payload = await response.json() as { ok?: boolean; matches?: LiveMatch[]; warnings?: string[] };
+      if (!response.ok || !payload.ok) {
+        setMessage("Import zlyhal. Skontroluj URL alebo prihlásenie admina.");
+        return;
+      }
+      const imported = payload.matches || [];
+      if (!imported.length) {
+        setMessage(payload.warnings?.[0] || "Import prebehol, ale nenašiel zápas s Hlohovcom.");
+        return;
+      }
+      setRows([...imported, ...rows.filter((row) => !imported.some((match) => match.sourceUrl === row.sourceUrl))]);
+      setMessage("Import uložený z backendu. Admin ho môže upraviť v sekcii Zápasy.");
+    } catch {
+      setMessage("Import zlyhal. Lokálne alebo externé spojenie nie je dostupné.");
+    }
   };
 
   return (
     <CrudShell title="Import z vysledky.kolky.sk" description="Ručne vlož detail zápasu alebo použi backend endpoint. Produkčne ho bude volať cron každých 24 hodín a vezme zápasy, kde je Hlohovec.">
       <div className="grid gap-3 md:grid-cols-[1fr_auto]">
         <Input label="URL zápasu" value={url} onChange={setUrl} />
-        <div className="flex items-end">
+        <div className="flex flex-wrap items-end gap-2">
           <ActionButton onClick={importMatch}><Download size={17} /> Importovať</ActionButton>
         </div>
       </div>

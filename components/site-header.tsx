@@ -56,6 +56,9 @@ export function SiteHeader() {
             <UserRound size={16} />
             Prihlásiť
           </Button>
+          <Button href="/registracia" className="h-11 px-5">
+            Registrácia
+          </Button>
         </div>
 
         <button
@@ -88,6 +91,9 @@ export function SiteHeader() {
           <div className="container-page mt-4 grid gap-3 md:hidden">
             <Button href="/prihlasenie" variant="secondary" className="w-full" >
               Prihlásiť
+            </Button>
+            <Button href="/registracia" className="w-full">
+              Registrácia
             </Button>
           </div>
         </div>

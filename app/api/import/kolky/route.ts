@@ -1,31 +1,59 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { requireAdminSession } from "@/lib/admin-request";
+import { importHlohovecMatchesFromKolky } from "@/lib/kolky-importer";
+import { readClubData, writeClubData } from "@/lib/server-store";
+import type { LiveMatch } from "@/lib/live-store";
 
-const HLOHOVEC_MATCH_SAMPLE = {
-  sourceUrl: "https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A",
-  league: "Extraliga muži",
-  round: "22. kolo",
-  date: "18.04.2026",
-  location: "Žarnovica",
-  home: "KO Žarnovica",
-  away: "KKZ Hlohovec A",
-  score: "7.0 : 1.0",
-  pins: "3 586 : 3 372",
-  status: "odohrané",
-  importedAt: new Date().toISOString(),
-  importStatus: "auto",
-  detailRows:
-    "Jančovič Martin | 629 | Novosad Róbert | 537\nNasvetr Dalibor | 574 | Poláčik Roman | 588\nTkáč Ján | 582 | Vlčko Jaroslav | 573\nKlubert Dávid | 592 | Jaderko Róbert | 574\nFúska Radoslav st. | 590 | Šišan Michal | 541\nPašiak Tomáš | 619 | Kadlečík Matúš | 559"
-};
+export async function GET(request: NextRequest) {
+  return runImport(request);
+}
 
-export async function GET() {
+export async function POST(request: NextRequest) {
+  return runImport(request);
+}
+
+async function runImport(request: NextRequest) {
+  const cronSecret = process.env.KOLKY_IMPORT_SECRET;
+  const suppliedSecret = request.nextUrl.searchParams.get("secret") || request.headers.get("x-kkhc-import-secret");
+  const isVercelCron = request.headers.get("user-agent")?.toLowerCase().includes("vercel-cron") || request.headers.get("x-vercel-cron") === "1";
+  const isCron = Boolean((cronSecret && suppliedSecret === cronSecret) || isVercelCron);
+
+  if (!isCron && !requireAdminSession()) {
+    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
+  }
+
+  const clubData = await readClubData();
+  const manualUrl = request.nextUrl.searchParams.get("url");
+  const from = request.nextUrl.searchParams.get("from") || undefined;
+  const to = request.nextUrl.searchParams.get("to") || undefined;
+  const query = request.nextUrl.searchParams.get("query") || undefined;
+  const result = await importHlohovecMatchesFromKolky(manualUrl ? [manualUrl] : [], { from, to, query });
+  const matches = mergeMatches(clubData.matches, result.imported);
+  await writeClubData({ ...clubData, matches });
+
   return NextResponse.json({
     ok: true,
-    mode: "prepared-cron-endpoint",
-    frequency: "every 24 hours",
+    mode: isCron ? "cron" : "admin",
+    frequency: "prepared for every 24 hours",
     source: "https://vysledky.kolky.sk",
-    filter: "matches containing Hlohovec",
-    writesTo: "Supabase table in production; local admin can still edit imported matches",
-    note: "Local demo cannot run a persistent 24h scheduler. On deployment, call this endpoint from Vercel Cron or a server cron job.",
-    sampleImport: HLOHOVEC_MATCH_SAMPLE
+    from: result.from,
+    to: result.to,
+    query: result.query,
+    importedCount: result.imported.length,
+    checkedUrls: result.checkedUrls,
+    warnings: result.warnings,
+    matches: result.imported
   });
+}
+
+function mergeMatches(existing: LiveMatch[], imported: LiveMatch[]) {
+  const bySource = new Map(existing.map((match) => [match.sourceUrl || String(match.id), match]));
+
+  for (const match of imported) {
+    const key = match.sourceUrl || String(match.id);
+    const current = bySource.get(key);
+    bySource.set(key, current?.importStatus === "edited" ? current : { ...current, ...match });
+  }
+
+  return Array.from(bySource.values()).sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }

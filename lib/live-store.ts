@@ -186,6 +186,9 @@ export const defaultLiveData: LiveClubData = {
     { id: 5, slug: "tretia-liga", name: "Tretia liga", league: "Rozvojová súťaž", coach: "Tréner doplní admin", captain: "Kapitán doplní admin", members: "Hráč 1, Hráč 2, Hráč 3", achievements: "Aktívna klubová základňa; Výsledky doplní admin", description: "Priestor pre členov, ktorí chcú pravidelne hrávať." }
   ],
   matches: [
+    { id: 101, sourceUrl: "", league: "1. KL západ 2025/2026", round: "18. kolo", date: "11.05.2026", location: "Hlohovec", home: "KK Hlohovec", away: "TJ Rakovice", score: "6 : 2", pins: "3372 : 3291", status: "odohrané", importStatus: "manual", detailRows: "" },
+    { id: 102, sourceUrl: "", league: "1. KL západ 2025/2026", round: "17. kolo", date: "04.05.2026", location: "Hlohovec", home: "KK Hlohovec", away: "KK Trstená", score: "7 : 1", pins: "3398 : 3230", status: "odohrané", importStatus: "manual", detailRows: "" },
+    { id: 103, sourceUrl: "", league: "1. KL západ 2025/2026", round: "16. kolo", date: "27.04.2026", location: "Hlohovec", home: "KK Hlohovec", away: "KK Inter Bratislava", score: "5 : 3", pins: "3301 : 3250", status: "odohrané", importStatus: "manual", detailRows: "" },
     { id: 1, sourceUrl: "https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A", league: "Extraliga muži", round: "22. kolo", date: "18.04.2026", location: "Žarnovica", home: "KO Žarnovica", away: "KKZ Hlohovec A", score: "7.0 : 1.0", pins: "3 586 : 3 372", status: "odohrané", importStatus: "manual", detailRows: "Jančovič Martin | 629 | Novosad Róbert | 537\nNasvetr Dalibor | 574 | Poláčik Roman | 588\nTkáč Ján | 582 | Vlčko Jaroslav | 573\nKlubert Dávid | 592 | Jaderko Róbert | 574\nFúska Radoslav st. | 590 | Šišan Michal | 541\nPašiak Tomáš | 619 | Kadlečík Matúš | 559" },
     { id: 2, sourceUrl: "", league: "1. KL západ", round: "18. kolo", date: "11.05.2024", location: "Hlohovec", home: "KK Hlohovec", away: "TJ Rakovice", score: "6 : 2", pins: "3372 : 3291", status: "odohrané", importStatus: "manual", detailRows: "" },
     { id: 3, sourceUrl: "", league: "2. liga západ", round: "18. kolo", date: "25.05.2026", location: "Kolkáreň Hlohovec", home: "KK Hlohovec", away: "ŠKK Trnava", score: "vs", pins: "-", status: "plánované", importStatus: "manual", detailRows: "" }
@@ -241,6 +244,36 @@ export function subscribeLiveData(callback: (data: LiveClubData) => void) {
   };
 }
 
+export async function refreshLiveDataFromBackend() {
+  if (typeof window === "undefined") return defaultLiveData;
+
+  try {
+    const response = await fetch("/api/club-data", { cache: "no-store" });
+    if (!response.ok) return readLiveData();
+    const payload = await response.json() as { data?: LiveClubData };
+    if (!payload.data) return readLiveData();
+    writeLiveData(payload.data);
+    return payload.data;
+  } catch {
+    return readLiveData();
+  }
+}
+
+export async function persistLiveDataToBackend(data: LiveClubData) {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const response = await fetch("/api/admin/live-data", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ data })
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export type TournamentRegistration = {
   id: number;
   tournamentId: number;
@@ -286,4 +319,52 @@ export function subscribeTournamentRegistrations(callback: (rows: TournamentRegi
     window.removeEventListener(TOURNAMENT_REGISTRATION_EVENT, handler);
     window.removeEventListener("storage", storageHandler);
   };
+}
+
+export async function refreshTournamentRegistrationsFromBackend(tournamentId?: number) {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const suffix = tournamentId ? `?tournamentId=${encodeURIComponent(tournamentId)}` : "";
+    const response = await fetch(`/api/tournament-registrations${suffix}`, { cache: "no-store" });
+    if (!response.ok) return readTournamentRegistrations();
+    const payload = await response.json() as { data?: TournamentRegistration[] };
+    if (!payload.data) return readTournamentRegistrations();
+    if (!tournamentId) writeTournamentRegistrations(payload.data);
+    return payload.data;
+  } catch {
+    return readTournamentRegistrations();
+  }
+}
+
+export async function persistTournamentRegistrationsToBackend(rows: TournamentRegistration[]) {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const response = await fetch("/api/admin/tournament-registrations", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ data: rows })
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function createTournamentRegistrationInBackend(registration: Omit<TournamentRegistration, "id" | "createdAt">) {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const response = await fetch("/api/tournament-registrations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(registration)
+    });
+    if (!response.ok) return null;
+    const payload = await response.json() as { data?: TournamentRegistration };
+    return payload.data ?? null;
+  } catch {
+    return null;
+  }
 }

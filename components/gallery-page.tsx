@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Camera, ChevronDown, ChevronLeft, ChevronRight, Grid2X2, Images, LayoutList, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { galleryAlbums, galleryCategoryLabels, type GalleryAlbum, type GalleryCategory } from "@/lib/gallery-data";
-import { readLiveData, subscribeLiveData, type LiveGalleryAlbum } from "@/lib/live-store";
+import { readLiveData, refreshLiveDataFromBackend, subscribeLiveData, type LiveGalleryAlbum } from "@/lib/live-store";
 
 type FilterValue = "vsetky" | GalleryCategory;
 type SortValue = "newest" | "oldest" | "az";
@@ -40,7 +40,10 @@ export function GalleryPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [lightbox, setLightbox] = useState<{ album: GalleryAlbum; index: number } | null>(null);
 
-  useEffect(() => subscribeLiveData((data) => setAlbums(toGalleryAlbums(data.gallery))), []);
+  useEffect(() => {
+    refreshLiveDataFromBackend().then((data) => setAlbums(toGalleryAlbums(data.gallery))).catch(() => undefined);
+    return subscribeLiveData((data) => setAlbums(toGalleryAlbums(data.gallery)));
+  }, []);
 
   const filteredAlbums = useMemo(() => {
     const albumOrder = new Map(albums.map((album, index) => [album.id, index]));

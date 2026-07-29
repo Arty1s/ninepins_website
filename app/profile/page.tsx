@@ -14,6 +14,7 @@ import {
   Users
 } from "lucide-react";
 import { ADMIN_SESSION_COOKIE, readAdminSession } from "@/lib/admin-auth";
+import { readClubData } from "@/lib/server-store";
 import { readUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
 
 const paymentRows = [
@@ -46,7 +47,7 @@ const tournaments = [
   ["Mestská liga", "Doplní admin alebo tréner", "sezóna 2026"]
 ];
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
   const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE)?.value);
   const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE)?.value);
   const session = userSession || adminSession;
@@ -57,14 +58,16 @@ export default function ProfilePage() {
 
   const isAdmin = session.role === "admin";
   const email = session.email;
+  const clubData = await readClubData();
+  const member = clubData.members.find((item) => item.email.trim().toLowerCase() === email.trim().toLowerCase());
   const rawName = "name" in session ? session.name : undefined;
   const rawAvatarUrl = "avatarUrl" in session ? session.avatarUrl : undefined;
   const rawProvider = "provider" in session ? session.provider : undefined;
-  const name = isAdmin ? "Admin" : typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová";
+  const name = isAdmin ? "Admin" : member?.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
   const avatarUrl = typeof rawAvatarUrl === "string" && rawAvatarUrl.trim() ? rawAvatarUrl.trim() : undefined;
   const provider = typeof rawProvider === "string" && rawProvider.trim() ? rawProvider.trim() : isAdmin ? "password" : "email";
-  const currentTeam = isAdmin ? "Administrácia klubu" : "KK Hlohovec";
-  const teamRole = isAdmin ? "Správa klubu" : "Členka klubu";
+  const currentTeam = isAdmin ? "Administrácia klubu" : member?.team || "KK Hlohovec";
+  const teamRole = isAdmin ? "Správa klubu" : roleLabel(member?.role);
   const matchCount = "Čaká na import";
 
   return (
@@ -108,7 +111,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="mt-6 grid gap-3">
-                <StatusLine label="Členstvo" value="Čaká na prvú platbu" />
+                <StatusLine label="Členstvo" value={membershipLabel(member?.membershipStatus)} />
                 <StatusLine label="Aktuálny tím" value={currentTeam} />
                 <StatusLine label="Rola v klube" value={teamRole} />
               </div>
@@ -116,7 +119,7 @@ export default function ProfilePage() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Info icon={CreditCard} title="Členstvo" value="Online platby" />
-              <Info icon={CalendarClock} title="Ďalšia platba" value="Po aktivácii" />
+              <Info icon={CalendarClock} title="Ďalšia platba" value={member?.nextPayment || "Po aktivácii"} />
               <Info icon={Users} title="Tím" value={currentTeam} />
               <Info icon={Database} title="Zápasy kolky.sk" value={matchCount} />
             </div>
@@ -144,9 +147,9 @@ export default function ProfilePage() {
         <Surface title="Tím a hráčsky profil" icon={Users}>
           <div className="grid gap-3">
             <StatusLine label="Aktuálny tím" value={currentTeam} />
-            <StatusLine label="Kapitán / tréner" value={isAdmin ? "Správa tímov" : "Doplní administrátor"} />
+            <StatusLine label="Kapitán / tréner" value={isAdmin ? "Správa tímov" : teamCoachOrCaptain(clubData, currentTeam)} />
             <StatusLine label="Rola v klube" value={teamRole} />
-            <StatusLine label="Profil hráča" value={isAdmin ? "Admin účet" : "Michaela Vavrová"} />
+            <StatusLine label="Profil hráča" value={isAdmin ? "Admin účet" : name} />
           </div>
         </Surface>
 
@@ -224,4 +227,23 @@ function Stat({ value, label }: { value: string; label: string }) {
       <p className="mt-1 text-sm text-white/58">{label}</p>
     </div>
   );
+}
+
+function roleLabel(role?: string) {
+  if (role === "player") return "Hráčka/hráč klubu";
+  if (role === "coach") return "Tréner";
+  if (role === "admin") return "Administrátor";
+  return "Členka klubu";
+}
+
+function membershipLabel(status?: string) {
+  if (status === "paid") return "Zaplatené";
+  if (status === "unpaid") return "Nezaplatené";
+  return "Čaká na prvú platbu";
+}
+
+function teamCoachOrCaptain(data: Awaited<ReturnType<typeof readClubData>>, teamName: string) {
+  const team = data.teams.find((item) => item.name === teamName || item.members.includes(teamName));
+  if (!team) return "Doplní administrátor";
+  return `${team.coach} / ${team.captain}`;
 }
