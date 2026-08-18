@@ -7,11 +7,11 @@ export function SectionHeading({
   light = false,
   className
 }: {
-  eyebrow?: string;
+  eyebrow: string;
   title: string;
-  text?: string;
-  light?: boolean;
-  className?: string;
+  text: string;
+  light: boolean;
+  className: string;
 }) {
   return (
     <div className={cn("max-w-2xl", className)}>

@@ -48,12 +48,12 @@ const tournaments = [
 ];
 
 export default async function ProfilePage() {
-  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE)?.value);
-  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE)?.value);
+  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE).value);
+  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE).value);
   const session = userSession || adminSession;
 
   if (!session) {
-    redirect("/prihlasenie?next=/profile");
+    redirect("/prihlasenienext=/profile");
   }
 
   const isAdmin = session.role === "admin";
@@ -63,11 +63,11 @@ export default async function ProfilePage() {
   const rawName = "name" in session ? session.name : undefined;
   const rawAvatarUrl = "avatarUrl" in session ? session.avatarUrl : undefined;
   const rawProvider = "provider" in session ? session.provider : undefined;
-  const name = isAdmin ? "Admin" : member?.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
+  const name = isAdmin ? "Admin" : member.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
   const avatarUrl = typeof rawAvatarUrl === "string" && rawAvatarUrl.trim() ? rawAvatarUrl.trim() : undefined;
   const provider = typeof rawProvider === "string" && rawProvider.trim() ? rawProvider.trim() : isAdmin ? "password" : "email";
-  const currentTeam = isAdmin ? "Administrácia klubu" : member?.team || "KK Hlohovec";
-  const teamRole = isAdmin ? "Správa klubu" : roleLabel(member?.role);
+  const currentTeam = isAdmin ? "Administrácia klubu" : member.team || "KK Hlohovec";
+  const teamRole = isAdmin ? "Správa klubu" : roleLabel(member.role);
   const matchCount = "Čaká na import";
 
   return (
@@ -111,7 +111,7 @@ export default async function ProfilePage() {
                 </div>
               </div>
               <div className="mt-6 grid gap-3">
-                <StatusLine label="Členstvo" value={membershipLabel(member?.membershipStatus)} />
+                <StatusLine label="Členstvo" value={membershipLabel(member.membershipStatus)} />
                 <StatusLine label="Aktuálny tím" value={currentTeam} />
                 <StatusLine label="Rola v klube" value={teamRole} />
               </div>
@@ -119,7 +119,7 @@ export default async function ProfilePage() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Info icon={CreditCard} title="Členstvo" value="Online platby" />
-              <Info icon={CalendarClock} title="Ďalšia platba" value={member?.nextPayment || "Po aktivácii"} />
+              <Info icon={CalendarClock} title="Ďalšia platba" value={member.nextPayment || "Po aktivácii"} />
               <Info icon={Users} title="Tím" value={currentTeam} />
               <Info icon={Database} title="Zápasy kolky.sk" value={matchCount} />
             </div>
@@ -229,14 +229,14 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function roleLabel(role?: string) {
+function roleLabel(role: string) {
   if (role === "player") return "Hráčka/hráč klubu";
   if (role === "coach") return "Tréner";
   if (role === "admin") return "Administrátor";
   return "Členka klubu";
 }
 
-function membershipLabel(status?: string) {
+function membershipLabel(status: string) {
   if (status === "paid") return "Zaplatené";
   if (status === "unpaid") return "Nezaplatené";
   return "Čaká na prvú platbu";

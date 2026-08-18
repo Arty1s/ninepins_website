@@ -11,7 +11,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   if (!requireAdminSession()) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
 
-  const body = (await request.json()) as { data?: LiveClubData };
+  const body = (await request.json()) as { data: LiveClubData };
   if (!body.data) return NextResponse.json({ ok: false, message: "Missing data" }, { status: 400 });
 
   const data = await writeClubData(body.data);

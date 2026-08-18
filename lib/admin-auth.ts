@@ -38,7 +38,7 @@ export function createAdminSession(email: string) {
   return `${payload}.${signature}`;
 }
 
-export function readAdminSession(token?: string) {
+export function readAdminSession(token: string) {
   if (!token) return null;
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return null;

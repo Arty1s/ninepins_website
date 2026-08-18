@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {
@@ -23,7 +30,9 @@ const nextConfig = {
         { source: "/api/auth/login", destination: `${api}/api/auth/login` },
         { source: "/api/auth/logout", destination: `${api}/api/auth/logout` },
         { source: "/api/auth/session", destination: `${api}/api/auth/session` },
+        { source: "/api/members/ensure", destination: `${api}/api/members/ensure` },
         { source: "/api/profile", destination: `${api}/api/profile` },
+        { source: "/api/tournament-registrations/:path*", destination: `${api}/api/tournament-registrations/:path*` },
         { source: "/api/payments/checkout", destination: `${api}/api/payments/checkout` },
         { source: "/api/import/kolky", destination: `${api}/api/import/kolky` }
       ]

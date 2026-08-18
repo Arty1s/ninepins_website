@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 
 type ButtonProps = {
   children: ReactNode;
-  href?: string;
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  className?: string;
+  href: string;
+  variant: "primary" | "secondary" | "outline" | "ghost";
+  className: string;
 };
 
 const variants = {

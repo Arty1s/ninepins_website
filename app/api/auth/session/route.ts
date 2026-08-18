@@ -4,7 +4,7 @@ import { ADMIN_SESSION_COOKIE, readAdminSession } from "@/lib/admin-auth";
 import { readUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
 
 export async function GET() {
-  const adminToken = cookies().get(ADMIN_SESSION_COOKIE)?.value;
+  const adminToken = cookies().get(ADMIN_SESSION_COOKIE).value;
   const adminSession = readAdminSession(adminToken);
 
   if (adminSession) {
@@ -20,7 +20,7 @@ export async function GET() {
     });
   }
 
-  const userToken = cookies().get(USER_SESSION_COOKIE)?.value;
+  const userToken = cookies().get(USER_SESSION_COOKIE).value;
   const userSession = readUserSession(userToken);
 
   if (!userSession) {

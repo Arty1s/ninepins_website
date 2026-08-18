@@ -19,8 +19,8 @@ export function AdminGate({ children }: { children: ReactNode }) {
           return;
         }
 
-        const session = (await response.json()) as { user?: { role?: string } };
-        if (session.user?.role !== "admin") {
+        const session = (await response.json()) as { user: { role: string } };
+        if (session.user.role !== "admin") {
           window.location.href = "/prihlasenie";
           return;
         }

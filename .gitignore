@@ -1,5 +1,9 @@
 .next/
 node_modules/
+out/
+.vercel/
+.wrangler/
+.turbo/
 *.log
 *.err.log
 tsconfig.tsbuildinfo
@@ -10,6 +14,12 @@ tsconfig.tsbuildinfo
 .npm-cache/
 .pnpm-home/
 backend/.venv/
+backend/.venv-run/
+backend/.data/
+backend/*.log
+backend/*.err.log
 backend/__pycache__/
 backend/app/__pycache__/
+backend/tests/__pycache__/
+.venv/
 .data/

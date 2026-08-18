@@ -7,11 +7,11 @@ export const USER_SESSION_COOKIE = "kkhc_user_session";
 type UserSessionPayload = {
   email: string;
   role: "admin" | "member";
-  name?: string;
-  avatarUrl?: string;
-  provider?: string;
-  accessToken?: string;
-  refreshToken?: string;
+  name: string;
+  avatarUrl: string;
+  provider: string;
+  accessToken: string;
+  refreshToken: string;
   exp: number;
 };
 
@@ -19,7 +19,7 @@ function getSecret() {
   return process.env.USER_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || "kkhc-local-dev-session-secret-change-me";
 }
 
-export function createUserSession(user: User, session: Session, provider?: string) {
+export function createUserSession(user: User, session: Session, provider: string) {
   const email = (user.email || "").trim().toLowerCase();
   const role = email && email === getAdminEmail() ? "admin" : "member";
   const expiresAt = session.expires_at ? session.expires_at * 1000 : Date.now() + 1000 * 60 * 60 * 8;
@@ -46,7 +46,7 @@ export function createDemoMemberSession(email = "michaela@kkhlohovec.sk", name =
   });
 }
 
-export function readUserSession(token?: string): UserSessionPayload | null {
+export function readUserSession(token: string): UserSessionPayload | null {
   if (!token) return null;
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return null;
@@ -68,7 +68,7 @@ function getUserName(user: User): string {
   const metadata = user.user_metadata || {};
   const metadataName = metadata.full_name || metadata.name || metadata.user_name;
   if (typeof metadataName === "string" && metadataName.trim()) return metadataName.trim();
-  return user.email?.split("@")[0] || "Člen KK Hlohovec";
+  return user.email.split("@")[0] || "Člen KK Hlohovec";
 }
 
 function getAvatarUrl(user: User): string | undefined {

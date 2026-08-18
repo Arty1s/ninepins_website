@@ -20,7 +20,7 @@ export function LoginFormCard() {
     return next;
   }, [searchParams]);
   const authError = searchParams.get("error");
-  const nextQuery = nextPath ? `?next=${encodeURIComponent(nextPath)}` : "";
+  const nextQuery = nextPath ? `next=${encodeURIComponent(nextPath)}` : "";
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +35,7 @@ export function LoginFormCard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
-      const result = (await response.json()) as { ok?: boolean; message?: string; redirectTo?: string };
+      const result = (await response.json()) as { ok: boolean; message: string; redirectTo: string };
 
       if (!response.ok || !result.ok) {
         setError(result.message || "Prihlásenie zlyhalo.");
@@ -104,7 +104,7 @@ export function LoginFormCard() {
 
         <div className="-mt-1 flex justify-end">
           <Link className="text-sm font-semibold text-[#1683ff] transition hover:text-[#62adff]" href="/kontakt">
-            Zabudli ste heslo?
+            Zabudli ste heslo
           </Link>
         </div>
 
@@ -139,7 +139,7 @@ export function LoginFormCard() {
 
       <div className="mt-7 flex justify-center text-sm text-white/60">
         <Link className="inline-flex items-center justify-center gap-2 font-bold text-[#1683ff] transition hover:text-[#62adff]" href="/registracia">
-          Nemáš účet? Zaregistruj sa
+          Nemáš účet Zaregistruj sa
         </Link>
       </div>
     </div>

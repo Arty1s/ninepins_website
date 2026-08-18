@@ -41,7 +41,7 @@ export default function KontaktPage() {
               Kontakt
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-[#c7d6ee]">
-              Máte otázky, záujem o členstvo, turnaj alebo rezerváciu dráh? Napíšte nám a ozveme sa vám čo najskôr.
+              Máte otázky, záujem o členstvo, turnaj alebo rezerváciu dráh Napíšte nám a ozveme sa vám čo najskôr.
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">

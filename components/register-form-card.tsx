@@ -6,9 +6,9 @@ import { useMemo, useState } from "react";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Facebook, Loader2, LockKeyhole, Mail, UserRound } from "lucide-react";
 
 type RegisterResult = {
-  ok?: boolean;
-  message?: string;
-  redirectTo?: string;
+  ok: boolean;
+  message: string;
+  redirectTo: string;
 };
 
 export function RegisterFormCard() {
@@ -29,7 +29,7 @@ export function RegisterFormCard() {
   }, [searchParams]);
 
   const authError = searchParams.get("error");
-  const nextQuery = nextPath ? `?next=${encodeURIComponent(nextPath)}` : "";
+  const nextQuery = nextPath ? `next=${encodeURIComponent(nextPath)}` : "";
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -170,7 +170,7 @@ export function RegisterFormCard() {
 
       <div className="mt-7 flex justify-center text-sm text-white/60">
         <Link className="inline-flex items-center justify-center gap-2 font-bold text-[#1683ff] transition hover:text-[#62adff]" href="/prihlasenie">
-          Už máš účet? Prihlás sa
+          Už máš účet Prihlás sa
         </Link>
       </div>
     </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { Download, LogOut, Pencil, Plus, Save, Shield, Trash2, Trophy, Users, Images, Swords } from "lucide-react";
+import { Download, Eye, LogOut, Pencil, Plus, Save, Shield, Trash2, Trophy, Users, Images, Swords, X } from "lucide-react";
 import {
   defaultLiveData,
   persistLiveDataToBackend,
@@ -16,14 +17,36 @@ import {
   type LiveTeam,
   type LiveTournament
 } from "@/lib/live-store";
+import fixtureMatches from "@/fixtures/kolky-hlohovec-matches.json";
 
 export type AdminTab = "turnaje" | "galeria" | "clenovia" | "timy" | "zapasy" | "import";
 
 const adminSurfaceClass =
   "rounded-2xl border border-white/[0.05] bg-[linear-gradient(180deg,#0A1D3A_0%,#08172E_100%)] shadow-[0_8px_30px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.04)]";
 
-export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = false }: { initialActive?: AdminTab; compactHeader?: boolean }) {
-  const [active, setActive] = useState<AdminTab>(initialActive);
+type ImportLog = {
+  level: "info" | "warning" | "error";
+  type: string;
+  message: string;
+  url: string;
+  status: number;
+  parsedMatches: number;
+  checkedUrlCount: number;
+};
+
+type ImportPayload = {
+  ok: boolean;
+  matches: LiveMatch[];
+  importedCount: number;
+  counts: { teams: number; players: number; matches: number; standings: number; errors: number };
+  warnings: string[];
+  logs: ImportLog[];
+  status: string;
+  importMode: string;
+};
+
+export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = false }: { initialActive: AdminTab; compactHeader: boolean }) {
+  const [active] = useState<AdminTab>(initialActive);
   const [data, setData] = useState<LiveClubData>(defaultLiveData);
   const [adminEmail, setAdminEmail] = useState("admin");
 
@@ -37,7 +60,7 @@ export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = 
     fetch("/api/auth/session", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((session) => {
-        if (session?.user?.email) setAdminEmail(session.user.email);
+        if (session.user.email) setAdminEmail(session.user.email);
       })
       .catch(() => undefined);
   }, []);
@@ -89,15 +112,6 @@ export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = 
       </div>
 
       <div className={adminSurfaceClass}>
-        <div className="flex flex-wrap gap-2 border-b border-white/[0.05] p-4">
-          <TabButton active={active === "turnaje"} onClick={() => setActive("turnaje")}>Turnaje</TabButton>
-          <TabButton active={active === "galeria"} onClick={() => setActive("galeria")}>Galéria</TabButton>
-          <TabButton active={active === "clenovia"} onClick={() => setActive("clenovia")}>Členovia</TabButton>
-          <TabButton active={active === "timy"} onClick={() => setActive("timy")}>Tímy</TabButton>
-          <TabButton active={active === "zapasy"} onClick={() => setActive("zapasy")}>Zápasy</TabButton>
-          <TabButton active={active === "import"} onClick={() => setActive("import")}>Import kolky.sk</TabButton>
-        </div>
-
         <div className="p-5">
           {active === "turnaje" ? (
             <TournamentCrud rows={data.tournaments} setRows={(tournaments) => updateData({ ...data, tournaments })} />
@@ -126,42 +140,112 @@ export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = 
 }
 
 function TournamentCrud({ rows, setRows }: { rows: LiveTournament[]; setRows: (rows: LiveTournament[]) => void }) {
-  const empty: Omit<LiveTournament, "id"> = { name: "", date: "", time: "18:00", status: "Pripravuje sa", location: "Kolkáreň Hlohovec", capacity: "32 hráčov", fee: "", entryType: "paid", description: "", lanes: "4", paymentUrl: "", type: "upcoming" };
+  const empty: Omit<LiveTournament, "id"> = { name: "", date: "", dateFrom: "", dateTo: "", time: "18:00", status: "Pripravuje sa", location: "Kolkáreň Hlohovec", capacity: "32 hráčov", fee: "", entryType: "paid", description: "", lanes: "4", paymentUrl: "", type: "upcoming" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const save = () => {
-    if (!form.name.trim()) return;
-    if (editingId) setRows(rows.map((row) => row.id === editingId ? { id: editingId, ...form } : row));
-    else setRows([{ id: Date.now(), ...form }, ...rows]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const activeRows = rows.filter((row) => row.type !== "past");
+  const pastRows = rows.filter((row) => row.type === "past");
+
+  const openCreate = () => {
     setForm(empty);
     setEditingId(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (id: number) => {
+    const row = rows.find((item) => item.id === id);
+    if (!row) return;
+    const [legacyFrom = "", legacyTo = ""] = row.date.split(" - ");
+    setEditingId(id);
+    setForm({
+      ...row,
+      dateFrom: row.dateFrom || parseTournamentDateForInput(legacyFrom),
+      dateTo: row.dateTo || parseTournamentDateForInput(legacyTo)
+    });
+    setModalOpen(true);
+  };
+
+  const save = () => {
+    if (!form.name.trim()) return;
+    const normalized = normalizeTournamentForm(form);
+    if (editingId) setRows(rows.map((row) => row.id === editingId ? { id: editingId, ...normalized } : row));
+    else setRows([{ id: Date.now(), ...normalized }, ...rows]);
+    setForm(empty);
+    setEditingId(null);
+    setModalOpen(false);
   };
 
   return (
     <CrudShell title="Správa turnajov" description="Vytvor platený alebo bezplatný turnaj, nastav kapacitu, počet dráh, popis a stav. Verejná stránka Turnaje sa zmení okamžite.">
-      <div className="grid gap-3 md:grid-cols-4">
-        <Input label="Názov" value={form.name} onChange={(name) => setForm({ ...form, name })} />
-        <Input label="Dátum" value={form.date} onChange={(date) => setForm({ ...form, date })} />
-        <Input label="Čas" value={form.time} onChange={(time) => setForm({ ...form, time })} />
-        <Input label="Stav" value={form.status} onChange={(status) => setForm({ ...form, status })} />
-        <Input label="Miesto" value={form.location} onChange={(location) => setForm({ ...form, location })} />
-        <Input label="Kapacita" value={form.capacity} onChange={(capacity) => setForm({ ...form, capacity })} />
-        <Input label="Poplatok" value={form.fee} onChange={(fee) => setForm({ ...form, fee })} />
-        <Input label="Počet dráh" value={form.lanes} onChange={(lanes) => setForm({ ...form, lanes })} />
-        <Select label="Štartovné" value={form.entryType} onChange={(entryType) => setForm({ ...form, entryType: entryType as LiveTournament["entryType"], fee: entryType === "free" ? "zadarmo" : form.fee })} options={["paid", "free"]} />
-        <Select label="Typ" value={form.type} onChange={(type) => setForm({ ...form, type: type as LiveTournament["type"] })} options={["upcoming", "current", "past"]} />
-        <Input label="Stripe / platobný link" value={form.paymentUrl} onChange={(paymentUrl) => setForm({ ...form, paymentUrl })} />
-        <Input label="Popis" value={form.description} onChange={(description) => setForm({ ...form, description })} />
+      <div className="flex flex-col gap-3 rounded-xl border border-white/[0.05] bg-[#061a33]/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-bold text-white">Turnaje v systéme</p>
+          <p className="mt-1 text-xs text-[#9fb0c8]">Najprv vidíš zoznam. Formulár sa otvorí až ako samostatné okno.</p>
+        </div>
+        <ActionButton onClick={openCreate}><Plus size={17} /> Vytvoriť turnaj</ActionButton>
       </div>
-      <ActionButton onClick={save}>{editingId ? <Save size={17} /> : <Plus size={17} />} {editingId ? "Uložiť turnaj" : "Pridať turnaj"}</ActionButton>
-      <DataTable headers={["Názov", "Dátum", "Stav", "Poplatok", "Kapacita"]} rows={rows.map((row) => ({ id: row.id, cells: [row.name, row.date, row.status, row.entryType === "free" ? "zadarmo" : row.fee, row.capacity] }))} onEdit={(id) => {
-        const row = rows.find((item) => item.id === id);
-        if (row) {
-          setEditingId(id);
-          setForm(row);
-        }
-      }} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+
+      <TournamentTableBlock title="Pripravované a aktuálne turnaje" rows={activeRows} onEdit={openEdit} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+      <TournamentTableBlock title="Staršie turnaje / archív" rows={pastRows} onEdit={openEdit} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+
+      {modalOpen ? (
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-[#020b18]/82 px-4 py-6 backdrop-blur-sm">
+          <div className="max-h-[calc(100vh-48px)] w-full max-w-5xl overflow-y-auto rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,#0A1D3A_0%,#08172E_100%)] p-5 shadow-[0_28px_100px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.05)] md:p-7">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#4e9bff]">{editingId ? "Úprava turnaja" : "Nový turnaj"}</p>
+                <h3 className="mt-2 text-3xl font-black text-white">{editingId ? "Upraviť turnaj" : "Vytvoriť turnaj"}</h3>
+                <p className="mt-2 text-sm text-[#9fb0c8]">Po uložení sa zmena hneď zobrazí na webe aj v admin zozname.</p>
+              </div>
+              <button type="button" onClick={() => setModalOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/[0.06] text-[#c7d6ee] transition hover:border-blue-400/25 hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              <Input label="Názov" value={form.name} onChange={(name) => setForm({ ...form, name })} />
+              <DateInput label="Od dátumu" value={form.dateFrom || ""} onChange={(dateFrom) => setForm({ ...form, dateFrom })} />
+              <DateInput label="Do dátumu" value={form.dateTo || ""} onChange={(dateTo) => setForm({ ...form, dateTo })} />
+              <Input label="Čas" value={form.time} onChange={(time) => setForm({ ...form, time })} />
+              <Input label="Stav" value={form.status} onChange={(status) => setForm({ ...form, status })} />
+              <Input label="Miesto" value={form.location} onChange={(location) => setForm({ ...form, location })} />
+              <Input label="Kapacita" value={form.capacity} onChange={(capacity) => setForm({ ...form, capacity })} />
+              <Select label="Štartovné" value={form.entryType} onChange={(entryType) => setForm({ ...form, entryType: entryType as LiveTournament["entryType"], fee: entryType === "free" ? "zadarmo" : form.fee === "zadarmo" ? "" : form.fee })} options={["paid", "free"]} />
+              <Input label="Poplatok" value={form.entryType === "free" ? "zadarmo" : form.fee} onChange={(fee) => setForm({ ...form, fee })} disabled={form.entryType === "free"} />
+              <Input label="Počet dráh" value={form.lanes} onChange={(lanes) => setForm({ ...form, lanes })} />
+              <Select label="Typ" value={form.type} onChange={(type) => setForm({ ...form, type: type as LiveTournament["type"] })} options={["upcoming", "current", "past"]} />
+              <Textarea label="Popis" value={form.description} onChange={(description) => setForm({ ...form, description })} className="md:col-span-4" />
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button type="button" onClick={() => setModalOpen(false)} className="inline-flex h-11 items-center justify-center rounded-lg border border-white/[0.06] px-5 text-sm font-black uppercase text-[#dbe7ff] transition hover:border-blue-400/25 hover:text-white">
+                Zrušiť
+              </button>
+              <ActionButton onClick={save}>{editingId ? <Save size={17} /> : <Plus size={17} />} {editingId ? "Uložiť turnaj" : "Pridať turnaj"}</ActionButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </CrudShell>
+  );
+}
+
+function TournamentTableBlock({ title, rows, onEdit, onDelete }: { title: string; rows: LiveTournament[]; onEdit: (id: number) => void; onDelete: (id: number) => void }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-lg font-black text-white">{title}</h3>
+        <span className="rounded-md bg-[#1683ff]/12 px-3 py-1 text-xs font-black uppercase text-[#7db7ff]">{rows.length} záznamov</span>
+      </div>
+      <DataTable
+        headers={["Názov", "Dátum", "Stav", "Poplatok", "Kapacita"]}
+        rows={rows.map((row) => ({ id: row.id, cells: [row.name, row.date, row.status, row.entryType === "free" ? "zadarmo" : row.fee, row.capacity] }))}
+        detailHref={(id) => `/admin/turnaje/${id}`}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </section>
   );
 }
 
@@ -239,34 +323,64 @@ function MemberCrud({ rows, setRows }: { rows: LiveMember[]; setRows: (rows: Liv
   const empty: Omit<LiveMember, "id"> = { name: "", email: "", team: "KK Hlohovec", role: "member", memberSince: new Date().toISOString().slice(0, 10), membershipStatus: "pending", lastPayment: "-", nextPayment: "Po aktivácii členstva" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openCreate = () => {
+    setForm(empty);
+    setEditingId(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (id: number) => {
+    const row = rows.find((item) => item.id === id);
+    if (!row) return;
+    setEditingId(id);
+    setForm(row);
+    setModalOpen(true);
+  };
+
   const save = () => {
     if (!form.name.trim() || !form.email.trim()) return;
     if (editingId) setRows(rows.map((row) => row.id === editingId ? { id: editingId, ...form } : row));
     else setRows([{ id: Date.now(), ...form }, ...rows]);
     setForm(empty);
     setEditingId(null);
+    setModalOpen(false);
   };
 
   return (
     <CrudShell title="Správa členov" description="Admin vidí členov, tím, rolu, stav platby a odkedy sú členmi. Vie ich upraviť alebo odstrániť.">
-      <div className="grid gap-3 md:grid-cols-4">
-        <Input label="Meno" value={form.name} onChange={(name) => setForm({ ...form, name })} />
-        <Input label="E-mail" value={form.email} onChange={(email) => setForm({ ...form, email })} />
-        <Input label="Tím" value={form.team} onChange={(team) => setForm({ ...form, team })} />
-        <Select label="Rola" value={form.role} onChange={(role) => setForm({ ...form, role: role as LiveMember["role"] })} options={["admin", "coach", "player", "member"]} />
-        <Input label="Člen od" value={form.memberSince} onChange={(memberSince) => setForm({ ...form, memberSince })} />
-        <Select label="Platba" value={form.membershipStatus} onChange={(membershipStatus) => setForm({ ...form, membershipStatus: membershipStatus as LiveMember["membershipStatus"] })} options={["paid", "pending", "unpaid"]} />
-        <Input label="Posledná platba" value={form.lastPayment} onChange={(lastPayment) => setForm({ ...form, lastPayment })} />
-        <Input label="Ďalšia platba" value={form.nextPayment} onChange={(nextPayment) => setForm({ ...form, nextPayment })} />
+      <div className="flex flex-col gap-3 rounded-xl border border-white/[0.05] bg-[#061a33]/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-bold text-white">Členovia na stránke</p>
+          <p className="mt-1 text-xs text-[#9fb0c8]">Zoznam členov je hlavný pohľad. Úprava sa otvorí ako samostatné okno.</p>
+        </div>
+        <ActionButton onClick={openCreate}><Plus size={17} /> Pridať člena</ActionButton>
       </div>
-      <ActionButton onClick={save}>{editingId ? <Save size={17} /> : <Plus size={17} />} {editingId ? "Uložiť člena" : "Pridať člena"}</ActionButton>
-      <DataTable headers={["Meno", "Tím", "Platba", "Člen od", "Ďalšia platba"]} rows={rows.map((row) => ({ id: row.id, cells: [row.name, row.team, paymentLabel(row.membershipStatus), row.memberSince, row.nextPayment] }))} onEdit={(id) => {
-        const row = rows.find((item) => item.id === id);
-        if (row) {
-          setEditingId(id);
-          setForm(row);
-        }
-      }} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+      <DataTable headers={["Meno", "E-mail", "Tím", "Platba", "Člen od", "Ďalšia platba"]} rows={rows.map((row) => ({ id: row.id, cells: [row.name, row.email, row.team, paymentLabel(row.membershipStatus), row.memberSince, row.nextPayment] }))} onEdit={openEdit} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+
+      {modalOpen ? (
+        <EntityModal
+          eyebrow={editingId ? "Úprava člena" : "Nový člen"}
+          title={editingId ? "Upraviť člena" : "Pridať člena"}
+          description="Zmena sa po uložení okamžite prejaví v profile člena a admin zozname."
+          onClose={() => setModalOpen(false)}
+          onSave={save}
+          saveLabel={editingId ? "Uložiť člena" : "Pridať člena"}
+          saveIcon={editingId ? <Save size={17} /> : <Plus size={17} />}
+        >
+          <div className="grid gap-3 md:grid-cols-4">
+            <Input label="Meno" value={form.name} onChange={(name) => setForm({ ...form, name })} />
+            <Input label="E-mail" value={form.email} onChange={(email) => setForm({ ...form, email })} />
+            <Input label="Tím" value={form.team} onChange={(team) => setForm({ ...form, team })} />
+            <Select label="Rola" value={form.role} onChange={(role) => setForm({ ...form, role: role as LiveMember["role"] })} options={["admin", "coach", "player", "member"]} />
+            <DateInput label="Člen od" value={parseTournamentDateForInput(form.memberSince) || form.memberSince} onChange={(memberSince) => setForm({ ...form, memberSince })} />
+            <Select label="Platba" value={form.membershipStatus} onChange={(membershipStatus) => setForm({ ...form, membershipStatus: membershipStatus as LiveMember["membershipStatus"] })} options={["paid", "pending", "unpaid"]} />
+            <Input label="Posledná platba" value={form.lastPayment} onChange={(lastPayment) => setForm({ ...form, lastPayment })} />
+            <Input label="Ďalšia platba" value={form.nextPayment} onChange={(nextPayment) => setForm({ ...form, nextPayment })} />
+          </div>
+        </EntityModal>
+      ) : null}
     </CrudShell>
   );
 }
@@ -275,6 +389,22 @@ function TeamCrud({ rows, members, setRows }: { rows: LiveTeam[]; members: LiveM
   const empty: Omit<LiveTeam, "id"> = { slug: "", name: "", league: "", coach: "", captain: "", members: "", achievements: "", description: "" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openCreate = () => {
+    setForm(empty);
+    setEditingId(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (id: number) => {
+    const row = rows.find((item) => item.id === id);
+    if (!row) return;
+    setEditingId(id);
+    setForm(row);
+    setModalOpen(true);
+  };
+
   const save = () => {
     if (!form.name.trim()) return;
     const payload = { ...form, slug: form.slug || slugify(form.name) };
@@ -282,30 +412,44 @@ function TeamCrud({ rows, members, setRows }: { rows: LiveTeam[]; members: LiveM
     else setRows([{ id: Date.now(), ...payload }, ...rows]);
     setForm(empty);
     setEditingId(null);
+    setModalOpen(false);
   };
   const memberNames = members.map((member) => member.name).join(", ");
 
   return (
     <CrudShell title="Správa tímov" description="Tímy a ligy sú jedna sekcia. Tu admin mení kategóriu/ligu, trénera, kapitána, členov a úspechy tímu.">
-      <p className="rounded-xl bg-[#1683ff]/10 p-3 text-sm text-[#cfe5ff]">Dostupní členovia: {memberNames || "zatiaľ bez členov"}</p>
-      <div className="grid gap-3 md:grid-cols-3">
-        <Input label="Slug" value={form.slug} onChange={(slug) => setForm({ ...form, slug })} />
-        <Input label="Názov tímu" value={form.name} onChange={(name) => setForm({ ...form, name })} />
-        <Input label="Liga/kategória" value={form.league} onChange={(league) => setForm({ ...form, league })} />
-        <Input label="Tréner" value={form.coach} onChange={(coach) => setForm({ ...form, coach })} />
-        <Input label="Kapitán" value={form.captain} onChange={(captain) => setForm({ ...form, captain })} />
-        <Input label="Členovia CSV" value={form.members} onChange={(membersValue) => setForm({ ...form, members: membersValue })} />
-        <Input label="Úspechy ; oddelené" value={form.achievements} onChange={(achievements) => setForm({ ...form, achievements })} />
-        <Input label="Popis" value={form.description} onChange={(description) => setForm({ ...form, description })} />
+      <div className="flex flex-col gap-3 rounded-xl border border-white/[0.05] bg-[#061a33]/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-bold text-white">Tímy a ligy</p>
+          <p className="mt-1 text-xs text-[#9fb0c8]">Na stránke sú klikateľné tímy. Admin upravuje členov, kapitána, trénera a úspechy v modale.</p>
+        </div>
+        <ActionButton onClick={openCreate}><Plus size={17} /> Pridať tím</ActionButton>
       </div>
-      <ActionButton onClick={save}>{editingId ? <Save size={17} /> : <Plus size={17} />} {editingId ? "Uložiť tím" : "Pridať tím"}</ActionButton>
-      <DataTable headers={["Tím", "Liga/kategória", "Kapitán", "Členovia"]} rows={rows.map((row) => ({ id: row.id, cells: [row.name, row.league, row.captain, row.members] }))} onEdit={(id) => {
-        const row = rows.find((item) => item.id === id);
-        if (row) {
-          setEditingId(id);
-          setForm(row);
-        }
-      }} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+      <p className="rounded-xl bg-[#1683ff]/10 p-3 text-sm text-[#cfe5ff]">Dostupní členovia: {memberNames || "zatiaľ bez členov"}</p>
+      <DataTable headers={["Tím", "Liga/kategória", "Tréner", "Kapitán", "Členovia"]} rows={rows.map((row) => ({ id: row.id, cells: [row.name, row.league, row.coach, row.captain, row.members] }))} onEdit={openEdit} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+
+      {modalOpen ? (
+        <EntityModal
+          eyebrow={editingId ? "Úprava tímu" : "Nový tím"}
+          title={editingId ? "Upraviť tím" : "Pridať tím"}
+          description="Členov píš ako mená oddelené čiarkou. Detail tímu ich potom zobrazí ako hráčske karty."
+          onClose={() => setModalOpen(false)}
+          onSave={save}
+          saveLabel={editingId ? "Uložiť tím" : "Pridať tím"}
+          saveIcon={editingId ? <Save size={17} /> : <Plus size={17} />}
+        >
+          <div className="grid gap-3 md:grid-cols-3">
+            <Input label="Slug" value={form.slug} onChange={(slug) => setForm({ ...form, slug })} />
+            <Input label="Názov tímu" value={form.name} onChange={(name) => setForm({ ...form, name })} />
+            <Input label="Liga/kategória" value={form.league} onChange={(league) => setForm({ ...form, league })} />
+            <Input label="Tréner" value={form.coach} onChange={(coach) => setForm({ ...form, coach })} />
+            <Input label="Kapitán" value={form.captain} onChange={(captain) => setForm({ ...form, captain })} />
+            <Input label="Členovia CSV" value={form.members} onChange={(membersValue) => setForm({ ...form, members: membersValue })} />
+            <Input label="Úspechy ; oddelené" value={form.achievements} onChange={(achievements) => setForm({ ...form, achievements })} />
+            <Textarea label="Popis" value={form.description} onChange={(description) => setForm({ ...form, description })} className="md:col-span-2" />
+          </div>
+        </EntityModal>
+      ) : null}
     </CrudShell>
   );
 }
@@ -314,6 +458,25 @@ function MatchCrud({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveM
   const empty: Omit<LiveMatch, "id"> = { sourceUrl: "", league: "", round: "", date: "", location: "", home: "", away: "", score: "", pins: "", status: "plánované", detailRows: "", importStatus: "manual" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [importLogs, setImportLogs] = useState<ImportLog[]>([]);
+  const [importing, setImporting] = useState(false);
+
+  const openCreate = () => {
+    setForm(empty);
+    setEditingId(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (id: number) => {
+    const row = rows.find((item) => item.id === id);
+    if (!row) return;
+    setEditingId(id);
+    setForm(row);
+    setModalOpen(true);
+  };
+
   const save = () => {
     if (!form.home.trim() || !form.away.trim()) return;
     const payload = { ...form, importStatus: editingId ? "edited" as const : form.importStatus };
@@ -321,31 +484,90 @@ function MatchCrud({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveM
     else setRows([{ id: Date.now(), ...payload }, ...rows]);
     setForm(empty);
     setEditingId(null);
+    setModalOpen(false);
   };
 
+  const importSeason = async (mode: "live" | "fixture" | "cache" = "live") => {
+    setImporting(true);
+    setImportLogs([]);
+    setMessage(mode === "live" ? "Importujem zápasy Hlohovca od 1. kola sezóny 2025/2026..." : "Načítavam lokálne dáta pre vývoj...");
+    try {
+      const params = new URLSearchParams({ from: "2025-09-01", to: "2027-06-30" });
+      if (mode === "live") {
+        params.set("mode", "live");
+        params.set("idFrom", "43400");
+        params.set("idTo", "44820");
+      } else {
+        params.set("mode", mode);
+      }
+      const response = await fetch(`${mode === "live" ? fastApiSyncUrl() : fastApiImportUrl()}${params.toString()}`, { method: "POST", credentials: "include" });
+      const payload = await response.json() as ImportPayload;
+      setImportLogs(payload.logs || []);
+      const backendMatches = payload.matches || [];
+      if (!backendMatches.length && mode === "live") {
+        setMessage("Live crawler failed. No real matches were imported.");
+      } else {
+        const imported = mode === "fixture" ? backendMatches.map((match) => ({ ...match, importStatus: "auto" as const })) : backendMatches;
+        setRows([...imported, ...rows.filter((row) => !imported.some((match) => match.sourceUrl === row.sourceUrl))]);
+        setMessage(formatImportMessage(payload, response.ok));
+      }
+    } catch {
+      if (mode === "fixture") {
+        const imported = localFixtureMatches();
+        setRows([...imported, ...rows.filter((row) => !imported.some((match) => match.sourceUrl === row.sourceUrl))]);
+        setMessage(`Development fixture mode: načítal som ${imported.length} ukážkových zápasov.`);
+        setImportLogs([{ level: "warning", type: "fixture", message: "Explicit fixture mode loaded bundled development data because the backend endpoint was unavailable." }]);
+      } else {
+        setMessage("Live crawler failed. No real matches were imported.");
+        setImportLogs([{ level: "error", type: "blocked_connection", message: "Fetch request from admin UI failed before the backend response was received." }]);
+      }
+    } finally {
+      setImporting(false);
+    }
+  };
   return (
     <CrudShell title="Správa zápasov" description="Admin vidí importované aj ručne pridané zápasy. Vie upraviť skóre, kolky, detailnú zápisnicu alebo plánovaný zápas.">
-      <div className="grid gap-3 md:grid-cols-4">
-        <Input label="Liga" value={form.league} onChange={(league) => setForm({ ...form, league })} />
-        <Input label="Kolo" value={form.round} onChange={(round) => setForm({ ...form, round })} />
-        <Input label="Dátum" value={form.date} onChange={(date) => setForm({ ...form, date })} />
-        <Input label="Miesto" value={form.location} onChange={(location) => setForm({ ...form, location })} />
-        <Input label="Domáci" value={form.home} onChange={(home) => setForm({ ...form, home })} />
-        <Input label="Hostia" value={form.away} onChange={(away) => setForm({ ...form, away })} />
-        <Input label="Skóre" value={form.score} onChange={(score) => setForm({ ...form, score })} />
-        <Input label="Kolky" value={form.pins} onChange={(pins) => setForm({ ...form, pins })} />
-        <Select label="Stav" value={form.status} onChange={(status) => setForm({ ...form, status: status as LiveMatch["status"] })} options={["plánované", "odohrané", "import"]} />
-        <Input label="Zdroj URL" value={form.sourceUrl} onChange={(sourceUrl) => setForm({ ...form, sourceUrl })} />
-        <Input label="Detailné riadky" value={form.detailRows} onChange={(detailRows) => setForm({ ...form, detailRows })} />
+      <div className="flex flex-col gap-3 rounded-xl border border-white/[0.05] bg-[#061a33]/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-bold text-white">Dáta KKZ Hlohovec</p>
+          <p className="mt-1 text-xs text-[#9fb0c8]">Synchronizuje iba päť oficiálnych tímov: Extraliga muži, Extraliga ženy, 2. liga, 3. liga a Dorast.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <ActionButton onClick={() => importSeason("live")}><Download size={17} /> {importing ? "Synchronizujem..." : "Synchronizovať dáta KKZ Hlohovec"}</ActionButton>
+          <ActionButton onClick={() => importSeason("fixture")}>Fixture dáta</ActionButton>
+          <ActionButton onClick={() => importSeason("cache")}>Cached JSON</ActionButton>
+          <ActionButton onClick={openCreate}><Plus size={17} /> Pridať zápas</ActionButton>
+        </div>
       </div>
-      <ActionButton onClick={save}>{editingId ? <Save size={17} /> : <Plus size={17} />} {editingId ? "Uložiť zápas" : "Pridať zápas"}</ActionButton>
-      <DataTable headers={["Liga", "Dátum", "Zápas", "Skóre", "Zdroj"]} rows={rows.map((row) => ({ id: row.id, cells: [row.league, row.date, `${row.home} vs ${row.away}`, row.score, row.importStatus || "manual"] }))} onEdit={(id) => {
-        const row = rows.find((item) => item.id === id);
-        if (row) {
-          setEditingId(id);
-          setForm(row);
-        }
-      }} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+      {message ? <p className="rounded-xl bg-[#1683ff]/10 p-3 text-sm font-bold text-[#cfe5ff]">{message}</p> : null}
+      <ImportLogPanel logs={importLogs} />
+      <DataTable headers={["Liga", "Dátum", "Zápas", "Skóre", "Kolky", "Zdroj"]} rows={rows.map((row) => ({ id: row.id, cells: [row.league, row.date, `${row.home} vs ${row.away}`, row.score, row.pins, row.importStatus || "manual"] }))} onEdit={openEdit} onDelete={(id) => setRows(rows.filter((row) => row.id !== id))} />
+
+      {modalOpen ? (
+        <EntityModal
+          eyebrow={editingId ? "Úprava zápasu" : "Nový zápas"}
+          title={editingId ? "Upraviť zápas" : "Pridať zápas"}
+          description="Detailné riadky píš po hráčoch. Jeden riadok = hodnoty oddelené znakom |, aby sa na stránke zobrazila zápisnica."
+          onClose={() => setModalOpen(false)}
+          onSave={save}
+          saveLabel={editingId ? "Uložiť zápas" : "Pridať zápas"}
+          saveIcon={editingId ? <Save size={17} /> : <Plus size={17} />}
+        >
+          <div className="grid gap-3 md:grid-cols-4">
+            <Input label="Liga" value={form.league} onChange={(league) => setForm({ ...form, league })} />
+            <Input label="Kolo" value={form.round} onChange={(round) => setForm({ ...form, round })} />
+            <DateInput label="Dátum" value={parseTournamentDateForInput(form.date) || form.date} onChange={(date) => setForm({ ...form, date })} />
+            <Input label="Miesto" value={form.location} onChange={(location) => setForm({ ...form, location })} />
+            <Input label="Domáci" value={form.home} onChange={(home) => setForm({ ...form, home })} />
+            <Input label="Hostia" value={form.away} onChange={(away) => setForm({ ...form, away })} />
+            <Input label="Skóre" value={form.score} onChange={(score) => setForm({ ...form, score })} />
+            <Input label="Kolky" value={form.pins} onChange={(pins) => setForm({ ...form, pins })} />
+            <Select label="Stav" value={form.status} onChange={(status) => setForm({ ...form, status: status as LiveMatch["status"] })} options={["plánované", "odohrané", "import"]} />
+            <Input label="Zdroj URL" value={form.sourceUrl} onChange={(sourceUrl) => setForm({ ...form, sourceUrl })} />
+            <Textarea label="Detailné riadky" value={form.detailRows} onChange={(detailRows) => setForm({ ...form, detailRows })} className="md:col-span-4" />
+          </div>
+        </EntityModal>
+      ) : null}
     </CrudShell>
   );
 }
@@ -353,6 +575,7 @@ function MatchCrud({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveM
 function KolkyImport({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveMatch[]) => void }) {
   const [url, setUrl] = useState("https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A");
   const [message, setMessage] = useState("");
+  const [logs, setLogs] = useState<ImportLog[]>([]);
 
   const importMatch = async () => {
     if (!url.includes("vysledky.kolky.sk")) {
@@ -361,22 +584,22 @@ function KolkyImport({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: Liv
     }
 
     setMessage("Importujem zo zdroja...");
+    setLogs([]);
     try {
-      const response = await fetch(`/api/import/kolky?url=${encodeURIComponent(url)}`, { method: "POST" });
-      const payload = await response.json() as { ok?: boolean; matches?: LiveMatch[]; warnings?: string[] };
-      if (!response.ok || !payload.ok) {
-        setMessage("Import zlyhal. Skontroluj URL alebo prihlásenie admina.");
-        return;
-      }
+      const params = new URLSearchParams({ url });
+      const response = await fetch(`${fastApiImportUrl()}${params.toString()}`, { method: "POST" });
+      const payload = await response.json() as ImportPayload;
+      setLogs(payload.logs || []);
       const imported = payload.matches || [];
       if (!imported.length) {
-        setMessage(payload.warnings?.[0] || "Import prebehol, ale nenašiel zápas s Hlohovcom.");
+        setMessage(formatImportMessage(payload, response.ok));
         return;
       }
       setRows([...imported, ...rows.filter((row) => !imported.some((match) => match.sourceUrl === row.sourceUrl))]);
-      setMessage("Import uložený z backendu. Admin ho môže upraviť v sekcii Zápasy.");
+      setMessage(formatImportMessage(payload, response.ok));
     } catch {
       setMessage("Import zlyhal. Lokálne alebo externé spojenie nie je dostupné.");
+      setLogs([{ level: "error", type: "blocked_connection", message: "Fetch request from admin UI failed before the backend response was received." }]);
     }
   };
 
@@ -389,11 +612,57 @@ function KolkyImport({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: Liv
         </div>
       </div>
       {message ? <p className="rounded-xl bg-emerald-500/12 p-3 text-sm font-bold text-emerald-200">{message}</p> : null}
+      <ImportLogPanel logs={logs} />
       <div className="rounded-xl bg-[#1683ff]/10 p-4 text-sm leading-6 text-[#cfe5ff]">
         <p className="font-black text-white">Backend endpoint pripravený:</p>
         <p className="mt-1">`/api/import/kolky` - v produkcii ho nastavíme ako 24h cron. Ak parser nájde Hlohovec, zápas sa pridá na web a admin ho stále vie ručne prepísať.</p>
       </div>
     </CrudShell>
+  );
+}
+
+function formatImportMessage(payload: ImportPayload, responseOk: boolean) {
+  const count = payload.matches.length || payload.importedCount || 0;
+  if (count > 0) {
+    const suffix = payload.importMode === "fixture" ? " z development fixture." : payload.importMode === "cache" ? " z cached JSON." : ".";
+    return `Import hotovy: ${count} zapasov${suffix} Rucne upravene zapasy sa neprepisu.`;
+  }
+
+  const firstProblem = payload.logs.find((log) => log.level === "error" || log.level === "warning")?.message || payload.warnings?.[0];
+  if (payload.importMode === "live") return firstProblem || "Live crawler failed. No real matches were imported.";
+  if (!responseOk || payload.status === "failed") return firstProblem || "Import zlyhal. Backend vratil chybu bez detailu.";
+  return firstProblem || "Import prebehol, ale nenasiel zapasy. Site data sa nezmenili.";
+}
+
+function fastApiImportUrl() {
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+  return `${baseUrl}/api/import/kolky`;
+}
+
+function fastApiSyncUrl() {
+  return "/api/admin/sync";
+}
+
+function localFixtureMatches() {
+  return (fixtureMatches as LiveMatch[]).map((match) => ({ ...match, importStatus: "auto" as const }));
+}
+
+function ImportLogPanel({ logs }: { logs: ImportLog[] }) {
+  if (!logs.length) return null;
+  return (
+    <div className="rounded-2xl border border-white/[0.05] bg-[#061a33]/70 p-4 text-xs shadow-[0_8px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <p className="mb-3 font-black uppercase tracking-[0.18em] text-[#6eb6ff]">Import log</p>
+      <div className="max-h-56 space-y-2 overflow-auto pr-1">
+        {logs.slice(0, 24).map((log, index) => (
+          <div key={`${log.type}-${index}`} className="grid gap-2 rounded-xl bg-white/[0.03] px-3 py-2 text-[#cfe5ff] md:grid-cols-[110px_1fr]">
+            <span className={log.level === "error" ? "font-black text-rose-300" : log.level === "warning" ? "font-black text-amber-200" : "font-black text-emerald-200"}>
+              {log.type}
+            </span>
+            <span className="break-words">{log.message}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -414,7 +683,19 @@ function CrudShell({ title, description, children }: { title: string; descriptio
   );
 }
 
-function DataTable({ headers, rows, onEdit, onDelete }: { headers: string[]; rows: { id: number; cells: string[] }[]; onEdit: (id: number) => void; onDelete: (id: number) => void }) {
+function DataTable({
+  headers,
+  rows,
+  detailHref,
+  onEdit,
+  onDelete
+}: {
+  headers: string[];
+  rows: { id: number; cells: string[] }[];
+  detailHref: (id: number) => string;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+}) {
   return (
     <div className="overflow-x-auto rounded-xl border border-white/[0.05] bg-[#061a33]/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <table className="w-full min-w-[760px] text-left text-sm">
@@ -430,6 +711,11 @@ function DataTable({ headers, rows, onEdit, onDelete }: { headers: string[]; row
               {row.cells.map((cell, index) => <td key={`${row.id}-${index}`} className="px-4 py-4 text-[#dbe7ff]">{cell}</td>)}
               <td className="px-4 py-4">
                 <div className="flex justify-end gap-2">
+                  {detailHref ? (
+                    <Link className="grid h-9 w-9 place-items-center rounded-md border border-[#1683ff]/20 text-[#7db7ff] transition hover:border-blue-400/35 hover:bg-[#1683ff]/10 hover:text-white" href={detailHref(row.id)} title="Otvoriť detail turnaja">
+                      <Eye size={16} />
+                    </Link>
+                  ) : null}
                   <button className="grid h-9 w-9 place-items-center rounded-md border border-white/[0.06] text-[#dbe7ff] transition hover:border-blue-400/25 hover:text-[#1683ff]" onClick={() => onEdit(row.id)} type="button" title="Upraviť"><Pencil size={16} /></button>
                   <button className="grid h-9 w-9 place-items-center rounded-md border border-red-400/20 text-red-300 transition hover:bg-red-500/12" onClick={() => onDelete(row.id)} type="button" title="Vymazať"><Trash2 size={16} /></button>
                 </div>
@@ -445,15 +731,103 @@ function DataTable({ headers, rows, onEdit, onDelete }: { headers: string[]; row
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button className={`rounded-md px-4 py-2 text-sm font-black uppercase transition ${active ? "bg-[#1683ff] text-white shadow-[0_8px_22px_rgba(20,124,255,0.20)]" : "border border-white/[0.04] bg-[#061a33]/60 text-[#c7d6ee] hover:bg-[#0d3d78] hover:text-white"}`} onClick={onClick} type="button">{children}</button>;
+function EntityModal({
+  eyebrow,
+  title,
+  description,
+  children,
+  onClose,
+  onSave,
+  saveLabel,
+  saveIcon
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+  onClose: () => void;
+  onSave: () => void;
+  saveLabel: string;
+  saveIcon: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-[90] grid place-items-center bg-[#020b18]/82 px-4 py-6 backdrop-blur-sm">
+      <div className="max-h-[calc(100vh-48px)] w-full max-w-5xl overflow-y-auto rounded-2xl border border-white/[0.06] bg-[linear-gradient(180deg,#0A1D3A_0%,#08172E_100%)] p-5 shadow-[0_28px_100px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.05)] md:p-7">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#4e9bff]">{eyebrow}</p>
+            <h3 className="mt-2 text-3xl font-black text-white">{title}</h3>
+            <p className="mt-2 text-sm text-[#9fb0c8]">{description}</p>
+          </div>
+          <button type="button" onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/[0.06] text-[#c7d6ee] transition hover:border-blue-400/25 hover:text-white">
+            <X size={18} />
+          </button>
+        </div>
+
+        {children}
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button type="button" onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-lg border border-white/[0.06] px-5 text-sm font-black uppercase text-[#dbe7ff] transition hover:border-blue-400/25 hover:text-white">
+            Zrušiť
+          </button>
+          <ActionButton onClick={onSave}>{saveIcon} {saveLabel}</ActionButton>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function Input({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function Input({
+  label,
+  value,
+  onChange,
+  placeholder,
+  disabled = false
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled: boolean;
+}) {
   return (
     <label className="block">
       <span className="mb-2 block text-xs font-black uppercase text-[#9fb0c8]">{label}</span>
-      <input className="h-11 w-full rounded-md border border-white/[0.06] bg-[#061a33]/70 px-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition focus:border-blue-400/35 focus:ring-2 focus:ring-[#1683ff]/15" value={value} onChange={(event) => onChange(event.target.value)} />
+      <input
+        className="h-11 w-full rounded-md border border-white/[0.06] bg-[#061a33]/70 px-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition placeholder:text-[#6f849f] focus:border-blue-400/35 focus:ring-2 focus:ring-[#1683ff]/15 disabled:cursor-not-allowed disabled:bg-[#061a33]/35 disabled:text-[#9fb0c8]"
+        value={value}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function DateInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-xs font-black uppercase text-[#9fb0c8]">{label}</span>
+      <input
+        type="date"
+        lang="sk-SK"
+        className="h-11 w-full rounded-md border border-white/[0.06] bg-[#061a33]/70 px-3 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition [color-scheme:dark] focus:border-blue-400/35 focus:ring-2 focus:ring-[#1683ff]/15"
+        value={parseTournamentDateForInput(value)}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function Textarea({ label, value, onChange, className = "" }: { label: string; value: string; onChange: (value: string) => void; className: string }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-2 block text-xs font-black uppercase text-[#9fb0c8]">{label}</span>
+      <textarea
+        className="min-h-32 w-full rounded-md border border-white/[0.06] bg-[#061a33]/70 px-3 py-3 text-sm leading-6 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition placeholder:text-[#6f849f] focus:border-blue-400/35 focus:ring-2 focus:ring-[#1683ff]/15"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
@@ -475,6 +849,69 @@ function ActionButton({ onClick, children }: { onClick: () => void; children: Re
 
 function slugify(value: string) {
   return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function normalizeTournamentForm(form: Omit<LiveTournament, "id">): Omit<LiveTournament, "id"> {
+  const dateFrom = form.dateFrom.trim() || parseTournamentDateForInput(form.date) || form.date.trim();
+  const dateTo = form.dateTo.trim() || "";
+  const displayFrom = formatSlovakDate(dateFrom);
+  const displayTo = formatSlovakDate(dateTo);
+  return {
+    ...form,
+    dateFrom,
+    dateTo,
+    date: dateTo && dateTo !== dateFrom ? `${displayFrom} - ${displayTo}` : displayFrom,
+    fee: form.entryType === "free" ? "zadarmo" : form.fee,
+    paymentUrl: ""
+  };
+}
+
+const slovakMonths: Record<string, number> = {
+  januar: 1,
+  january: 1,
+  februar: 2,
+  february: 2,
+  marec: 3,
+  april: 4,
+  apr: 4,
+  maj: 5,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  august: 8,
+  september: 9,
+  oktober: 10,
+  october: 10,
+  november: 11,
+  december: 12
+};
+
+function formatSlovakDate(value: string) {
+  const iso = parseTournamentDateForInput(value);
+  if (!iso) return value;
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat("sk-SK", { day: "numeric", month: "long", year: "numeric" }).format(new Date(year, month - 1, day));
+}
+
+function parseTournamentDateForInput(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return trimmed;
+
+  const numeric = trimmed.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/);
+  if (numeric) return `${numeric[3]}-${numeric[2].padStart(2, "0")}-${numeric[1].padStart(2, "0")}`;
+
+  const slovak = trimmed.toLocaleLowerCase("sk-SK").match(/^(\d{1,2})\.\s*([a-z\u00c0-\u017f]+)\s+(\d{4})$/i);
+  if (!slovak) return "";
+
+  const monthKey = slovak[2].normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const month = slovakMonths[monthKey];
+  if (!month) return "";
+  return `${slovak[3]}-${String(month).padStart(2, "0")}-${slovak[1].padStart(2, "0")}`;
 }
 
 function splitCsv(value: string) {

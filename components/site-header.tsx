@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { label: "Domov", href: "/" },
-  { label: "O klube", href: "/achievements" },
+  { label: "O klube", href: "/o_klube.html" },
   { label: "Tímy", href: "/timy" },
   { label: "Zápasy", href: "/zapasy" },
   { label: "Turnaje", href: "/turnaje" },

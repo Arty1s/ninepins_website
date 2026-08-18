@@ -3,11 +3,11 @@ import { stripe } from "@/lib/payments";
 import { getSiteUrl } from "@/lib/supabase-auth-server";
 
 type CheckoutBody = {
-  mode?: "membership" | "tournament";
-  name?: string;
-  amount?: number;
-  email?: string;
-  metadata?: Record<string, string>;
+  mode: "membership" | "tournament";
+  name: string;
+  amount: number;
+  email: string;
+  metadata: Record<string, string>;
 };
 
 export async function POST(request: Request) {
@@ -47,8 +47,8 @@ export async function POST(request: Request) {
       mode: body.mode || "membership",
       ...(body.metadata || {})
     },
-    success_url: `${siteUrl}/profile?payment=success`,
-    cancel_url: `${siteUrl}/profile?payment=cancelled`
+    success_url: `${siteUrl}/profilepayment=success`,
+    cancel_url: `${siteUrl}/profilepayment=cancelled`
   });
 
   return NextResponse.json({ ok: true, url: session.url });

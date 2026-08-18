@@ -155,7 +155,7 @@ function PlayerCell({ value }: { value: string }) {
   return <td className="px-3 py-4 text-base font-black text-white">{value}</td>;
 }
 
-function ScoreCell({ value, strong = false }: { value: string | number; strong?: boolean }) {
+function ScoreCell({ value, strong = false }: { value: string | number; strong: boolean }) {
   return (
     <td className={`px-3 py-4 text-center ${strong ? "text-base font-black" : "text-sm font-medium text-white/90"}`}>
       {value}

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: { provider
 
   const next = sanitizeNext(request.nextUrl.searchParams.get("next"));
   const siteUrl = getSiteUrl(request.url);
-  const redirectTo = `${siteUrl}/api/auth/callback?next=${encodeURIComponent(next)}`;
+  const redirectTo = `${siteUrl}/api/auth/callbacknext=${encodeURIComponent(next)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: { provider
   });
 
   if (error || !data.url) {
-    return redirectWithError(request, error?.message || "Nepodarilo sa spustiť sociálne prihlásenie.");
+    return redirectWithError(request, error.message || "Nepodarilo sa spustiť sociálne prihlásenie.");
   }
 
   const response = NextResponse.redirect(data.url);

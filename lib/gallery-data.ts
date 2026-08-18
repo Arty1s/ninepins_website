@@ -8,7 +8,7 @@ export type GalleryAlbum = {
   date: string;
   coverImage: string;
   photoCount: number;
-  featured?: boolean;
+  featured: boolean;
   photos: string[];
 };
 

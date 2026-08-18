@@ -5,8 +5,8 @@ import { readClubData } from "@/lib/server-store";
 import { readUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
 
 export async function GET() {
-  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE)?.value);
-  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE)?.value);
+  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE).value);
+  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE).value);
   const session = userSession || adminSession;
 
   if (!session) {
@@ -20,7 +20,7 @@ export async function GET() {
   const rawName = "name" in session ? session.name : undefined;
   const rawAvatarUrl = "avatarUrl" in session ? session.avatarUrl : undefined;
   const rawProvider = "provider" in session ? session.provider : undefined;
-  const name = isAdmin ? "Admin" : member?.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
+  const name = isAdmin ? "Admin" : member.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
 
   return NextResponse.json({
     authenticated: true,
@@ -32,14 +32,14 @@ export async function GET() {
       provider: typeof rawProvider === "string" && rawProvider.trim() ? rawProvider.trim() : isAdmin ? "password" : "email"
     },
     membership: {
-      status: member?.membershipStatus || "pending_payment",
-      label: member?.membershipStatus === "paid" ? "Zaplatené" : member?.membershipStatus === "unpaid" ? "Nezaplatené" : "Čaká na prvú platbu",
-      nextPayment: member?.nextPayment || null,
+      status: member.membershipStatus || "pending_payment",
+      label: member.membershipStatus === "paid" ? "Zaplatené" : member.membershipStatus === "unpaid" ? "Nezaplatené" : "Čaká na prvú platbu",
+      nextPayment: member.nextPayment || null,
       stripeReady: false
     },
     team: {
-      name: isAdmin ? "Administrácia klubu" : member?.team || "KK Hlohovec",
-      category: isAdmin ? "Správa klubu" : member?.role || "member",
+      name: isAdmin ? "Administrácia klubu" : member.team || "KK Hlohovec",
+      category: isAdmin ? "Správa klubu" : member.role || "member",
       captain: null,
       coach: null
     },

@@ -12,6 +12,7 @@ import {
   Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiveHomeRecentMatches } from "@/components/live-home-recent-matches";
 import { type Team } from "@/lib/landing-data";
 
 type FeatureWidget = {
@@ -35,15 +36,17 @@ type TournamentWidget = {
   time: string;
 };
 
-type RecentMatchWidget = {
+export type RecentMatchWidget = {
   league: string;
   date: string;
   home: Team;
   away: Team;
   score: string;
-  homePins: number;
-  awayPins: number;
+  homePins: number | string;
+  awayPins: number | string;
   href: string;
+  homeIsClub: boolean;
+  awayIsClub: boolean;
 };
 
 export const heroFeatureWidgets: FeatureWidget[] = [
@@ -154,7 +157,7 @@ export function HeroWidget() {
             <Button href="/registracia">
               Staň sa členom <ArrowRight size={18} />
             </Button>
-            <Button href="/achievements" variant="secondary">
+            <Button href="/o_klube.html" variant="secondary">
               Spoznaj klub <ArrowRight size={18} />
             </Button>
           </div>
@@ -239,7 +242,7 @@ export function IntroCardsWidget() {
             Pozri zápasy <ArrowRight size={16} />
           </Button>
           <Button
-            href="/achievements"
+            href="/o_klube.html"
             variant="secondary"
             className="border-[#9ac9ff] bg-[#dcecff] text-[#0757d8] shadow-[0_12px_28px_rgba(17,75,255,.12)] hover:border-[#1683ff] hover:bg-[#cfe6ff] hover:text-[#063fa8]"
           >
@@ -287,11 +290,7 @@ export function RecentMatchesWidget() {
     <section className="relative z-10 pb-10 pt-16 text-white">
       <div className="container-page relative z-10">
         <DarkPanel title="Nedávne zápasy" action="Zobraziť všetky" href="/zapasy">
-          <div className="grid gap-4 lg:grid-cols-3">
-            {recentMatchWidgets.map((match) => (
-              <MatchResultWidget key={`${match.date}-${match.away.name}`} match={match} />
-            ))}
-          </div>
+          <LiveHomeRecentMatches fallbackMatches={recentMatchWidgets} />
         </DarkPanel>
       </div>
     </section>
@@ -322,7 +321,7 @@ export function MembershipCtaWidget() {
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button href="/cennik">Členstvo a cenník</Button>
                 <Button href="/kontakt" variant="secondary">Kontaktuj nás</Button>
-                <Button href="/achievements" variant="secondary" className="border-[#1688ff]/70 bg-[#06172f]/80 text-[#9dccff] hover:border-[#1688ff] hover:bg-[#0a2448] hover:text-white">
+                <Button href="/o_klube.html" variant="secondary" className="border-[#1688ff]/70 bg-[#06172f]/80 text-[#9dccff] hover:border-[#1688ff] hover:bg-[#0a2448] hover:text-white">
                   Kolky nie sú bowling <ArrowRight size={16} />
                 </Button>
               </div>
@@ -345,7 +344,7 @@ export function MembershipCtaWidget() {
 
             <div className="relative lg:pr-[22%]">
               <div className="rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(10,29,58,.92),rgba(8,23,46,.9))] p-6 shadow-[0_20px_60px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#1688ff]">Vedeli ste?</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#1688ff]">Vedeli ste</p>
                 <h3 className="mt-3 font-display text-2xl font-black uppercase">Kolky ≠ Bowling</h3>
                 <div className="mt-6 grid grid-cols-[1fr_auto_1fr] gap-3 text-sm">
                   <div className="text-center text-xs font-black uppercase tracking-[0.12em] text-[#1688ff]">Kolky</div>
@@ -364,7 +363,7 @@ export function MembershipCtaWidget() {
                     </div>
                   ))}
                 </div>
-                <Link href="/achievements" className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.1em] text-[#1688ff] transition hover:text-white">
+                <Link href="/o_klube.html" className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.1em] text-[#1688ff] transition hover:text-white">
                   Zisti rozdiely <ArrowRight size={15} />
                 </Link>
               </div>
@@ -376,7 +375,7 @@ export function MembershipCtaWidget() {
   );
 }
 
-function WidgetShell({ children, className = "" }: { children: ReactNode; className?: string }) {
+function WidgetShell({ children, className = "" }: { children: ReactNode; className: string }) {
   return <div className={`rounded-2xl border shadow-[0_14px_45px_rgba(15,35,70,.12)] ${className}`}>{children}</div>;
 }
 
@@ -487,8 +486,8 @@ function LightWidget({
 }: {
   title: string;
   icon: ElementType;
-  action?: string;
-  href?: string;
+  action: string;
+  href: string;
   children: ReactNode;
 }) {
   return (
@@ -521,45 +520,6 @@ function DarkPanel({ title, action, href, children }: { title: string; action: s
         </Link>
       </div>
       {children}
-    </div>
-  );
-}
-
-function MatchResultWidget({ match }: { match: RecentMatchWidget }) {
-  return (
-    <article className="rounded-lg border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] px-4 pb-4 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_14px_34px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-0.5 hover:border-[#2c86d8]/75 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_20px_42px_rgba(0,0,0,.2)]">
-      <div className="flex items-center justify-between border-b border-[#183e67]/80 pb-3 text-[11px] uppercase text-[#9db4d2]">
-        <span>{match.league}</span>
-        <span>{match.date}</span>
-      </div>
-      <div className="mt-6 grid grid-cols-[1fr_110px_1fr] items-center gap-4 text-center">
-        <TeamBadgeWidget team={match.home} pins={match.homePins} home />
-        <strong className="font-display text-[2.65rem] font-black leading-none tracking-[0.08em] text-[#1688ff]">
-          {match.score}
-        </strong>
-        <TeamBadgeWidget team={match.away} pins={match.awayPins} />
-      </div>
-      <Link href={match.href} className="mt-5 flex justify-center border-t border-[#183e67]/70 pt-3 text-[11px] font-black uppercase tracking-[0.08em] text-[#58a3ff]">
-        Detail zápasu
-      </Link>
-    </article>
-  );
-}
-
-function TeamBadgeWidget({ team, pins, home = false }: { team: Team; pins: number; home?: boolean }) {
-  return (
-    <div>
-      {home ? (
-        <span className="mx-auto grid h-[54px] w-[54px] place-items-center">
-          <Image src="/kkhc-logo.png" alt="KK Hlohovec" width={54} height={54} className="kkhc-logo-cutout h-[48px] w-auto object-contain" />
-        </span>
-      ) : (
-        <span className={`mx-auto grid h-[54px] w-[54px] place-items-center rounded-full bg-gradient-to-br ${team.badgeClass} ring-1 ring-white/15`}>
-          <span className="px-1 text-[10px] font-black leading-none text-white">{team.shortName}</span>
-        </span>
-      )}
-      <p className="mt-2 min-h-9 text-xs font-bold leading-tight text-white">{team.name}</p>
-      <p className="font-display text-base font-black text-[#1688ff]">{pins}</p>
     </div>
   );
 }

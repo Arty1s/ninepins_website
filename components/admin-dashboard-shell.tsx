@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { ElementType, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -13,7 +14,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  MoreVertical,
   Settings,
   ShieldCheck,
   Trophy,
@@ -82,7 +82,7 @@ export function AdminDashboardShell() {
     fetch("/api/auth/session", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((session) => {
-        if (session?.user?.email) setAdminEmail(session.user.email);
+        if (session.user.email) setAdminEmail(session.user.email);
       })
       .catch(() => undefined);
   }, []);
@@ -113,7 +113,7 @@ export function AdminDashboardShell() {
       />
 
       <section className={cn("min-h-screen px-4 py-5 transition-all duration-300 lg:px-7", collapsed ? "lg:ml-[92px]" : "lg:ml-[260px]")}>
-        <AdminTopbar dateLabel={dateLabel} timeLabel={timeLabel} openMobile={() => setMobileOpen(true)} />
+        <AdminTopbar dateLabel={dateLabel} timeLabel={timeLabel} openMobile={() => setMobileOpen(true)} showHeading={active === "prehlad"} />
 
         {active === "prehlad" ? (
           <AdminOverview data={data} registrations={registrations} setActive={setActive} />
@@ -239,17 +239,19 @@ function AdminSidebar({
   );
 }
 
-function AdminTopbar({ dateLabel, timeLabel, openMobile }: { dateLabel: string; timeLabel: string; openMobile: () => void }) {
+function AdminTopbar({ dateLabel, timeLabel, openMobile, showHeading }: { dateLabel: string; timeLabel: string; openMobile: () => void; showHeading: boolean }) {
   return (
     <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div className="flex items-start gap-3">
         <button type="button" onClick={openMobile} className="mt-1 grid h-11 w-11 place-items-center rounded-xl border border-white/[0.05] bg-[#081b35] text-white lg:hidden">
           <Menu size={20} />
         </button>
-        <div>
-          <h1 className="text-3xl font-black tracking-tight md:text-4xl">Prehľad</h1>
-          <p className="mt-2 text-[#9fb0c8]">Vitajte späť v administrácii KK Hlohovec</p>
-        </div>
+        {showHeading ? (
+          <div>
+            <h1 className="text-3xl font-black tracking-tight md:text-4xl">Prehľad</h1>
+            <p className="mt-2 text-[#9fb0c8]">Vitajte späť v administrácii KK Hlohovec</p>
+          </div>
+        ) : null}
       </div>
       <div className="flex items-center gap-3">
         <button className="relative grid h-12 w-12 place-items-center rounded-xl border border-white/[0.05] bg-[linear-gradient(180deg,#0A1D3A_0%,#08172E_100%)] text-white shadow-[0_8px_24px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-blue-400/20" type="button" aria-label="Notifikácie">
@@ -269,8 +271,8 @@ function AdminOverview({ data, registrations, setActive }: { data: LiveClubData;
   const activeTournaments = data.tournaments.filter((item) => item.type !== "past");
   const upcomingTournaments = data.tournaments.filter((item) => item.type === "upcoming");
   const nearest = upcomingTournaments[0] ?? data.tournaments[0];
-  const capacity = parseCapacity(nearest?.capacity);
-  const registered = registrations.filter((row) => row.tournamentId === nearest?.id).length;
+  const capacity = parseCapacity(nearest.capacity);
+  const registered = registrations.filter((row) => row.tournamentId === nearest.id).length;
   const percent = capacity ? Math.round((registered / capacity) * 100) : 0;
 
   const stats = [
@@ -329,7 +331,7 @@ function DashboardStatCard({ label, value, icon: Icon, color, onClick }: { label
   );
 }
 
-function Panel({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+function Panel({ title, action, children }: { title: string; action: ReactNode; children: ReactNode }) {
   return (
     <section className={cn(adminSurfaceClass, "p-5")}>
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -341,7 +343,7 @@ function Panel({ title, action, children }: { title: string; action?: ReactNode;
   );
 }
 
-function UpcomingTournamentCard({ tournament, registered, capacity, percent }: { tournament?: LiveTournament; registered: number; capacity: number; percent: number }) {
+function UpcomingTournamentCard({ tournament, registered, capacity, percent }: { tournament: LiveTournament; registered: number; capacity: number; percent: number }) {
   if (!tournament) return <Panel title="Najbližší turnaj"><p className="text-[#9fb0c8]">Zatiaľ nie je vytvorený turnaj.</p></Panel>;
 
   return (
@@ -367,9 +369,9 @@ function UpcomingTournamentCard({ tournament, registered, capacity, percent }: {
               <div className="h-full rounded-full bg-[#1677ff]" style={{ width: `${Math.min(percent, 100)}%` }} />
             </div>
           </div>
-          <button type="button" className="mt-5 h-10 rounded-lg border border-white/[0.07] px-5 text-sm font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition hover:border-blue-400/25 hover:text-[#58a3ff]">
+          <Link href={`/admin/turnaje/${tournament.id}`} className="mt-5 inline-flex h-10 items-center justify-center rounded-lg border border-white/[0.07] px-5 text-sm font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition hover:border-blue-400/25 hover:text-[#58a3ff]">
             Zobraziť turnaj
-          </button>
+          </Link>
         </div>
       </div>
     </Panel>
@@ -458,7 +460,11 @@ function TournamentTable({ tournaments, registrations, setActive }: { tournament
                     </div>
                   </td>
                   <td className="px-3 py-4"><Badge tone={tournament.status.toLowerCase().includes("otvoren") ? "green" : "yellow"}>{tournament.status}</Badge></td>
-                  <td className="px-3 py-4 text-right"><button className="text-white/70 hover:text-white" type="button" aria-label="Akcie"><MoreVertical size={18} /></button></td>
+                  <td className="px-3 py-4 text-right">
+                    <Link href={`/admin/turnaje/${tournament.id}`} className="inline-flex h-9 items-center justify-center rounded-md border border-[#1683ff]/20 px-3 text-xs font-black uppercase text-[#7db7ff] transition hover:border-blue-400/35 hover:bg-[#1683ff]/10 hover:text-white">
+                      Detail
+                    </Link>
+                  </td>
                 </tr>
               );
             })}
@@ -602,8 +608,8 @@ function Badge({ tone, children }: { tone: "blue" | "green" | "yellow"; children
   return <span className={cn("inline-flex rounded-md px-3 py-1 text-xs font-bold", className)}>{children}</span>;
 }
 
-function parseCapacity(value?: string) {
-  const match = value?.match(/\d+/);
+function parseCapacity(value: string) {
+  const match = value.match(/\d+/);
   return match ? Number(match[0]) : 0;
 }
 
@@ -620,4 +626,3 @@ function toCrudTab(section: AdminSection): AdminTab | null {
   if (section === "turnaje" || section === "galeria" || section === "clenovia" || section === "timy" || section === "zapasy") return section;
   return null;
 }
-

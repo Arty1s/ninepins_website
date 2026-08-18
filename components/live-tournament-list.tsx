@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Bell, CalendarDays, CheckCircle2, CreditCard, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  cancelTournamentRegistrationInBackend,
   createTournamentRegistrationInBackend,
   readLiveData,
   readTournamentRegistrations,
@@ -89,6 +90,13 @@ export function LiveTournamentList() {
                       const saved = await createTournamentRegistrationInBackend(registration);
                       updateRegistrations([saved || { ...registration, id: Date.now(), createdAt: new Date().toISOString() }, ...registrations]);
                     }}
+                    onCancel={async (registrationId, email) => {
+                      const result = await cancelTournamentRegistrationInBackend(registrationId, email);
+                      if (!result.data) return false;
+                      const next = registrations.map((row) => row.id === registrationId ? result.data! : row);
+                      updateRegistrations(next);
+                      return result.refundEligible === true;
+                    }}
                   />
                 ))}
               </div>
@@ -109,16 +117,19 @@ function TournamentCard({
   registrations,
   active,
   onToggle,
-  onRegister
+  onRegister,
+  onCancel
 }: {
   tournament: LiveTournament;
   registrations: TournamentRegistration[];
   active: boolean;
   onToggle: () => void;
   onRegister: (registration: Omit<TournamentRegistration, "id" | "createdAt">) => void;
+  onCancel: (registrationId: number, email: string) => Promise<boolean>;
 }) {
   const capacity = parseCapacity(tournament.capacity);
-  const freeSlots = Math.max(capacity - registrations.length, 0);
+  const activeRegistrations = registrations.filter((row) => (row.cancellationStatus || "active") === "active");
+  const freeSlots = Math.max(capacity - activeRegistrations.length, 0);
   const paid = tournament.entryType === "paid";
 
   return (
@@ -162,28 +173,28 @@ function TournamentCard({
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[#58a3ff]">Obsadenosť turnaja</p>
           <div className="mt-4 grid grid-cols-3 gap-3">
             <MiniStat value={String(capacity)} label="kapacita" />
-            <MiniStat value={String(registrations.length)} label="prihlásení" />
+            <MiniStat value={String(activeRegistrations.length)} label="prihlásení" />
             <MiniStat value={String(parseInt(tournament.lanes || "4", 10) || 4)} label="dráhy" />
           </div>
           <div className="mt-6 space-y-2">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-black uppercase tracking-[0.14em] text-white/55">Prihlásení hráči</p>
-              {registrations.length ? <span className="text-xs font-bold text-[#7db7ff]">{registrations.length} spolu</span> : null}
+              {activeRegistrations.length ? <span className="text-xs font-bold text-[#7db7ff]">{activeRegistrations.length} spolu</span> : null}
             </div>
-            {registrations.slice(0, 5).map((row) => (
+            {activeRegistrations.slice(0, 5).map((row) => (
               <div key={row.id} className="flex items-center justify-between rounded-lg bg-white/8 px-3 py-2 text-sm">
                 <span className="font-bold">{row.name}</span>
                 <span className="text-white/60">{row.slot}</span>
               </div>
             ))}
-            {registrations.length > 5 ? <p className="pt-1 text-xs font-bold text-[#7db7ff]">Ďalší hráči sú v detaile turnaja.</p> : null}
-            {!registrations.length ? <p className="rounded-lg bg-white/8 px-3 py-4 text-sm text-white/68">Zatiaľ bez prihlásených hráčov.</p> : null}
+            {activeRegistrations.length > 5 ? <p className="pt-1 text-xs font-bold text-[#7db7ff]">Ďalší hráči sú v detaile turnaja.</p> : null}
+            {!activeRegistrations.length ? <p className="rounded-lg bg-white/8 px-3 py-4 text-sm text-white/68">Zatiaľ bez prihlásených hráčov.</p> : null}
           </div>
         </div>
       </div>
 
       {active ? (
-        <RegistrationPanel tournament={tournament} registrations={registrations} onRegister={onRegister} />
+        <RegistrationPanel tournament={tournament} registrations={registrations} onRegister={onRegister} onCancel={onCancel} />
       ) : null}
     </article>
   );
@@ -192,14 +203,17 @@ function TournamentCard({
 function RegistrationPanel({
   tournament,
   registrations,
-  onRegister
+  onRegister,
+  onCancel
 }: {
   tournament: LiveTournament;
   registrations: TournamentRegistration[];
   onRegister: (registration: Omit<TournamentRegistration, "id" | "createdAt">) => void;
+  onCancel: (registrationId: number, email: string) => Promise<boolean>;
 }) {
   const slots = useMemo(() => buildSlots(tournament), [tournament]);
-  const takenSlots = new Set(registrations.map((row) => row.slot));
+  const activeRegistrations = registrations.filter((row) => (row.cancellationStatus || "active") === "active");
+  const takenSlots = new Set(activeRegistrations.map((row) => row.slot));
   const firstOpenSlot = slots.find((slot) => !takenSlots.has(slot)) || slots[0] || "";
   const [form, setForm] = useState<RegistrationForm>({ ...emptyForm, slot: firstOpenSlot });
   const [saved, setSaved] = useState(false);
@@ -215,7 +229,10 @@ function RegistrationPanel({
       phone: form.phone,
       slot: form.slot,
       note: form.note,
-      paymentStatus: paid ? "pending" : "free"
+      paymentStatus: paid ? "pending" : "free",
+      userEmail: form.email,
+      cancellationStatus: "active",
+      cancelledAt: null
     });
     setForm({ ...emptyForm, slot: firstOpenSlot });
     setSaved(true);
@@ -252,7 +269,7 @@ function RegistrationPanel({
           </div>
         </div>
 
-        <RegisteredPlayersPanel registrations={registrations} capacity={parseCapacity(tournament.capacity)} />
+        <RegisteredPlayersPanel registrations={registrations} capacity={parseCapacity(tournament.capacity)} paid={paid} onCancel={onCancel} />
 
         <div className="rounded-xl border border-navy/10 bg-white p-5 shadow-sm">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-kkhc">Prihláška</p>
@@ -296,13 +313,39 @@ function RegistrationPanel({
   );
 }
 
-function RegisteredPlayersPanel({ registrations, capacity }: { registrations: TournamentRegistration[]; capacity: number }) {
+function RegisteredPlayersPanel({
+  registrations,
+  capacity,
+  paid,
+  onCancel
+}: {
+  registrations: TournamentRegistration[];
+  capacity: number;
+  paid: boolean;
+  onCancel: (registrationId: number, email: string) => Promise<boolean>;
+}) {
+  const activeRegistrations = registrations.filter((row) => (row.cancellationStatus || "active") === "active");
+  const [message, setMessage] = useState("");
+
+  const cancelRegistration = async (registration: TournamentRegistration) => {
+    const email = window.prompt("Pre potvrdenie odhlásenia zadaj e-mail použitý pri registrácii.");
+    if (!email) return;
+    const refundEligible = await onCancel(registration.id, email);
+    setMessage(
+      paid
+        ? refundEligible
+          ? "Registrácia bola zrušená. Pri platenom turnaji je odhlásenie viac ako 48 hodín pred štartom označené na refund."
+          : "Registrácia bola zrušená. Ak je turnaj platený a štart je do 48 hodín, refund už nemusí byť dostupný."
+        : "Registrácia bola zrušená."
+    );
+  };
+
   return (
     <div className="rounded-xl border border-navy/10 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.16em] text-kkhc">Prihlásení hráči</p>
-          <h4 className="sport-title mt-2 text-3xl text-navy">{registrations.length} / {capacity}</h4>
+          <h4 className="sport-title mt-2 text-3xl text-navy">{activeRegistrations.length} / {capacity}</h4>
         </div>
         <span className="rounded-full bg-[#edf5ff] px-3 py-1 text-xs font-black uppercase text-[#0757d8]">
           Live zoznam
@@ -310,14 +353,19 @@ function RegisteredPlayersPanel({ registrations, capacity }: { registrations: To
       </div>
 
       <div className="mt-5 max-h-[360px] space-y-2 overflow-auto pr-1">
-        {registrations.map((row, index) => (
+        {activeRegistrations.map((row, index) => (
           <div key={row.id} className="rounded-lg border border-navy/10 bg-[#f6f9ff] p-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-black text-navy">{index + 1}. {row.name}</p>
                 <p className="mt-1 text-xs text-navy/55">{row.club}</p>
               </div>
-              <span className="shrink-0 rounded-md bg-white px-2 py-1 text-xs font-bold text-navy/60">{row.slot}</span>
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <span className="rounded-md bg-white px-2 py-1 text-xs font-bold text-navy/60">{row.slot}</span>
+                <button type="button" onClick={() => cancelRegistration(row)} className="text-[11px] font-black uppercase text-[#0757d8] hover:text-navy">
+                  Odhlásiť
+                </button>
+              </div>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-navy/55">
               <span>{row.email}</span>
@@ -329,11 +377,12 @@ function RegisteredPlayersPanel({ registrations, capacity }: { registrations: To
           </div>
         ))}
 
-        {!registrations.length ? (
+        {!activeRegistrations.length ? (
           <div className="rounded-lg border border-dashed border-navy/15 bg-[#f6f9ff] p-5 text-sm leading-6 text-navy/60">
             Zatiaľ sa nikto neprihlásil. Keď hráč odošle prihlášku, okamžite sa zobrazí tu aj v admin paneli.
           </div>
         ) : null}
+        {message ? <p className="rounded-lg bg-[#edf5ff] p-3 text-xs font-bold leading-5 text-[#0757d8]">{message}</p> : null}
       </div>
     </div>
   );
@@ -374,7 +423,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 function normalizeTournament(tournament: LiveTournament): LiveTournament {
   return {
     ...tournament,
-    entryType: tournament.entryType || (tournament.fee?.toLowerCase().includes("zadarmo") ? "free" : "paid"),
+    entryType: tournament.entryType || (tournament.fee.toLowerCase().includes("zadarmo") ? "free" : "paid"),
     description: tournament.description || "",
     lanes: tournament.lanes || "4",
     paymentUrl: tournament.paymentUrl || ""

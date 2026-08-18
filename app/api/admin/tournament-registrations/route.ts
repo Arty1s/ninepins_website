@@ -10,7 +10,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   if (!requireAdminSession()) return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
-  const body = (await request.json()) as { data?: TournamentRegistration[] };
+  const body = (await request.json()) as { data: TournamentRegistration[] };
   const data = await writeRegistrations(body.data || []);
   return NextResponse.json({ ok: true, data });
 }

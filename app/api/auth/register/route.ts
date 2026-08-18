@@ -4,9 +4,9 @@ import { createSupabaseAuthClient, getSiteUrl, isSupabaseAuthConfigured } from "
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { name?: string; email?: string; password?: string };
-    const name = body.name?.trim() || "";
-    const email = body.email?.trim().toLowerCase() || "";
+    const body = (await request.json()) as { name: string; email: string; password: string };
+    const name = body.name.trim() || "";
+    const email = body.email.trim().toLowerCase() || "";
     const password = body.password || "";
 
     if (!name || !email || !password) {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${getSiteUrl(request.url)}/api/auth/callback?next=${encodeURIComponent("/profile")}`
+        emailRedirectTo: `${getSiteUrl(request.url)}/api/auth/callbacknext=${encodeURIComponent("/profile")}`
       }
     });
 
@@ -43,6 +43,13 @@ export async function POST(request: Request) {
     }
 
     if (data.session && data.user) {
+      await ensureBackendMember({
+        email,
+        name,
+        provider: "email",
+        avatarUrl: ""
+      });
+
       const response = NextResponse.json({ ok: true, redirectTo: "/profile" });
       response.cookies.set(USER_SESSION_COOKIE, createUserSession(data.user, data.session, "email"), {
         httpOnly: true,
@@ -60,5 +67,20 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.json({ ok: false, message: "Pri registrácii nastala chyba." }, { status: 500 });
+  }
+}
+
+async function ensureBackendMember(payload: { email: string; name: string; provider: string; avatarUrl: string }) {
+  const fastApiUrl = process.env.FASTAPI_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (!fastApiUrl) return;
+
+  try {
+    await fetch(`${fastApiUrl.replace(/\/$/, "")}/api/members/ensure`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch {
+    // Registration can still continue; the member row can be repaired by next login.
   }
 }

@@ -263,10 +263,10 @@ export const matchArchive = [
 ];
 
 export const galleryAlbums = [
-  { title: "Memoriál KKHC", tag: "Turnaj 2026", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1200&q=80" },
-  { title: "Extraliga doma", tag: "Tímy", image: "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80" },
-  { title: "Mládežnícky tréning", tag: "Dorast", image: "https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=1200&q=80" },
-  { title: "Mestská liga", tag: "Hlohovec", image: "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=1200&q=80" }
+  { title: "Memoriál KKHC", tag: "Turnaj 2026", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6auto=format&fit=crop&w=1200&q=80" },
+  { title: "Extraliga doma", tag: "Tímy", image: "https://images.unsplash.com/photo-1521412644187-c49fa049e84dauto=format&fit=crop&w=1200&q=80" },
+  { title: "Mládežnícky tréning", tag: "Dorast", image: "https://images.unsplash.com/photo-1551958219-acbc608c6377auto=format&fit=crop&w=1200&q=80" },
+  { title: "Mestská liga", tag: "Hlohovec", image: "https://images.unsplash.com/photo-1519861531473-9200262188bfauto=format&fit=crop&w=1200&q=80" }
 ];
 
 export const integrations = [

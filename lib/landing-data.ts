@@ -56,7 +56,7 @@ export interface MembershipPlan {
   price: string;
   features: string[];
   cta: string;
-  featured?: boolean;
+  featured: boolean;
 }
 
 export interface ClubStat {

@@ -1,4 +1,4 @@
-from app.models import LiveClubData
+from backend.app.models import LiveClubData
 
 
 DEFAULT_CLUB_DATA = LiveClubData(
@@ -72,14 +72,8 @@ DEFAULT_CLUB_DATA = LiveClubData(
         {"id": 4, "slug": "druha-liga", "name": "Druhá liga", "league": "Seniorská liga", "coach": "Tréner doplní admin", "captain": "Kapitán doplní admin", "members": "", "achievements": "", "description": "Tím prepájajúci skúsených hráčov s novými členmi."},
         {"id": 5, "slug": "tretia-liga", "name": "Tretia liga", "league": "Rozvojová súťaž", "coach": "Tréner doplní admin", "captain": "Kapitán doplní admin", "members": "", "achievements": "", "description": "Priestor pre členov, ktorí chcú pravidelne hrávať."},
     ],
-    matches=[
-        {"id": 101, "sourceUrl": "", "league": "1. KL západ 2025/2026", "round": "18. kolo", "date": "11.05.2026", "location": "Hlohovec", "home": "KK Hlohovec", "away": "TJ Rakovice", "score": "6 : 2", "pins": "3372 : 3291", "status": "odohrané", "importStatus": "manual", "detailRows": ""},
-        {"id": 102, "sourceUrl": "", "league": "1. KL západ 2025/2026", "round": "17. kolo", "date": "04.05.2026", "location": "Hlohovec", "home": "KK Hlohovec", "away": "KK Trstená", "score": "7 : 1", "pins": "3398 : 3230", "status": "odohrané", "importStatus": "manual", "detailRows": ""},
-        {"id": 103, "sourceUrl": "", "league": "1. KL západ 2025/2026", "round": "16. kolo", "date": "27.04.2026", "location": "Hlohovec", "home": "KK Hlohovec", "away": "KK Inter Bratislava", "score": "5 : 3", "pins": "3301 : 3250", "status": "odohrané", "importStatus": "manual", "detailRows": ""},
-        {"id": 104, "sourceUrl": "https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A", "league": "Extraliga muži 2025/2026", "round": "22. kolo", "date": "18.04.2026", "location": "Žarnovica", "home": "KO Žarnovica", "away": "KKZ Hlohovec A", "score": "7.0 : 1.0", "pins": "3 586 : 3 372", "status": "odohrané", "importStatus": "manual", "detailRows": "Jančovič Martin | 629 | Novosad Róbert | 537\nNasvetr Dalibor | 574 | Poláčik Roman | 588"},
-    ],
+    matches=[],
     gallery=[
         {"id": 1, "slug": "kk-hlohovec-podbrezova", "title": "KK Hlohovec - SK Železiarne Podbrezová", "category": "zapasy", "date": "12. máj 2024", "description": "Domáci zápas a atmosféra v kolkárni.", "coverImage": "/images/gallery-1.jpg", "photos": "/images/gallery-1.jpg, /images/gallery-2.jpg, /images/gallery-3.jpg", "featured": True}
     ],
 )
-

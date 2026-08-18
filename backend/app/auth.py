@@ -3,8 +3,8 @@ from typing import Any
 from fastapi import HTTPException, Request, Response, status
 from itsdangerous import BadSignature, URLSafeSerializer
 
-from app.config import get_settings
-from app.storage import read_club_data
+from backend.app.config import get_settings
+from backend.app.storage import read_club_data
 
 ADMIN_SESSION_COOKIE = "kkhc_admin_session"
 USER_SESSION_COOKIE = "kkhc_user_session"
@@ -78,4 +78,3 @@ def authenticate(email: str, password: str) -> dict[str, str] | None:
         return {"email": member_email, "role": "member", "name": member.name if member else "Michaela Vavrová"}
 
     return None
-

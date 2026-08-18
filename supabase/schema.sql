@@ -19,3 +19,8 @@ create index if not exists kkhc_payment_events_member_email_idx
 -- Keep RLS enabled for browser safety. The Next.js server writes with SUPABASE_SERVICE_ROLE_KEY.
 alter table public.kkhc_live_state enable row level security;
 alter table public.kkhc_payment_events enable row level security;
+
+-- Optional gallery storage bucket used by the FastAPI backend/admin gallery uploader.
+insert into storage.buckets (id, name, public)
+values ('gallery', 'gallery', true)
+on conflict (id) do nothing;

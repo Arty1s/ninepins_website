@@ -2,6 +2,8 @@ export type LiveTournament = {
   id: number;
   name: string;
   date: string;
+  dateFrom: string;
+  dateTo: string;
   time: string;
   status: string;
   location: string;
@@ -29,6 +31,20 @@ export type LivePlayer = {
   team: string;
   role: string;
   average: string;
+  externalPlayerId: number | null;
+  externalLeagueId: number | null;
+  externalTeamId: number | null;
+  season: string;
+  category: string;
+  profileUrl: string;
+  matches: number | null;
+  totalPerformance: number | null;
+  bestPerformance: number | null;
+  full: number | null;
+  clearing: number | null;
+  faults: number | null;
+  sourceUrl: string;
+  rosterKey: string;
 };
 
 export type LiveMember = {
@@ -41,6 +57,8 @@ export type LiveMember = {
   membershipStatus: "paid" | "unpaid" | "pending";
   lastPayment: string;
   nextPayment: string;
+  authProvider: string;
+  avatarUrl: string;
 };
 
 export type LiveTeam = {
@@ -48,28 +66,71 @@ export type LiveTeam = {
   slug: string;
   name: string;
   league: string;
+  externalLeagueId: number | null;
+  externalTeamId: number | null;
+  competition: string;
+  category: string;
+  season: string;
+  sourceUrl: string;
+  isHlohovecTeam: boolean;
   coach: string;
   captain: string;
   members: string;
   achievements: string;
   description: string;
+  standing: string;
+  matchesPlayed: number | null;
+  wins: number | null;
+  draws: number | null;
+  losses: number | null;
+  points: number | null;
 };
 
 export type LiveMatch = {
   id: number;
   sourceUrl: string;
   league: string;
+  competition: string;
+  season: string;
   round: string;
   date: string;
   location: string;
   home: string;
   away: string;
+  externalLeagueId: number | null;
+  homeExternalTeamId: number | null;
+  awayExternalTeamId: number | null;
   score: string;
   pins: string;
-  status: "odohrané" | "plánované" | "import";
+  status: string;
   detailRows: string;
-  importedAt?: string;
-  importStatus?: "manual" | "auto" | "edited";
+  homeTeam: LiveMatchTeam | null;
+  awayTeam: LiveMatchTeam | null;
+  importKey: string;
+  importedAt: string;
+  importStatus: "manual" | "auto" | "edited";
+  adminLocked: boolean;
+};
+
+export type LiveMatchPlayer = {
+  name: string;
+  externalPlayerId: number | null;
+  profileUrl: string;
+  full: number | null;
+  clearing: number | null;
+  faults: number | null;
+  total: number | null;
+  point: number | null;
+};
+
+export type LiveMatchTeam = {
+  name: string;
+  players: LiveMatchPlayer[];
+  fullTotal: number | null;
+  clearingTotal: number | null;
+  faultsTotal: number | null;
+  pinsTotal: number | null;
+  pointsTotal: number | null;
 };
 
 export type LiveGalleryAlbum = {
@@ -84,6 +145,25 @@ export type LiveGalleryAlbum = {
   featured: boolean;
 };
 
+export type LiveStandingRow = {
+  id: number;
+  league: string;
+  category: string;
+  season: string;
+  team: string;
+  externalLeagueId: number | null;
+  externalTeamId: number | null;
+  position: number | null;
+  matchesPlayed: number | null;
+  wins: number | null;
+  draws: number | null;
+  losses: number | null;
+  score: string;
+  pins: string;
+  points: number | null;
+  isHlohovecTeam: boolean;
+};
+
 export type LiveClubData = {
   tournaments: LiveTournament[];
   leagues: LiveLeague[];
@@ -91,6 +171,7 @@ export type LiveClubData = {
   members: LiveMember[];
   teams: LiveTeam[];
   matches: LiveMatch[];
+  standings: LiveStandingRow[];
   gallery: LiveGalleryAlbum[];
 };
 
@@ -185,14 +266,8 @@ export const defaultLiveData: LiveClubData = {
     { id: 4, slug: "druha-liga", name: "Druhá liga", league: "Seniorská liga", coach: "Tréner doplní admin", captain: "Kapitán doplní admin", members: "Hráč 1, Hráč 2, Hráč 3", achievements: "Silná domáca bilancia; Regionálne zápasy a turnaje", description: "Tím prepájajúci skúsených hráčov s novými členmi." },
     { id: 5, slug: "tretia-liga", name: "Tretia liga", league: "Rozvojová súťaž", coach: "Tréner doplní admin", captain: "Kapitán doplní admin", members: "Hráč 1, Hráč 2, Hráč 3", achievements: "Aktívna klubová základňa; Výsledky doplní admin", description: "Priestor pre členov, ktorí chcú pravidelne hrávať." }
   ],
-  matches: [
-    { id: 101, sourceUrl: "", league: "1. KL západ 2025/2026", round: "18. kolo", date: "11.05.2026", location: "Hlohovec", home: "KK Hlohovec", away: "TJ Rakovice", score: "6 : 2", pins: "3372 : 3291", status: "odohrané", importStatus: "manual", detailRows: "" },
-    { id: 102, sourceUrl: "", league: "1. KL západ 2025/2026", round: "17. kolo", date: "04.05.2026", location: "Hlohovec", home: "KK Hlohovec", away: "KK Trstená", score: "7 : 1", pins: "3398 : 3230", status: "odohrané", importStatus: "manual", detailRows: "" },
-    { id: 103, sourceUrl: "", league: "1. KL západ 2025/2026", round: "16. kolo", date: "27.04.2026", location: "Hlohovec", home: "KK Hlohovec", away: "KK Inter Bratislava", score: "5 : 3", pins: "3301 : 3250", status: "odohrané", importStatus: "manual", detailRows: "" },
-    { id: 1, sourceUrl: "https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A", league: "Extraliga muži", round: "22. kolo", date: "18.04.2026", location: "Žarnovica", home: "KO Žarnovica", away: "KKZ Hlohovec A", score: "7.0 : 1.0", pins: "3 586 : 3 372", status: "odohrané", importStatus: "manual", detailRows: "Jančovič Martin | 629 | Novosad Róbert | 537\nNasvetr Dalibor | 574 | Poláčik Roman | 588\nTkáč Ján | 582 | Vlčko Jaroslav | 573\nKlubert Dávid | 592 | Jaderko Róbert | 574\nFúska Radoslav st. | 590 | Šišan Michal | 541\nPašiak Tomáš | 619 | Kadlečík Matúš | 559" },
-    { id: 2, sourceUrl: "", league: "1. KL západ", round: "18. kolo", date: "11.05.2024", location: "Hlohovec", home: "KK Hlohovec", away: "TJ Rakovice", score: "6 : 2", pins: "3372 : 3291", status: "odohrané", importStatus: "manual", detailRows: "" },
-    { id: 3, sourceUrl: "", league: "2. liga západ", round: "18. kolo", date: "25.05.2026", location: "Kolkáreň Hlohovec", home: "KK Hlohovec", away: "ŠKK Trnava", score: "vs", pins: "-", status: "plánované", importStatus: "manual", detailRows: "" }
-  ],
+  matches: [],
+  standings: [],
   gallery: [
     { id: 1, slug: "kk-hlohovec-podbrezova", title: "KK Hlohovec - SK Železiarne Podbrezová", category: "zapasy", date: "12. máj 2024", description: "Domáci zápas a atmosféra v kolkárni.", coverImage: "/images/gallery-1.jpg", photos: "/images/gallery-1.jpg, /images/gallery-2.jpg, /images/gallery-3.jpg", featured: true },
     { id: 2, slug: "priprava-pred-zapasom", title: "Príprava pred zápasom", category: "zakulisie", date: "10. máj 2024", description: "Tímová príprava a šatňa pred zápasom.", coverImage: "/images/team-photo.jpg", photos: "/images/team-photo.jpg, /images/players-action.jpg, /images/gallery-2.jpg", featured: true },
@@ -208,13 +283,14 @@ export function readLiveData(): LiveClubData {
     if (!raw) return defaultLiveData;
     const parsed = JSON.parse(raw) as Partial<LiveClubData>;
     return {
-      tournaments: parsed.tournaments?.length ? parsed.tournaments : defaultLiveData.tournaments,
-      leagues: parsed.leagues?.length ? parsed.leagues : defaultLiveData.leagues,
-      players: parsed.players?.length ? parsed.players : defaultLiveData.players,
-      members: parsed.members?.length ? parsed.members : defaultLiveData.members,
-      teams: parsed.teams?.length ? parsed.teams : defaultLiveData.teams,
-      matches: parsed.matches?.length ? parsed.matches : defaultLiveData.matches,
-      gallery: parsed.gallery?.length ? parsed.gallery : defaultLiveData.gallery
+      tournaments: parsed.tournaments.length ? parsed.tournaments : defaultLiveData.tournaments,
+      leagues: parsed.leagues.length ? parsed.leagues : defaultLiveData.leagues,
+      players: parsed.players.length ? parsed.players : defaultLiveData.players,
+      members: parsed.members.length ? parsed.members : defaultLiveData.members,
+      teams: parsed.teams.length ? parsed.teams : defaultLiveData.teams,
+      matches: parsed.matches.length ? parsed.matches : defaultLiveData.matches,
+      standings: parsed.standings.length ? parsed.standings : defaultLiveData.standings,
+      gallery: parsed.gallery.length ? parsed.gallery : defaultLiveData.gallery
     };
   } catch {
     return defaultLiveData;
@@ -250,7 +326,7 @@ export async function refreshLiveDataFromBackend() {
   try {
     const response = await fetch("/api/club-data", { cache: "no-store" });
     if (!response.ok) return readLiveData();
-    const payload = await response.json() as { data?: LiveClubData };
+    const payload = await response.json() as { data: LiveClubData };
     if (!payload.data) return readLiveData();
     writeLiveData(payload.data);
     return payload.data;
@@ -280,11 +356,14 @@ export type TournamentRegistration = {
   name: string;
   club: string;
   email: string;
+  userEmail: string;
   phone: string;
   slot: string;
   note: string;
-  paymentStatus: "free" | "pending";
+  paymentStatus: "free" | "pending" | "paid" | "refunded" | "cancelled";
   createdAt: string;
+  cancelledAt: string | null;
+  cancellationStatus: "active" | "cancelled" | "refund_due" | "no_refund";
 };
 
 export function readTournamentRegistrations(): TournamentRegistration[] {
@@ -321,14 +400,14 @@ export function subscribeTournamentRegistrations(callback: (rows: TournamentRegi
   };
 }
 
-export async function refreshTournamentRegistrationsFromBackend(tournamentId?: number) {
+export async function refreshTournamentRegistrationsFromBackend(tournamentId: number) {
   if (typeof window === "undefined") return [];
 
   try {
-    const suffix = tournamentId ? `?tournamentId=${encodeURIComponent(tournamentId)}` : "";
+    const suffix = tournamentId ? `tournamentId=${encodeURIComponent(tournamentId)}` : "";
     const response = await fetch(`/api/tournament-registrations${suffix}`, { cache: "no-store" });
     if (!response.ok) return readTournamentRegistrations();
-    const payload = await response.json() as { data?: TournamentRegistration[] };
+    const payload = await response.json() as { data: TournamentRegistration[] };
     if (!payload.data) return readTournamentRegistrations();
     if (!tournamentId) writeTournamentRegistrations(payload.data);
     return payload.data;
@@ -362,9 +441,39 @@ export async function createTournamentRegistrationInBackend(registration: Omit<T
       body: JSON.stringify(registration)
     });
     if (!response.ok) return null;
-    const payload = await response.json() as { data?: TournamentRegistration };
+    const payload = await response.json() as { data: TournamentRegistration };
     return payload.data ?? null;
   } catch {
     return null;
+  }
+}
+
+export async function cancelTournamentRegistrationInBackend(registrationId: number, email: string) {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const response = await fetch(`/api/tournament-registrations/${registrationId}`, {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: email || "" })
+    });
+    if (!response.ok) return null;
+    const payload = await response.json() as { data: TournamentRegistration; refundEligible: boolean };
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteTournamentRegistrationInBackend(registrationId: number) {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const response = await fetch(`/api/admin/tournament-registrations/${registrationId}`, {
+      method: "DELETE"
+    });
+    return response.ok;
+  } catch {
+    return false;
   }
 }

@@ -8,8 +8,8 @@ const DEMO_MEMBER_EMAILS = new Set(["clen@kkhlohovec.sk", "michaela@kkhlohovec.s
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { email?: string; password?: string };
-    const email = body.email?.trim().toLowerCase() || "";
+    const body = (await request.json()) as { email: string; password: string };
+    const email = body.email.trim().toLowerCase() || "";
     const password = body.password || "";
 
     if (!email || !password) {
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Nesprávny e-mail alebo heslo." }, { status: 401 });
     }
 
-    const role = data.user.email?.trim().toLowerCase() === getAdminEmail() ? "admin" : "member";
+    const role = data.user.email.trim().toLowerCase() === getAdminEmail() ? "admin" : "member";
     const response = NextResponse.json({
       ok: true,
       user: { email: data.user.email, role },

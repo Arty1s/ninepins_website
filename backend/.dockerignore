@@ -1,0 +1,8 @@
+.venv
+.venv-run
+.data
+__pycache__
+*.pyc
+*.log
+*.err.log
+.env
