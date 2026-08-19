@@ -7,13 +7,13 @@ import {
   BarChart3,
   CalendarDays,
   ChevronRight,
-  ShieldCheck,
+  MapPin,
   Star,
   Trophy,
   UserRound,
   Users
 } from "lucide-react";
-import { readLiveData, subscribeLiveData, type LiveClubData, type LiveMember, type LivePlayer, type LiveTeam } from "@/lib/live-store";
+import { readLiveData, subscribeLiveData, type LiveClubData, type LiveMatch, type LiveMember, type LivePlayer, type LiveTeam } from "@/lib/live-store";
 import { getLeagueTheme, type LeagueTheme } from "@/lib/league-theme";
 
 type PlayerCard = {
@@ -22,6 +22,7 @@ type PlayerCard = {
   description: string;
   average: string;
   matches: number | null;
+  bestPerformance?: string;
   source: LiveMember;
 };
 
@@ -37,6 +38,8 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
   const [data, setData] = useState<LiveClubData>(() => readLiveData());
   const [teams, setTeams] = useState<LiveTeam[]>(FALLBACK_TEAMS);
   const [syncedPlayers, setSyncedPlayers] = useState<LivePlayer[]>([]);
+  const [activeTab, setActiveTab] = useState<"players" | "matches">("players");
+  const [selectedSeason, setSelectedSeason] = useState("");
 
   useEffect(() => {
     return subscribeLiveData(setData);
@@ -68,6 +71,14 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
   const players = useMemo(() => buildPlayers(team, data.members, syncedPlayers.length ? syncedPlayers : data.players), [team, data.members, data.players, syncedPlayers]);
   const achievements = useMemo(() => splitList(team.achievements || "", ";"), [team.achievements]);
   const theme = getLeagueTheme(`${team.category || ""} ${team.name || ""} ${team.league || ""}`);
+  const teamMatches = useMemo(() => data.matches.filter((match) => isTeamMatch(match, team)).sort((a, b) => dateValue(b.date) - dateValue(a.date)), [data.matches, team]);
+  const seasons = useMemo(() => Array.from(new Set(teamMatches.map(matchSeason))).sort().reverse(), [teamMatches]);
+
+  useEffect(() => {
+    if (seasons.length && !seasons.includes(selectedSeason)) setSelectedSeason(seasons[0]);
+  }, [seasons, selectedSeason]);
+
+  const seasonMatches = teamMatches.filter((match) => matchSeason(match) === selectedSeason);
 
   if (!team) {
     return (
@@ -115,12 +126,12 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
 
       <section className="container-page py-7">
         <div className="flex flex-wrap items-center gap-8 border-b border-[#071a3d]/10">
-          <Tab active icon={Users} label="Hráči" />
-          <Tab icon={BarChart3} label="Štatistiky" />
+          <Tab active={activeTab === "players"} icon={Users} label="Hráči" onClick={() => setActiveTab("players")} />
+          <Tab active={activeTab === "matches"} icon={BarChart3} label="Zápasy" onClick={() => setActiveTab("matches")} />
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#041225] px-0 py-12">
+      {activeTab === "players" ? <section className="relative overflow-hidden bg-[#041225] px-0 py-12">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,12,26,.86),rgba(3,12,26,.95)),url('/images/premium-blue-bg.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(22,136,255,.2),transparent_30%),radial-gradient(circle_at_90%_62%,rgba(17,75,255,.12),transparent_34%)]" />
         <div className="container-page relative z-10">
@@ -135,15 +146,10 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
           )}
         </div>
         </div>
-      </section>
+      </section> : <section className="container-page py-10"><TeamMatches matches={seasonMatches} seasons={seasons} selectedSeason={selectedSeason} setSelectedSeason={setSelectedSeason} /></section>}
 
       <section className="container-page pb-16 pt-7">
-        <div className="mt-7 grid gap-5 lg:grid-cols-2">
-          <StaffCard icon={UserRound} eyebrow="Tréner" title={team.coach} text="Skúsený tréner alebo zodpovedná osoba tímu. Detail môže neskôr doplniť admin." />
-          <StaffCard icon={ShieldCheck} eyebrow="Kapitán tímu" title={team.captain} text="Kapitán vedie tím na dráhe, drží disciplínu a pomáha novým hráčom zapadnúť." />
-        </div>
-
-        <div className="mt-7 rounded-2xl bg-white p-6 shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06]">
+        {activeTab === "players" ? <div className="mt-7 rounded-2xl bg-white p-6 shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06]">
           <div className="mb-5 flex items-center gap-3">
             <Award className="text-[#114bff]" />
             <h2 className="text-2xl font-black">Úspechy tímu</h2>
@@ -158,7 +164,7 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
               <p className="rounded-xl bg-[#f3f7ff] p-4 text-sm font-semibold text-[#071a3d]/60">Úspechy doplní admin.</p>
             )}
           </div>
-        </div>
+        </div> : null}
       </section>
     </main>
   );
@@ -176,9 +182,9 @@ function HeroStat({ icon: Icon, value, label }: { icon: ElementType; value: stri
   );
 }
 
-function Tab({ icon: Icon, label, active = false }: { icon: ElementType; label: string; active: boolean }) {
+function Tab({ icon: Icon, label, active = false, onClick }: { icon: ElementType; label: string; active: boolean; onClick: () => void }) {
   return (
-    <button className={`relative inline-flex items-center gap-2 py-4 text-lg font-bold ${active ? "text-[#114bff]" : "text-[#071a3d]/68"}`} type="button">
+    <button onClick={onClick} className={`relative inline-flex items-center gap-2 py-4 text-lg font-bold ${active ? "text-[#114bff]" : "text-[#071a3d]/68"}`} type="button">
       <Icon size={22} strokeWidth={1.8} />
       {label}
       {active ? <span className="absolute bottom-[-1px] left-0 h-[2px] w-full rounded-full bg-[#114bff]" /> : null}
@@ -203,6 +209,12 @@ function PremiumPlayerTile({ player, index, theme }: { player: PlayerCard; index
       <div className="relative mt-6 flex-1 border-t border-white/[0.08] pt-5">
         <p className="text-[15px] leading-7 text-white/76">{player.description}</p>
       </div>
+      {player.bestPerformance ? (
+        <div className="relative mt-5 rounded-xl border border-white/[0.09] bg-white/[0.06] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
+          <p className={`text-[10px] font-black uppercase tracking-[0.18em] ${theme.text}`}>Najlepší výkon</p>
+          <p className="mt-1 text-2xl font-black text-white">{player.bestPerformance}</p>
+        </div>
+      ) : null}
       <div className="relative -mx-6 -mb-6 mt-6 grid grid-cols-[1fr_auto_auto] items-center gap-3 bg-white/[0.055] px-6 py-4 text-sm">
         <p className={`min-w-0 font-black leading-5 ${theme.text}`}>
           <Trophy size={17} className="mr-1 inline align-[-3px]" /> Priemer {player.average || "-"}
@@ -230,6 +242,12 @@ function PlayerTile({ player, index }: { player: PlayerCard; index: number }) {
         </div>
       </div>
       <p className="mt-5 text-sm leading-6 text-[#071a3d]/72">{player.description}</p>
+      {player.bestPerformance ? (
+        <div className="mt-4 border-t border-[#1688ff]/20 pt-4">
+          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#1688ff]">Najlepší výkon</p>
+          <p className="mt-1 text-xl font-black text-[#071a33]">{player.bestPerformance}</p>
+        </div>
+      ) : null}
       {player.average ? (
         <p className="mt-4 text-sm font-black text-[#114bff]">
           Priemer {player.average}{player.matches ? ` · ${player.matches} zápasov` : ""}
@@ -240,20 +258,42 @@ function PlayerTile({ player, index }: { player: PlayerCard; index: number }) {
   );
 }
 
-function StaffCard({ icon: Icon, eyebrow, title, text }: { icon: ElementType; eyebrow: string; title: string; text: string }) {
+function TeamMatches({ matches, seasons, selectedSeason, setSelectedSeason }: { matches: LiveMatch[]; seasons: string[]; selectedSeason: string; setSelectedSeason: (season: string) => void }) {
   return (
-    <article className="grid gap-5 rounded-2xl bg-white p-6 shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06] sm:grid-cols-[112px_1fr]">
-      <div className="grid h-28 w-28 place-items-center rounded-2xl bg-[#f0f5ff] text-[#114bff]">
-        <Icon size={58} strokeWidth={1.35} />
+    <div>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div><p className="text-xs font-black uppercase tracking-[.18em] text-[#114bff]">Sezónne výsledky</p><h2 className="mt-1 text-3xl font-black">Zápasy tímu</h2></div>
+        {seasons.length ? <label className="flex items-center gap-3 text-sm font-bold">Sezóna<select value={selectedSeason} onChange={(event) => setSelectedSeason(event.target.value)} className="rounded-xl border border-[#071a3d]/10 bg-white px-4 py-3 font-black outline-none focus:border-[#114bff]">{seasons.map((season) => <option key={season}>{season}</option>)}</select></label> : null}
       </div>
-      <div>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#114bff]">{eyebrow}</p>
-        <h3 className="mt-2 text-2xl font-black">{title}</h3>
-        <div className="mt-3 h-[2px] w-14 rounded-full bg-[#114bff]" />
-        <p className="mt-4 text-sm leading-6 text-[#071a3d]/70">{text}</p>
-      </div>
-    </article>
+      {matches.length ? <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">{matches.map((match) => <article key={match.id} className="overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06]">
+        <div className="flex items-center justify-between gap-3 border-b border-[#071a3d]/10 px-5 py-4 text-xs font-black uppercase text-[#114bff]"><span>{match.competition || match.league} · {match.round}</span><span>{match.date}</span></div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 p-5 text-center"><strong>{match.home}</strong><div><p className="text-3xl font-black text-[#114bff]">{match.score}</p><p className="mt-1 text-xs font-bold text-[#071a3d]/60">{match.pins}</p></div><strong>{match.away}</strong></div>
+        <div className="grid gap-2 border-t border-[#071a3d]/10 px-5 py-4 text-sm text-[#071a3d]/65 sm:grid-cols-2"><p className="flex items-center gap-2"><CalendarDays size={16} className="text-[#114bff]" />{match.status}</p><p className="flex items-center gap-2"><MapPin size={16} className="text-[#114bff]" />{match.location}</p></div>
+      </article>)}</div> : <div className="rounded-2xl border border-dashed border-[#114bff]/25 bg-white p-8 text-center text-[#071a3d]/60">Pre túto sezónu zatiaľ nie sú evidované žiadne zápasy.</div>}
+    </div>
   );
+}
+
+function isTeamMatch(match: LiveMatch, team: LiveTeam) {
+  if (team.externalTeamId && [match.homeExternalTeamId, match.awayExternalTeamId].includes(team.externalTeamId)) return true;
+  if (team.externalLeagueId && match.externalLeagueId === team.externalLeagueId) return true;
+  const value = normalize(`${match.competition} ${match.league} ${match.home} ${match.away}`);
+  return value.includes(normalize(team.category || team.name));
+}
+
+function matchSeason(match: LiveMatch) {
+  if (match.season) return match.season;
+  const explicit = match.league.match(/20\d{2}\/20\d{2}/)?.[0];
+  if (explicit) return explicit;
+  const year = Number(match.date.match(/20\d{2}/)?.[0]);
+  const month = Number(match.date.split(/[.\/-]/)[1]);
+  if (!year) return "Staršie";
+  return month >= 7 ? `${year}/${year + 1}` : `${year - 1}/${year}`;
+}
+
+function dateValue(value: string) {
+  const [day, month, year] = value.split(/[.\/-]/).map(Number);
+  return year ? new Date(year, month - 1, day).getTime() : 0;
 }
 
 function buildPlayers(team: LiveTeam | undefined, members: LiveMember[], syncedPlayers: LivePlayer[]): PlayerCard[] {
@@ -275,8 +315,9 @@ function buildPlayers(team: LiveTeam | undefined, members: LiveMember[], syncedP
       role: player.role || "Hráč",
       average: player.average,
       matches: player.matches,
+      bestPerformance: player.bestPerformance || "Doplní sa po importe",
       description: player.matches
-        ? `Oficiálne zápisy: ${player.matches}. Najlepší výkon ${player.bestPerformance || "doplní sa po importe"}.`
+        ? `Oficiálne zápisy: ${player.matches}.`
         : playerDescriptions[index % playerDescriptions.length]
     }));
   }

@@ -84,22 +84,30 @@ function HeroSection() {
       <div className="absolute inset-x-[-12%] bottom-[-42%] h-[420px] rounded-[50%] bg-[#1688ff]/10 blur-3xl" />
       <div className="absolute right-10 top-24 hidden text-[11rem] font-black leading-none text-white/[0.025] lg:block">KKHC</div>
       <div className="container-page relative z-10 py-12 md:py-16">
-        <div className="text-sm text-white/62">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+        <div><div className="text-sm text-white/62">
           <Link href="/" className="hover:text-white">Domov</Link>
           <span className="mx-2">/</span>
           <span>O klube</span>
         </div>
-        <p className="mt-8 text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">O klube</p>
-        <h1 className="mt-3 max-w-3xl font-display text-5xl font-black leading-none tracking-tight md:text-7xl">
-          O klube KK Hlohovec
+        <p className="mt-8 text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Tradícia od roku 1949</p>
+        <h1 className="mt-3 max-w-3xl font-display text-5xl font-black leading-[.96] tracking-tight md:text-7xl">
+          Viac než klub.<br /><span className="text-[#1688ff]">Jedna kolkárska rodina.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-[#c5d4ea]">
-          Kolkársky klub s bohatou históriou, silnou komunitou a vášňou pre šport, ktorý spája generácie v Hlohovci.
+          Už viac ako 75 rokov spájame generácie, rozvíjame talent a reprezentujeme Hlohovec na domácich kolkárskych dráhach.
         </p>
-        <div className="mt-10 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-8 flex flex-wrap gap-3"><Button href="/registracia">Pridaj sa ku klubu <ArrowRight size={16} /></Button><Button href="/kontakt" variant="secondary">Navštív kolkáreň</Button></div>
+        </div>
+        <div className="relative min-h-[330px] overflow-hidden rounded-[28px] border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,.38)] md:min-h-[440px]">
+          <Image src="/images/hero-action.jpg" alt="Kolkár pri hode na kolkárskej dráhe" fill priority className="object-cover object-center" sizes="(min-width: 1024px) 46vw, 100vw" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_40%,rgba(3,18,37,.88)_100%)]" />
+          <div className="absolute bottom-0 left-0 right-0 p-6"><p className="text-xs font-black uppercase tracking-[.18em] text-[#69adff]">Presnosť · Tím · Tradícia</p><p className="mt-2 text-2xl font-black">Šport, ktorý nás spája</p></div>
+        </div></div>
+        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {statItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-3">
-              <item.icon className="h-7 w-7 shrink-0 text-[#1688ff]" strokeWidth={1.8} />
+            <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] p-4">
+              <item.icon className="h-6 w-6 shrink-0 text-[#1688ff]" strokeWidth={1.8} />
               <div>
                 <p className="font-black">{item.value}</p>
                 <p className="text-xs text-[#a9bad3]">{item.label}</p>
@@ -181,7 +189,7 @@ function ComparisonSection() {
             Hoci si ich mnohí mýlia, kolky a bowling sú dva odlišné športy. Kolky stoja viac na presnosti, technike, pravidelnosti a európskej športovej tradícii.
           </p>
         </div>
-        <SportVisual title="Bowling" image="/images/hero-lane.jpg" />
+        <SportVisual title="Bowling" image="/images/bowling-ball-photo.png" />
       </div>
     </SectionSurface>
   );
@@ -273,46 +281,16 @@ function ArenaSection() {
 function QuoteAndCtaSection() {
   return (
     <section className="container-page pb-16 pt-6">
-      <div className="grid gap-6 lg:grid-cols-[.95fr_1.05fr]">
-        <div className="overflow-hidden rounded-2xl bg-white/82 shadow-[0_20px_70px_rgba(7,26,51,.10),inset_0_1px_0_rgba(255,255,255,.72)] ring-1 ring-[#b9d7ff]/55">
-          <div className="grid gap-6 p-6 md:grid-cols-[170px_1fr]">
-            <div className="relative min-h-[180px] overflow-hidden rounded-xl">
-              <Image src="/images/players-action.jpg" alt="Tréner a hráči KK Hlohovec" fill className="object-cover" />
-            </div>
-            <blockquote className="flex flex-col justify-center">
-              <p className="text-5xl font-black text-[#1688ff]/80">“</p>
-              <p className="text-lg leading-8 text-[#071a33]">
-                Kolky nie sú len o výsledkoch. Sú o disciplíne, priateľstvách a radosti z hry. Sme jedna veľká rodina.
-              </p>
-              <p className="mt-5 text-sm font-black">KK Hlohovec</p>
-              <p className="text-sm text-[#46617f]">kolkársky klub</p>
-            </blockquote>
+      <div className="rounded-[26px] bg-[linear-gradient(120deg,#0d3159_0%,#071a33_68%)] p-7 text-white shadow-[0_24px_70px_rgba(7,26,51,.18),inset_0_1px_0_rgba(255,255,255,.05)] ring-1 ring-white/[0.07] md:p-9">
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-[.18em] text-[#64adff]">Staň sa súčasťou klubu</p>
+            <h2 className="mt-3 text-3xl font-black text-white">Príď si kolky nezáväzne vyskúšať</h2>
+            <p className="mt-3 leading-7 text-[#bfd0e5]">Spoznaj tím, kolkáreň a šport, ktorý spája komunitu v Hlohovci. Prvý tréning je nezáväzný.</p>
           </div>
-        </div>
-        <div className="rounded-2xl bg-[linear-gradient(135deg,rgba(8,31,62,.68),rgba(5,18,39,.78))] p-7 shadow-[0_20px_70px_rgba(0,0,0,.22),inset_0_1px_0_rgba(255,255,255,.035)]">
-          <p className="section-eyebrow">Prečo sa pridať k nám</p>
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
-            {[
-              ["Komunita", "Sme klubová rodina. Podporujeme sa na dráhach aj mimo nich."],
-              ["Rozvoj", "Zlepšujeme techniku, kondíciu a športové myslenie."],
-              ["Zážitky", "Turnaje, výlety, zápasy a spoločné akcie počas roka."]
-            ].map(([title, text]) => (
-              <div key={title}>
-                <Trophy className="h-8 w-8 text-[#1688ff]" strokeWidth={1.7} />
-                <h3 className="mt-3 font-black">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#9fb0c8]">{text}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 flex flex-col gap-3 border-t border-white/[0.045] pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-black">Staň sa súčasťou KK Hlohovec</h2>
-              <p className="mt-1 text-sm text-[#9fb0c8]">Prvý tréning je nezáväzný.</p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button href="/cennik">Staň sa členom <ArrowRight size={16} /></Button>
-              <Button href="/kontakt" variant="secondary">Kontaktuj nás</Button>
-            </div>
+          <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+            <Button href="/cennik">Staň sa členom <ArrowRight size={16} /></Button>
+            <Button href="/kontakt" variant="secondary">Kontaktuj nás</Button>
           </div>
         </div>
       </div>
@@ -338,7 +316,7 @@ function SportVisual({ title, image, primary = false }: { title: string; image: 
   return (
     <div className="text-center">
       <p className={`text-xs font-black uppercase tracking-[0.14em] ${primary ? "text-[#1688ff]" : "text-[#46617f]"}`}>{title}</p>
-      <div className="relative mx-auto mt-4 h-40 w-full max-w-[220px] overflow-hidden rounded-2xl bg-[#e8f2ff] shadow-[0_16px_38px_rgba(7,26,51,.10)] ring-1 ring-[#b9d7ff]/60">
+      <div className="relative mx-auto mt-4 h-48 w-full max-w-[240px] overflow-hidden rounded-2xl bg-[#e8f2ff] shadow-[0_18px_50px_rgba(7,26,51,.18)] ring-1 ring-[#b9d7ff]/60">
         <Image src={image} alt={title} fill className="object-cover" sizes="220px" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#031225]/48 to-transparent" />
       </div>

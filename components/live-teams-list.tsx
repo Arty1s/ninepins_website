@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CircleDot, ShieldCheck, Target, Trophy, UserRound, Users } from "lucide-react";
+import { ArrowRight, CircleDot, Target, Trophy, UserRound, Users } from "lucide-react";
 import { type LiveTeam } from "@/lib/live-store";
 import { getLeagueTheme } from "@/lib/league-theme";
 
@@ -90,12 +90,7 @@ function TeamCard({ team }: { team: LiveTeam }) {
         </div>
 
         <div className="p-6">
-          <div className="grid gap-3 text-sm text-[#071a3d]/72">
-            <InfoRow icon={UserRound} label="Tréner:" value={team.coach} />
-            <InfoRow icon={ShieldCheck} label="Kapitán:" value={team.captain} />
-          </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#071a3d]/10 pt-5 text-sm">
+          <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.12em] text-[#071a3d]/45">Členovia</p>
               <p className="mt-1 font-black text-[#071a3d]">{Math.min(members.length, 10)} zobrazených</p>
@@ -113,16 +108,6 @@ function TeamCard({ team }: { team: LiveTeam }) {
         </div>
       </article>
     </Link>
-  );
-}
-
-function InfoRow({ icon: Icon, label, value }: { icon: typeof UserRound; label: string; value: string }) {
-  return (
-    <p className="flex items-center gap-3">
-      <Icon size={18} className="shrink-0 text-[#114bff]" strokeWidth={1.9} />
-      <span>{label}</span>
-      <strong className="font-black text-[#071a3d]">{value}</strong>
-    </p>
   );
 }
 
