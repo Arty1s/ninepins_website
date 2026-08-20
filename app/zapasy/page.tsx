@@ -1,14 +1,6 @@
 import Image from "next/image";
-import type { Metadata } from "next";
 import { SectionHeading } from "@/components/section-heading";
 import { LiveMatchesList } from "@/components/live-matches-list";
-
-export const metadata: Metadata = {
-  title: "Zápasy a výsledky KK Hlohovec",
-  description: "Program, výsledky a zápisnice zo zápasov tímov KK Hlohovec podľa súťaží a sezón.",
-  alternates: { canonical: "/zapasy" },
-  openGraph: { title: "Zápasy a výsledky KK Hlohovec", description: "Výsledky, program a zápisnice tímov KK Hlohovec.", url: "/zapasy" }
-};
 
 export default function ZapasyPage() {
   return (
@@ -21,7 +13,7 @@ export default function ZapasyPage() {
             light
             eyebrow="Zápasy KK Hlohovec"
             title="Výsledky, program a detailné zápisnice"
-            text="Pozrite si odohrané aj plánované zápasy tímov KK Hlohovec podľa súťaže a sezóny. Pri odohraných stretnutiach nájdete výsledok aj zápisnicu."
+            text="Admin môže zápasy pridať ručne alebo importovať z vysledky.kolky.sk. Zmeny sa zobrazia okamžite."
           />
         </div>
       </section>

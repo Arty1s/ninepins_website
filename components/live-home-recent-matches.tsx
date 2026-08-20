@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { type RecentMatchWidget } from "@/components/home-widgets";
 import { type Team } from "@/lib/landing-data";
 import { type LiveMatch } from "@/lib/live-store";
-import { resolveClubLogo } from "@/lib/club-logos";
 
 const OFFICIAL_TEAM_PAIRS = new Set(["355:4855", "356:4865", "359:4889", "362:4925", "361:4923"]);
 
@@ -91,10 +90,6 @@ function TeamBadgeWidget({ team, pins, isClub = false }: { team: Team; pins: num
         <span className="mx-auto grid h-12 w-12 place-items-center sm:h-[54px] sm:w-[54px]">
           <Image src="/kkhc-logo.png" alt="KK Hlohovec" width={54} height={54} className="kkhc-logo-cutout h-11 w-auto object-contain sm:h-[48px]" />
         </span>
-      ) : team.logoUrl ? (
-        <span className="mx-auto grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-white/95 p-1.5 ring-1 ring-white/20 sm:h-[54px] sm:w-[54px]">
-          <Image src={team.logoUrl} alt={`Logo ${team.name}`} width={54} height={54} unoptimized className="h-full w-full object-contain" />
-        </span>
       ) : (
         <span className={`mx-auto grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br sm:h-[54px] sm:w-[54px] ${team.badgeClass} ring-1 ring-white/15`}>
           <span className="px-1 text-[10px] font-black leading-none text-white">{team.shortName}</span>
@@ -112,8 +107,8 @@ function toRecentMatchWidget(match: LiveMatch): RecentMatchWidget {
   return {
     league: [competition, match.season, match.round].filter(Boolean).join(" - "),
     date: match.date,
-    home: teamFromName(match.home, match.homeExternalTeamId, match.homeTeam?.logoUrl),
-    away: teamFromName(match.away, match.awayExternalTeamId, match.awayTeam?.logoUrl),
+    home: teamFromName(match.home),
+    away: teamFromName(match.away),
     score: formatHomeScore(match.score),
     homePins,
     awayPins,
@@ -123,11 +118,10 @@ function toRecentMatchWidget(match: LiveMatch): RecentMatchWidget {
   };
 }
 
-function teamFromName(name: string, externalTeamId?: number | null, importedLogo?: string): Team {
+function teamFromName(name: string): Team {
   const normalized = homeNormalizeText(name);
   return {
     name,
-    logoUrl: resolveClubLogo(name, externalTeamId, importedLogo),
     shortName: isHlohovecName(name) ? "KKHC" : opponentShortName(name),
     badgeClass: isHlohovecName(name)
       ? "from-[#071a3d] to-[#0d2d67]"
@@ -218,3 +212,4 @@ function isHlohovecName(value: string) {
 function homeNormalizeText(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
+

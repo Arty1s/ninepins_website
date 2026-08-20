@@ -51,23 +51,23 @@ export type RecentMatchWidget = {
 
 export const heroFeatureWidgets: FeatureWidget[] = [
   {
-    title: "Kolkársky klub Hlohovec",
-    text: "Klubová história a súťažné kolky v Hlohovci.",
+    title: "Tradícia od roku 1970",
+    text: "Viac ako 50 rokov kolkárskej histórie v Hlohovci.",
     icon: Trophy
   },
   {
-    title: "Hráči a klub",
-    text: "Tímy, hráči, tréneri a ľudia okolo klubu.",
+    title: "Komunita & priateľstvá",
+    text: "Sme jeden veľký tím, kde má každý svoje miesto.",
     icon: Users
   },
   {
-    title: "Tréningy kolkov",
-    text: "Pravidelná práca na technike, presnosti a výkone.",
+    title: "Rozvoj & tréningy",
+    text: "Podporujeme talent, zlepšujeme sa a posúvame hranice.",
     icon: Target
   },
   {
     title: "Súťaže & turnaje",
-    text: "Ligové zápasy a turnaje KK Hlohovec.",
+    text: "Domáce ligy aj medzinárodné podujatia počas celého roka.",
     icon: CalendarDays
   }
 ];
@@ -143,19 +143,19 @@ export function HeroWidget() {
 
       <div className="container-page relative z-10 grid min-h-[560px] items-center gap-10 pb-20 pt-10 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="max-w-[650px]">
-          <Image src="/kkhc-logo.png" alt="Logo Kolkárskeho klubu Hlohovec" width={145} height={96} className="kkhc-logo-cutout mb-8 h-20 w-auto object-contain" />
+          <Image src="/kkhc-logo.png" alt="Logo KKHC" width={145} height={96} className="kkhc-logo-cutout mb-8 h-20 w-auto object-contain" />
           <p className="text-sm font-black uppercase tracking-[0.22em] text-[#1e7dff]">Kolkársky klub Hlohovec</p>
           <h1 className="mt-3 font-display text-[4rem] font-black leading-[0.95] tracking-tight text-white sm:text-[5.4rem] lg:text-[6.2rem]">
-            Hráme kolky.
+            Tradícia, ktorá
             <br />
-            <span className="text-[#164fff]">Hráme za Hlohovec.</span>
+            <span className="text-[#164fff]">posúva vpred.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-white/82">
-            KK Hlohovec je kolkársky klub v Hlohovci pre súťažných hráčov, mládež aj ľudí, ktorí si chcú kolky vyskúšať.
+            KK Hlohovec spája generácie hráčov. U nás nájdeš priateľov, súťaže, tréningy a zážitky, ktoré zostanú.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Button href="/registracia">
-              Pridaj sa na tréning <ArrowRight size={18} />
+              Staň sa členom <ArrowRight size={18} />
             </Button>
             <Button href="/o_klube.html" variant="secondary">
               Spoznaj klub <ArrowRight size={18} />
@@ -170,7 +170,7 @@ export function HeroWidget() {
               ))}
             </div>
             <p className="max-w-xs text-sm leading-6 text-white/78">
-              Pridaj sa k viac než 100 aktívnym hráčom KK Hlohovec a začni pravidelne trénovať.
+              Pridaj sa k viac než 100 aktívnym hráčom a buď súčasťou našej kolkárskej rodiny.
             </p>
           </div>
         </div>
@@ -232,10 +232,10 @@ export function IntroCardsWidget() {
           KK Hlohovec
         </span>
         <h2 className="mt-5 text-4xl font-black tracking-tight text-[#061b35] sm:text-5xl">
-          Kolky v Hlohovci
+          Aj kolky sú šport!
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#4b5d76]">
-          Na jednom mieste nájdeš tímy KK Hlohovec, výsledky zápasov, turnaje, galériu aj informácie o členstve.
+          Oficiálna stránka klubu, výsledky, tímy a turnaje na jednom mieste. Pre hráčov, rodičov, fanúšikov aj nových členov.
         </p>
         <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
           <Button href="/zapasy">
@@ -310,13 +310,13 @@ export function MembershipCtaWidget() {
           </div>
           <div className="relative z-10 grid gap-6 p-4 sm:p-8 md:p-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-8 lg:p-14">
             <div className="max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Tréningy v Hlohovci</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Pridaj sa k nám</p>
               <h2 className="mt-4 font-display text-3xl font-black uppercase leading-tight sm:text-5xl">
-                Príď si zahrať
-                <span className="block text-[#1688ff]">kolky v Hlohovci</span>
+                Staň sa súčasťou
+                <span className="block text-[#1688ff]">KK Hlohovec</span>
               </h2>
               <p className="mt-4 max-w-xl text-sm leading-7 text-[#b9c7db]">
-                Ak máš záujem o tréning, členstvo alebo rezerváciu dráhy, pozri si cenník alebo nám napíš.
+                Či už si skúsený hráč alebo začiatočník, u nás nájdeš skvelú partiu, tréningy a možnosť rásť.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button href="/cennik">Členstvo a cenník</Button>
@@ -327,9 +327,9 @@ export function MembershipCtaWidget() {
               </div>
               <div className="mt-8 grid gap-5 md:grid-cols-3">
                 {[
-                  { title: "KK Hlohovec", text: "Informácie o klube, tímoch a hráčoch.", icon: Users },
-                  { title: "Pravidelné tréningy", text: "Tréning techniky, presnosti a kondície.", icon: Target },
-                  { title: "Zápasy a turnaje", text: "Program, výsledky a klubové podujatia.", icon: Trophy }
+                  { title: "Skvelá komunita", text: "Partia, priateľstvá a spoločné zážitky.", icon: Users },
+                  { title: "Tréningy pre každého", text: "Od začiatočníkov po pokročilých hráčov.", icon: Target },
+                  { title: "Súťaže & turnaje", text: "Domáce ligy aj medzinárodné podujatia.", icon: Trophy }
                 ].map((item) => (
                   <div key={item.title} className="flex gap-3">
                     <item.icon className="mt-1 h-8 w-8 shrink-0 text-[#1688ff]" strokeWidth={1.8} />
@@ -523,3 +523,4 @@ function DarkPanel({ title, action, href, children }: { title: string; action: s
     </div>
   );
 }
+

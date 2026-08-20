@@ -1,13 +1,5 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
 import { RegisterFormCard } from "@/components/register-form-card";
-
-export const metadata: Metadata = {
-  title: "Registrácia člena",
-  description: "Registrácia členského účtu KK Hlohovec.",
-  alternates: { canonical: "/registracia" },
-  robots: { index: false, follow: false }
-};
 
 export default function RegistraciaPage() {
   return (

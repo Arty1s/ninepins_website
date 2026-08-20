@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { readLiveData, subscribeLiveData, type LiveClubData, type LiveMatch, type LiveMember, type LivePlayer, type LiveTeam } from "@/lib/live-store";
 import { getLeagueTheme, type LeagueTheme } from "@/lib/league-theme";
-import { ClubLogo } from "@/components/club-logo";
 
 type PlayerCard = {
   name: string;
@@ -141,8 +140,8 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
             <PremiumPlayerTile key={`${player.name}-${index}`} player={player} index={index} theme={theme} />
           )) : (
             <div className="col-span-full rounded-2xl bg-white p-8 text-center shadow-[0_18px_50px_rgba(7,26,61,.12)]">
-              <p className="text-lg font-black">Zostava tímu zatiaľ nie je zverejnená.</p>
-              <p className="mt-2 text-sm text-[#071a3d]/60">Hráči sa tu zobrazia po doplnení klubovej zostavy.</p>
+              <p className="text-lg font-black">Admin zatiaľ nepridal hráčov do tohto tímu.</p>
+              <p className="mt-2 text-sm text-[#071a3d]/60">Po doplnení členov v administrácii sa zobrazia automaticky tu.</p>
             </div>
           )}
         </div>
@@ -162,7 +161,7 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
                 {achievement}
               </p>
             )) : (
-              <p className="rounded-xl bg-[#f3f7ff] p-4 text-sm font-semibold text-[#071a3d]/60">Úspechy tímu zatiaľ nie sú zverejnené.</p>
+              <p className="rounded-xl bg-[#f3f7ff] p-4 text-sm font-semibold text-[#071a3d]/60">Úspechy doplní admin.</p>
             )}
           </div>
         </div> : null}
@@ -268,7 +267,7 @@ function TeamMatches({ matches, seasons, selectedSeason, setSelectedSeason }: { 
       </div>
       {matches.length ? <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">{matches.map((match) => <article key={match.id} className="overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06]">
         <div className="flex items-center justify-between gap-3 border-b border-[#071a3d]/10 px-5 py-4 text-xs font-black uppercase text-[#114bff]"><span>{match.competition || match.league} · {match.round}</span><span>{match.date}</span></div>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 p-5 text-center"><div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={match.home} externalTeamId={match.homeExternalTeamId} logoUrl={match.homeTeam?.logoUrl} light /><strong>{match.home}</strong></div><div><p className="text-3xl font-black text-[#114bff]">{match.score}</p><p className="mt-1 text-xs font-bold text-[#071a3d]/60">{match.pins}</p></div><div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={match.away} externalTeamId={match.awayExternalTeamId} logoUrl={match.awayTeam?.logoUrl} light /><strong>{match.away}</strong></div></div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 p-5 text-center"><strong>{match.home}</strong><div><p className="text-3xl font-black text-[#114bff]">{match.score}</p><p className="mt-1 text-xs font-bold text-[#071a3d]/60">{match.pins}</p></div><strong>{match.away}</strong></div>
         <div className="grid gap-2 border-t border-[#071a3d]/10 px-5 py-4 text-sm text-[#071a3d]/65 sm:grid-cols-2"><p className="flex items-center gap-2"><CalendarDays size={16} className="text-[#114bff]" />{match.status}</p><p className="flex items-center gap-2"><MapPin size={16} className="text-[#114bff]" />{match.location}</p></div>
       </article>)}</div> : <div className="rounded-2xl border border-dashed border-[#114bff]/25 bg-white p-8 text-center text-[#071a3d]/60">Pre túto sezónu zatiaľ nie sú evidované žiadne zápasy.</div>}
     </div>

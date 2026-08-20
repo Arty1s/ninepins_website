@@ -22,7 +22,7 @@ export default function UserLoginPage() {
             <span className="grid h-12 w-12 place-items-center rounded-full bg-kkhc text-white"><UserRound /></span>
             <div>
               <h2 className="font-black uppercase text-navy">Používateľské prihlásenie</h2>
-              <p className="text-sm text-navy/60">Prihlásenie do členského profilu KK Hlohovec</p>
+              <p className="text-sm text-navy/60">Supabase Auth placeholder</p>
             </div>
           </div>
           <LoginForm emailPlaceholder="hrac@kkhlohovec.sk" buttonLabel="Prihlásiť sa do profilu" />

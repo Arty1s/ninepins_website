@@ -26,7 +26,7 @@ export function SiteHeader() {
     <header className="absolute top-0 z-50 w-full border-b border-white/10 bg-[#020b18]/88 text-white backdrop-blur-md">
       <div className="container-page flex h-[82px] items-center justify-between gap-4">
         <Link className="flex min-w-0 items-center gap-3" href="/" aria-label="KK Hlohovec domov" onClick={() => setOpen(false)}>
-          <Image src="/kkhc-logo.png" alt="Logo Kolkárskeho klubu Hlohovec" width={72} height={52} className="kkhc-logo-cutout h-12 w-auto object-contain" priority />
+          <Image src="/kkhc-logo.png" alt="Logo KK Hlohovec" width={72} height={52} className="kkhc-logo-cutout h-12 w-auto object-contain" priority />
           <span className="leading-tight">
             <span className="block text-xl font-black tracking-tight">KK Hlohovec</span>
             <span className="block text-[10px] font-black uppercase tracking-[0.28em] text-white/68">Kolkársky klub</span>

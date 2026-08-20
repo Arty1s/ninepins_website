@@ -125,7 +125,6 @@ export type LiveMatchPlayer = {
 
 export type LiveMatchTeam = {
   name: string;
-  logoUrl?: string;
   players: LiveMatchPlayer[];
   fullTotal: number | null;
   clearingTotal: number | null;
@@ -193,7 +192,7 @@ export const defaultLiveData: LiveClubData = {
       capacity: "0",
       fee: "zadarmo",
       entryType: "free",
-      description: "Podrobnosti a výsledky turnaja budú doplnené neskôr.",
+      description: "Podrobnosti a výsledky turnaja doplní admin neskôr.",
       lanes: "4",
       paymentUrl: "",
       type: "past"
@@ -448,3 +447,4 @@ export async function deleteTournamentRegistrationInBackend(registrationId: numb
     return false;
   }
 }
+

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, Camera, ChevronDown, ChevronLeft, ChevronRight, Grid2X2, ImageIcon, Images, LayoutList, X } from "lucide-react";
+import { CalendarDays, Camera, ChevronDown, ChevronLeft, ChevronRight, Grid2X2, Images, LayoutList, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { galleryAlbums, galleryCategoryLabels, type GalleryAlbum, type GalleryCategory } from "@/lib/gallery-data";
 import { readLiveData, refreshLiveDataFromBackend, subscribeLiveData, type LiveGalleryAlbum } from "@/lib/live-store";
@@ -111,41 +111,11 @@ export function GalleryPage() {
               </button>
             </div>
           ) : null}
-
-          <PhotoSubmissionCta />
         </div>
       </section>
 
       {lightbox ? <GalleryLightbox lightbox={lightbox} setLightbox={setLightbox} /> : null}
     </main>
-  );
-}
-
-function PhotoSubmissionCta() {
-  return (
-    <div className="relative mt-12 overflow-hidden rounded-2xl border border-[#1683ff]/35 bg-[linear-gradient(110deg,#06295c_0%,#0753ad_48%,#062a61_100%)] px-5 py-5 shadow-[0_18px_60px_rgba(0,61,145,.28)] sm:px-7 lg:px-9">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_20%,rgba(55,148,255,.28),transparent_30%),linear-gradient(135deg,transparent_55%,rgba(0,0,0,.18))]" aria-hidden="true" />
-      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#4ca1ff]/45 bg-[#1683ff]/20 text-[#62adff]">
-            <ImageIcon size={22} aria-hidden="true" />
-          </span>
-          <div>
-            <h2 className="text-base font-black uppercase tracking-[0.025em] text-white sm:text-lg">
-              Máš zaujímavé fotografie z našich podujatí?
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-white/75">Pošli nám ich a my ich radi pridáme do galérie.</p>
-          </div>
-        </div>
-
-        <Link
-          href="mailto:prezidentkkz@gmail.com?subject=Fotografie%20do%20gal%C3%A9rie%20KK%20Hlohovec"
-          className="inline-flex h-12 shrink-0 items-center justify-center gap-3 rounded-lg bg-white px-6 text-xs font-black uppercase tracking-[0.04em] text-[#071a33] shadow-[0_10px_28px_rgba(0,0,0,.22)] transition hover:-translate-y-0.5 hover:bg-[#eaf4ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-        >
-          Poslať fotografie <ArrowRight size={17} aria-hidden="true" />
-        </Link>
-      </div>
-    </div>
   );
 }
 
@@ -173,9 +143,11 @@ function GalleryHero() {
   return (
     <div className="max-w-2xl">
       <p className="text-sm font-black uppercase tracking-[0.24em] text-[#1683ff]">Galéria</p>
-      <h1 className="mt-5 text-4xl font-black tracking-tight text-white md:text-6xl">Fotografie KK Hlohovec</h1>
+      <h1 className="mt-5 text-4xl font-black tracking-tight text-white md:text-6xl">Momenty, ktoré nás spájajú</h1>
       <p className="mt-5 max-w-xl text-lg leading-8 text-white/72">
-        Fotografie zo zápasov, turnajov, klubových podujatí a diania v kolkárni KK Hlohovec.
+        Fotky z turnajov, zápasov, podujatí a zákulisia nášho klubu.
+        <br />
+        Spomienky, ktoré žijú s nami.
       </p>
     </div>
   );

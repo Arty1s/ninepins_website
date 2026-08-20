@@ -11,7 +11,8 @@ const routes = [
   "/cennik",
   "/galeria",
   "/kontakt",
-  "/city-league"
+  "/prihlasenie",
+  "/registracia"
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

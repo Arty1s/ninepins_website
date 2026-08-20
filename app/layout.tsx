@@ -6,15 +6,15 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kolkyhlohovec.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: {
-    default: "KK Hlohovec | Kolkársky klub a kolky v Hlohovci",
-    template: "%s | KK Hlohovec"
-  },
-  description: "Kolkársky klub Hlohovec – tímy, zápasy, turnaje, tréningy a informácie o kolkoch v Hlohovci.",
+  title: "Kolkársky Klub Hlohovec | KKHC",
+  description: "Moderný športový klub pre kolky v Hlohovci. Tímy, turnaje, mestská liga, členstvo a galéria.",
   keywords: ["kolky Hlohovec", "kolkársky klub Hlohovec", "kolkáreň Hlohovec", "šport Hlohovec", "turnaje kolky Hlohovec"],
+  alternates: {
+    canonical: "/"
+  },
   openGraph: {
-    title: "KK Hlohovec | Kolkársky klub v Hlohovci",
-    description: "Tímy, zápasy, turnaje, tréningy a informácie o kolkoch v Hlohovci.",
+    title: "Kolkársky Klub Hlohovec",
+    description: "Tradícia, tímový duch a vášeň pre kolky.",
     url: siteUrl,
     siteName: "KK Hlohovec",
     locale: "sk_SK",
@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KK Hlohovec | Kolkársky klub v Hlohovci",
-    description: "Tímy, zápasy, turnaje, tréningy a informácie o kolkoch v Hlohovci."
+    title: "Kolkársky Klub Hlohovec",
+    description: "Tradícia, tímový duch a vášeň pre kolky."
   }
 };
 

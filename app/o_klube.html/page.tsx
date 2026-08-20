@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Metadata } from "next";
 import {
   ArrowRight,
   Building2,
@@ -19,17 +18,6 @@ import {
   Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export const metadata: Metadata = {
-  title: "O klube | Kolkársky klub Hlohovec",
-  description: "Spoznajte históriu, tímy a kolkáreň KK Hlohovec na Bernolákovej 720 v Hlohovci.",
-  alternates: { canonical: "/o_klube.html" },
-  openGraph: {
-    title: "O klube | Kolkársky klub Hlohovec",
-    description: "História, tímy a domáca kolkáreň KK Hlohovec.",
-    url: "/o_klube.html"
-  }
-};
 
 const statItems = [
   { value: "1949", label: "založenie klubu", icon: CalendarDays },
@@ -104,17 +92,17 @@ function HeroSection() {
         </div>
         <p className="mt-8 text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Tradícia od roku 1949</p>
         <h1 className="mt-3 max-w-3xl font-display text-5xl font-black leading-[.96] tracking-tight md:text-7xl">
-          Spoznaj<br /><span className="text-[#1688ff]">KK Hlohovec.</span>
+          Viac než klub.<br /><span className="text-[#1688ff]">Jedna kolkárska rodina.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-[#c5d4ea]">
-          Kolkársky klub Hlohovec má tradíciu od roku 1949. Trénujeme, hráme ligové zápasy a reprezentujeme Hlohovec na turnajoch.
+          Už viac ako 75 rokov spájame generácie, rozvíjame talent a reprezentujeme Hlohovec na domácich kolkárskych dráhach.
         </p>
         <div className="mt-8 flex flex-wrap gap-3"><Button href="/registracia">Pridaj sa ku klubu <ArrowRight size={16} /></Button><Button href="/kontakt" variant="secondary">Navštív kolkáreň</Button></div>
         </div>
         <div className="relative min-h-[330px] overflow-hidden rounded-[28px] border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,.38)] md:min-h-[440px]">
-          <Image src="/images/hero-action.jpg" alt="Hráč KK Hlohovec pri hode na kolkárskej dráhe" fill priority className="object-cover object-center" sizes="(min-width: 1024px) 46vw, 100vw" />
+          <Image src="/images/hero-action.jpg" alt="Kolkár pri hode na kolkárskej dráhe" fill priority className="object-cover object-center" sizes="(min-width: 1024px) 46vw, 100vw" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_40%,rgba(3,18,37,.88)_100%)]" />
-          <div className="absolute bottom-0 left-0 right-0 p-6"><p className="text-xs font-black uppercase tracking-[.18em] text-[#69adff]">Presnosť · Tím · Tradícia</p><p className="mt-2 text-2xl font-black">Kolky v Hlohovci</p></div>
+          <div className="absolute bottom-0 left-0 right-0 p-6"><p className="text-xs font-black uppercase tracking-[.18em] text-[#69adff]">Presnosť · Tím · Tradícia</p><p className="mt-2 text-2xl font-black">Šport, ktorý nás spája</p></div>
         </div></div>
         <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {statItems.map((item) => (
@@ -296,9 +284,9 @@ function QuoteAndCtaSection() {
       <div className="rounded-[26px] bg-[linear-gradient(120deg,#0d3159_0%,#071a33_68%)] p-7 text-white shadow-[0_24px_70px_rgba(7,26,51,.18),inset_0_1px_0_rgba(255,255,255,.05)] ring-1 ring-white/[0.07] md:p-9">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-black uppercase tracking-[.18em] text-[#64adff]">Tréning kolkov v Hlohovci</p>
+            <p className="text-xs font-black uppercase tracking-[.18em] text-[#64adff]">Staň sa súčasťou klubu</p>
             <h2 className="mt-3 text-3xl font-black text-white">Príď si kolky nezáväzne vyskúšať</h2>
-            <p className="mt-3 leading-7 text-[#bfd0e5]">Spoznaj hráčov KK Hlohovec, našu kolkáreň a spôsob, ako u nás prebiehajú tréningy. Prvý tréning je nezáväzný.</p>
+            <p className="mt-3 leading-7 text-[#bfd0e5]">Spoznaj tím, kolkáreň a šport, ktorý spája komunitu v Hlohovci. Prvý tréning je nezáväzný.</p>
           </div>
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
             <Button href="/cennik">Staň sa členom <ArrowRight size={16} /></Button>

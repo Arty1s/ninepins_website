@@ -34,9 +34,9 @@ export function LiveCityLeague() {
         </div>
       </Card>
       <div className="space-y-6">
-        <Mini icon={CalendarDays} title="Najbližší zápas" text={data.leagues[0] ? `${data.leagues[0].name}: termín ďalšieho kola bude doplnený.` : "Liga zatiaľ nemá zverejnené údaje."} />
+        <Mini icon={CalendarDays} title="Najbližší zápas" text={data.leagues[0] ? `${data.leagues[0].name}: ďalšie kolo pripravuje admin.` : "Admin zatiaľ nepridal ligu."} />
         <Mini icon={Target} title="Výsledky" text={data.leagues[0] ? `Vedie ${data.leagues[0].leader}.` : "Výsledky budú dostupné po pridaní ligy."} />
-        <Mini icon={TrendingUp} title="Hráčske štatistiky" text={data.players[0] ? `Najlepší priemer: ${data.players[0].name}, ${data.players[0].average} kolkov.` : "Hráčske štatistiky zatiaľ nie sú zverejnené."} />
+        <Mini icon={TrendingUp} title="Hráčske štatistiky" text={data.players[0] ? `Najlepší priemer: ${data.players[0].name}, ${data.players[0].average} kolkov.` : "Admin zatiaľ nepridal hráčov."} />
         <Card>
           <Users className="mb-3 text-kkhc" />
           <h2 className="sport-title text-3xl">Hráči v systéme</h2>

@@ -44,7 +44,7 @@ export function MatchDetailPage({ matchId }: { matchId: string }) {
             <ArrowLeft size={17} /> Späť na zápasy
           </Link>
           <h1 className="sport-title mt-8 text-4xl">Zápas sa nenašiel</h1>
-          <p className="mt-3 max-w-2xl text-[#b9c7db]">Vráť sa na zoznam zápasov a skús vybrať iné stretnutie.</p>
+          <p className="mt-3 max-w-2xl text-[#b9c7db]">Skús spustiť live import v administrácii alebo otvor zoznam zápasov znova.</p>
         </div>
       </main>
     );

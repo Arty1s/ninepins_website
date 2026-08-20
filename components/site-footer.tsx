@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 const footerGroups = [
-  { title: "Klub", links: [{ label: "O klube", href: "/o_klube.html" }, { label: "Tímy", href: "/timy" }, { label: "Členstvo", href: "/cennik" }, { label: "Kontakt", href: "/kontakt" }] },
-  { title: "Súťaže", links: [{ label: "Zápasy", href: "/zapasy" }, { label: "Turnaje", href: "/turnaje" }, { label: "Mestská liga", href: "/city-league" }, { label: "Galéria", href: "/galeria" }] },
-  { title: "Kolkáreň", links: [{ label: "O kolkárni", href: "/o_klube.html" }, { label: "Rezervácia dráhy", href: "/kontakt" }, { label: "Cenník", href: "/cennik" }, { label: "Adresa", href: "/kontakt" }] }
+  { title: "Klub", links: ["O klube", "Stanovy", "Náš tím", "Partneri", "Kontakt"] },
+  { title: "Rýchle odkazy", links: ["Tímy", "Zápasy", "Turnaje", "Podujatia"] },
+  { title: "Aréna", links: ["O aréne", "Rezervácia dráh", "Cenník", "Galéria"] }
 ];
 
 export function SiteFooter() {
@@ -21,7 +21,7 @@ export function SiteFooter() {
             </div>
           </div>
           <p className="mt-5 max-w-sm text-sm leading-6 text-[#9baac0]">
-            Oficiálny web KK Hlohovec. Tímy, zápasy, turnaje a informácie pre ľudí, ktorí chcú hrať kolky v Hlohovci.
+            Sme klub s bohatou históriou a jasnou budúcnosťou. Podporujeme šport, férovosť a komunitu.
           </p>
           <div className="mt-6 flex gap-3">
             <a href="#" aria-label="Facebook" className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-white transition hover:bg-[#0878ff]">
@@ -60,14 +60,14 @@ export function SiteFooter() {
   );
 }
 
-function FooterList({ title, items }: { title: string; items: { label: string; href: string }[] }) {
+function FooterList({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
       <h3 className="mb-4 text-sm font-black uppercase tracking-[0.08em]">{title}</h3>
       <ul className="space-y-2 text-sm text-[#9baac0]">
         {items.map((item) => (
-          <li key={item.href}>
-            <Link href={item.href} className="transition hover:text-white">{item.label}</Link>
+          <li key={item}>
+            <Link href="#" className="transition hover:text-white">{item}</Link>
           </li>
         ))}
       </ul>
