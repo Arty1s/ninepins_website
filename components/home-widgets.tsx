@@ -287,7 +287,7 @@ export function LowerClubSectionWidget() {
 
 export function RecentMatchesWidget() {
   return (
-    <section className="relative z-10 pb-10 pt-16 text-white">
+    <section className="relative z-10 pb-8 pt-10 text-white sm:pb-10 sm:pt-16">
       <div className="container-page relative z-10">
         <DarkPanel title="Nedávne zápasy" action="Zobraziť všetky" href="/zapasy">
           <LiveHomeRecentMatches fallbackMatches={recentMatchWidgets} />
@@ -308,10 +308,10 @@ export function MembershipCtaWidget() {
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#061b35_0%,rgba(6,27,53,.72)_26%,rgba(6,27,53,.24)_58%,rgba(6,27,53,.04)_100%)]" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,27,53,.1),rgba(6,27,53,.48))]" />
           </div>
-          <div className="relative z-10 grid gap-8 p-8 md:p-10 lg:grid-cols-[1.05fr_.95fr] lg:p-14">
+          <div className="relative z-10 grid gap-6 p-4 sm:p-8 md:p-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-8 lg:p-14">
             <div className="max-w-3xl">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Pridaj sa k nám</p>
-              <h2 className="mt-4 font-display text-4xl font-black uppercase leading-tight sm:text-5xl">
+              <h2 className="mt-4 font-display text-3xl font-black uppercase leading-tight sm:text-5xl">
                 Staň sa súčasťou
                 <span className="block text-[#1688ff]">KK Hlohovec</span>
               </h2>
@@ -343,10 +343,10 @@ export function MembershipCtaWidget() {
             </div>
 
             <div className="relative lg:pr-[22%]">
-              <div className="rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(10,29,58,.92),rgba(8,23,46,.9))] p-6 shadow-[0_20px_60px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur">
+              <div className="rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(10,29,58,.92),rgba(8,23,46,.9))] p-4 shadow-[0_20px_60px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur sm:p-6">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#1688ff]">Vedeli ste</p>
-                <h3 className="mt-3 font-display text-2xl font-black uppercase">Kolky ≠ Bowling</h3>
-                <div className="mt-6 grid grid-cols-[1fr_auto_1fr] gap-3 text-sm">
+                <h3 className="mt-2 whitespace-nowrap font-display text-xl font-black uppercase sm:mt-3 sm:text-2xl">Kolky ≠ Bowling</h3>
+                <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-1.5 text-xs sm:mt-6 sm:gap-3 sm:text-sm">
                   <div className="text-center text-xs font-black uppercase tracking-[0.12em] text-[#1688ff]">Kolky</div>
                   <div />
                   <div className="text-center text-xs font-black uppercase tracking-[0.12em] text-white/72">Bowling</div>
@@ -512,10 +512,10 @@ function LightWidget({
 
 function DarkPanel({ title, action, href, children }: { title: string; action: string; href: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-[#1b5790]/70 bg-[#061d3a]/82 p-5 shadow-[0_24px_80px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-black uppercase tracking-[0.04em] text-white">{title}</h2>
-        <Link href={href} className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.04em] text-[#58a3ff]">
+    <div className="rounded-xl border border-[#1b5790]/70 bg-[#061d3a]/82 p-3 shadow-[0_24px_80px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.045)] backdrop-blur-sm sm:p-5">
+      <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-black uppercase tracking-[0.04em] text-white sm:text-xl">{title}</h2>
+        <Link href={href} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#58a3ff] sm:text-[11px]">
           {action} <ArrowRight size={14} />
         </Link>
       </div>
@@ -523,3 +523,4 @@ function DarkPanel({ title, action, href, children }: { title: string; action: s
     </div>
   );
 }
+
