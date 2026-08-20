@@ -10,9 +10,9 @@ export default function TournamentsPage() {
         <div className="container-page relative z-10 grid min-h-[330px] items-center py-16 md:min-h-[390px]">
           <SectionHeading
             light
-            eyebrow="Registrácie a výsledky"
+            eyebrow="Archív a výsledky"
             title="Turnaje"
-            text="Prehľad pripravovaných, aktuálnych a ukončených podujatí. Prihlášky, obsadenosť a výsledky sa menia priamo z admin dashboardu."
+            text="Prehľad minulých turnajov. Výsledky, fotografie a ďalšie podrobnosti bude priebežne dopĺňať admin."
           />
         </div>
       </section>
@@ -20,3 +20,4 @@ export default function TournamentsPage() {
     </main>
   );
 }
+
