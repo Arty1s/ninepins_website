@@ -13,7 +13,7 @@ export function MembershipPricingPage() {
             Vyber si možnosť, ktorá ti najviac vyhovuje.
           </h1>
           <p className="mt-5 text-lg leading-8 text-[#b9c7db]">
-            Členstvo, tréningy a prenájom arény na jednom mieste. Platby sú pripravené na neskoršie napojenie cez Stripe.
+            Členstvo, pravidelné tréningy a prenájom kolkárne alebo samostatnej dráhy na jednom mieste.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ function PricingCard({ plan }: { plan: MembershipPlan }) {
           </li>
         ))}
       </ul>
-      <Button href="/registracia" variant={plan.featured ? "primary" : "secondary"} className="mt-8 w-full">
+      <Button href={plan.href} variant={plan.featured ? "primary" : "secondary"} className="mt-8 w-full">
         {plan.cta}
       </Button>
     </article>
@@ -78,3 +78,4 @@ function Feature({ icon: Icon, title, text }: { icon: LucideIcon; title: string;
     </div>
   );
 }
+
