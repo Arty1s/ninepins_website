@@ -184,48 +184,18 @@ export const defaultLiveData: LiveClubData = {
   tournaments: [
     {
       id: 1,
-      name: "KK Hlohovec Open 2025",
-      date: "21. jún 2025",
-      time: "18:00",
-      status: "Registrácia otvorená",
+      name: "GrandPrix 2026 | 2-Bodový",
+      date: "2026",
+      time: "—",
+      status: "Ukončený",
       location: "Kolkáreň Hlohovec",
-      capacity: "64 hráčov",
-      fee: "15 €",
-      entryType: "paid",
-      description: "Otvorený turnaj pre registrovaných aj rekreačných hráčov. Vyber si časový slot a potvrď účasť.",
-      lanes: "4",
-      paymentUrl: "",
-      type: "upcoming"
-    },
-    {
-      id: 2,
-      name: "Memoriál KKHC",
-      date: "18. júl 2026",
-      time: "10:00",
-      status: "Pripravuje sa",
-      location: "Bernolákova 720",
-      capacity: "48 hráčov",
-      fee: "12 €",
-      entryType: "paid",
-      description: "Klubový memoriál s kapacitou podľa obsadenosti dráh. Po registrácii admin potvrdí štart.",
-      lanes: "4",
-      paymentUrl: "",
-      type: "upcoming"
-    },
-    {
-      id: 3,
-      name: "Náborový turnaj pre verejnosť",
-      date: "05. september 2026",
-      time: "15:00",
-      status: "Bez štartovného",
-      location: "Kolkáreň Hlohovec",
-      capacity: "32 hráčov",
+      capacity: "0",
       fee: "zadarmo",
       entryType: "free",
-      description: "Voľný vstup pre nových hráčov, rodičov a ľudí z Hlohovca, ktorí si chcú kolky vyskúšať.",
+      description: "Podrobnosti a výsledky turnaja doplní admin neskôr.",
       lanes: "4",
       paymentUrl: "",
-      type: "upcoming"
+      type: "past"
     }
   ],
   leagues: [
@@ -477,3 +447,4 @@ export async function deleteTournamentRegistrationInBackend(registrationId: numb
     return false;
   }
 }
+
