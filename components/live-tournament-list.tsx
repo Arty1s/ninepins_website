@@ -18,12 +18,6 @@ import {
   type TournamentRegistration
 } from "@/lib/live-store";
 
-const labels = {
-  upcoming: "Pripravované turnaje",
-  current: "Aktuálne turnaje",
-  past: "Minulé turnaje"
-};
-
 type RegistrationForm = {
   name: string;
   club: string;
@@ -40,6 +34,22 @@ const emptyForm: RegistrationForm = {
   phone: "",
   slot: "",
   note: ""
+};
+
+const grandPrixPlaceholder: LiveTournament = {
+  id: -2026,
+  name: "GrandPrix 2026 | 2-Bodový",
+  date: "2026",
+  time: "—",
+  status: "Ukončený",
+  location: "Kolkáreň Hlohovec",
+  capacity: "0",
+  fee: "zadarmo",
+  entryType: "free",
+  description: "Podrobnosti a výsledky turnaja doplní admin neskôr.",
+  lanes: "4",
+  paymentUrl: "",
+  type: "past"
 };
 
 export function LiveTournamentList() {
@@ -63,17 +73,18 @@ export function LiveTournamentList() {
 
   return (
     <section className="container-page space-y-12 py-16">
-      {(["upcoming", "current", "past"] as const).map((type) => {
-        const tournaments = data.tournaments.filter((item) => item.type === type);
+      {(["past"] as const).map((type) => {
+        const pastTournaments = data.tournaments.filter((item) => item.type === type);
+        const tournaments = pastTournaments.length ? pastTournaments : [grandPrixPlaceholder];
         return (
           <div key={type}>
             <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-kkhc">Registrácie online</p>
-                <h2 className="sport-title text-4xl text-navy">{labels[type]}</h2>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-kkhc">Archív turnajov</p>
+                <h2 className="sport-title text-4xl text-navy">Minulé turnaje</h2>
               </div>
               <p className="max-w-xl text-sm leading-6 text-navy/60">
-                Admin vytvorí turnaj, nastaví štartovné a verejnosť sa môže prihlásiť cez sloty podobne ako v kolkárskych registračných systémoch.
+                Výsledky, fotografie a ďalšie podrobnosti k odohraným turnajom doplní admin.
               </p>
             </div>
 
@@ -102,7 +113,7 @@ export function LiveTournamentList() {
               </div>
             ) : (
               <div className="rounded-xl border border-navy/10 bg-white p-6 shadow-sm">
-                <p className="text-sm text-navy/65">Zatiaľ bez záznamov. Admin môže pridať turnaj v administračnom paneli.</p>
+                <p className="text-sm text-navy/65">GrandPrix 2026 | 2-Bodový — podrobnosti doplní admin neskôr.</p>
               </div>
             )}
           </div>
@@ -131,6 +142,30 @@ function TournamentCard({
   const activeRegistrations = registrations.filter((row) => (row.cancellationStatus || "active") === "active");
   const freeSlots = Math.max(capacity - activeRegistrations.length, 0);
   const paid = tournament.entryType === "paid";
+  const isPast = tournament.type === "past";
+
+  if (isPast) {
+    return (
+      <article className="overflow-hidden rounded-2xl border border-navy/10 bg-white shadow-[0_24px_80px_rgba(7,26,61,.08)]">
+        <div className="grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-center md:p-8">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm font-black uppercase tracking-[0.12em] text-kkhc">{tournament.status}</p>
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase text-slate-600">Minulý turnaj</span>
+            </div>
+            <h3 className="sport-title mt-3 text-4xl leading-none text-navy md:text-5xl">{tournament.name}</h3>
+            <p className="mt-5 max-w-3xl text-sm leading-7 text-navy/65">
+              {tournament.description || "Podrobnosti a výsledky turnaja doplní admin neskôr."}
+            </p>
+          </div>
+          <div className="grid min-w-52 gap-3 text-sm text-navy/75">
+            <Info icon={CalendarDays} label="Rok" value={tournament.date} />
+            <Info icon={MapPin} label="Miesto" value={tournament.location} />
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="overflow-hidden rounded-2xl border border-navy/10 bg-white shadow-[0_24px_80px_rgba(7,26,61,.08)]">
@@ -141,8 +176,8 @@ function TournamentCard({
               <p className="text-sm font-black uppercase tracking-[0.12em] text-kkhc">{tournament.status}</p>
               <h3 className="sport-title mt-2 text-4xl leading-none text-navy md:text-5xl">{tournament.name}</h3>
             </div>
-            <span className={`rounded-full px-4 py-2 text-sm font-black uppercase ${paid ? "bg-[#e8f2ff] text-[#0757d8]" : "bg-emerald-50 text-emerald-700"}`}>
-              {paid ? tournament.fee : "Bez poplatku"}
+            <span className={`rounded-full px-4 py-2 text-sm font-black uppercase ${isPast ? "bg-slate-100 text-slate-600" : paid ? "bg-[#e8f2ff] text-[#0757d8]" : "bg-emerald-50 text-emerald-700"}`}>
+              {isPast ? "Minulý turnaj" : paid ? tournament.fee : "Bez poplatku"}
             </span>
           </div>
 
@@ -157,7 +192,7 @@ function TournamentCard({
             <Info icon={CreditCard} label="Platba" value={paid ? "Online / potvrdenie" : "Zadarmo"} />
           </div>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          {!isPast ? <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={onToggle}
@@ -166,7 +201,7 @@ function TournamentCard({
               {active ? "Zavrieť detail" : "Detail turnaja"} <ArrowRight size={17} />
             </button>
             <Button variant="outline"><Bell size={18} /> Pridať upozornenie</Button>
-          </div>
+          </div> : null}
         </div>
 
         <div className="border-t border-navy/10 bg-[linear-gradient(135deg,#071a33,#0b3c78)] p-6 text-white lg:border-l lg:border-t-0 md:p-8">
@@ -193,7 +228,7 @@ function TournamentCard({
         </div>
       </div>
 
-      {active ? (
+      {active && !isPast ? (
         <RegistrationPanel tournament={tournament} registrations={registrations} onRegister={onRegister} onCancel={onCancel} />
       ) : null}
     </article>
@@ -451,3 +486,4 @@ function buildSlots(tournament: LiveTournament) {
     return Array.from({ length: lanes }).map((__, lane) => `${time} · dráha ${lane + 1}`);
   }).slice(0, capacity);
 }
+
