@@ -57,6 +57,7 @@ export interface MembershipPlan {
   features: string[];
   cta: string;
   featured: boolean;
+  href: string;
 }
 
 export interface ClubStat {
@@ -122,27 +123,33 @@ export const leagueStandings: LeagueStanding[] = [
 
 export const pricingPlans: MembershipPlan[] = [
   {
-    title: "ZÁKLADNÉ ČLENSTVO",
-    subtitle: "Pre jednotlivcov",
-    price: "30 € / rok",
-    features: ["Členská karta", "Zľavy na turnaje", "Prístup ku klubovým podujatiam"],
-    cta: "STAŇ SA ČLENOM"
-  },
-  {
-    title: "AKTÍVNE ČLENSTVO",
-    subtitle: "Pre hráčov v súťažiach",
-    price: "60 € / rok",
-    features: ["Všetky výhody základného členstva", "Štart v ligových súťažiach", "Tréningy za zvýhodnenú cenu", "Klubové tričko"],
+    title: "ČLENSTVO",
+    subtitle: "Pravidelné tréningy a ligové hranie",
+    price: "25 € / mesiac",
+    features: ["2 tréningy týždenne", "Účasť v mestskej lige", "Registrácia v lige", "Zľavy na turnaje"],
     cta: "STAŇ SA ČLENOM",
-    featured: true
+    featured: true,
+    href: "/registracia"
   },
   {
-    title: "PRENÁJOM ARÉNY",
-    subtitle: "Firemné akcie a podujatia",
-    price: "od 80 € / hod.",
-    features: ["Rezervácia dráh", "Bar a občerstvenie", "Možnosť turnaja na mieru"],
-    cta: "REZERVUJ TERAZ"
+    title: "PRENÁJOM KOLKÁRNE",
+    subtitle: "Cena podľa počtu osôb",
+    price: "od 20 € / hod.",
+    features: ["Do 5 osôb — 20 € / hod.", "6 až 10 osôb — 30 € / hod.", "11 a viac osôb — 40 € / hod.", "Prenájom priestoru kolkárne"],
+    cta: "REZERVUJ KOLKÁREŇ",
+    featured: false,
+    href: "/kontakt"
+  },
+  {
+    title: "REZERVÁCIA DRÁHY",
+    subtitle: "Hodina hry na jednej dráhe",
+    price: "7 € / hod. / dráha",
+    features: ["Cena za jednu dráhu", "60 minút hry", "Vhodné pre jednotlivcov aj skupiny", "Termín potvrdí klub"],
+    cta: "REZERVUJ DRÁHU",
+    featured: false,
+    href: "/kontakt"
   }
 ];
 
 export const calendarIcon = CalendarDays;
+
