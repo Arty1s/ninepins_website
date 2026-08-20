@@ -52,7 +52,7 @@ export function LiveHomeRecentMatches({ fallbackMatches }: { fallbackMatches: Re
 
   return (
     <>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
         {matches.map((match) => (
           <MatchResultWidget key={`${match.date}-${match.home.name}-${match.away.name}-${match.href}`} match={match} />
         ))}
@@ -64,19 +64,19 @@ export function LiveHomeRecentMatches({ fallbackMatches }: { fallbackMatches: Re
 
 function MatchResultWidget({ match }: { match: RecentMatchWidget }) {
   return (
-    <article className="rounded-lg border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] px-4 pb-4 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_14px_34px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-0.5 hover:border-[#2c86d8]/75 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_20px_42px_rgba(0,0,0,.2)]">
-      <div className="flex items-center justify-between border-b border-[#183e67]/80 pb-3 text-[11px] uppercase text-[#9db4d2]">
-        <span>{match.league}</span>
-        <span>{match.date}</span>
+    <article className="rounded-lg border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] px-3 pb-3 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_14px_34px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-0.5 hover:border-[#2c86d8]/75 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_20px_42px_rgba(0,0,0,.2)] sm:px-4 sm:pb-4">
+      <div className="flex items-start justify-between gap-3 border-b border-[#183e67]/80 pb-3 text-[10px] uppercase leading-4 text-[#9db4d2] sm:text-[11px]">
+        <span className="min-w-0 flex-1">{match.league}</span>
+        <span className="shrink-0">{match.date}</span>
       </div>
-      <div className="mt-6 grid grid-cols-[1fr_110px_1fr] items-center gap-4 text-center">
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 text-center sm:mt-6 sm:gap-4">
         <TeamBadgeWidget team={match.home} pins={match.homePins} isClub={match.homeIsClub} />
-        <strong className="font-display text-[2.65rem] font-black leading-none tracking-[0.08em] text-[#1688ff]">
+        <strong className="whitespace-nowrap font-display text-3xl font-black leading-none text-[#1688ff] sm:text-[2.65rem] sm:tracking-[0.04em]">
           {match.score}
         </strong>
         <TeamBadgeWidget team={match.away} pins={match.awayPins} isClub={match.awayIsClub} />
       </div>
-      <Link href={match.href} className="mt-5 flex justify-center border-t border-[#183e67]/70 pt-3 text-[11px] font-black uppercase tracking-[0.08em] text-[#58a3ff]">
+      <Link href={match.href} className="mt-4 flex justify-center border-t border-[#183e67]/70 pt-3 text-[10px] font-black uppercase tracking-[0.08em] text-[#58a3ff] sm:mt-5 sm:text-[11px]">
         Detail zapasu
       </Link>
     </article>
@@ -87,16 +87,16 @@ function TeamBadgeWidget({ team, pins, isClub = false }: { team: Team; pins: num
   return (
     <div>
       {isClub ? (
-        <span className="mx-auto grid h-[54px] w-[54px] place-items-center">
-          <Image src="/kkhc-logo.png" alt="KK Hlohovec" width={54} height={54} className="kkhc-logo-cutout h-[48px] w-auto object-contain" />
+        <span className="mx-auto grid h-12 w-12 place-items-center sm:h-[54px] sm:w-[54px]">
+          <Image src="/kkhc-logo.png" alt="KK Hlohovec" width={54} height={54} className="kkhc-logo-cutout h-11 w-auto object-contain sm:h-[48px]" />
         </span>
       ) : (
-        <span className={`mx-auto grid h-[54px] w-[54px] place-items-center rounded-full bg-gradient-to-br ${team.badgeClass} ring-1 ring-white/15`}>
+        <span className={`mx-auto grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br sm:h-[54px] sm:w-[54px] ${team.badgeClass} ring-1 ring-white/15`}>
           <span className="px-1 text-[10px] font-black leading-none text-white">{team.shortName}</span>
         </span>
       )}
-      <p className="mt-2 min-h-9 text-xs font-bold leading-tight text-white">{team.name}</p>
-      <p className="font-display text-base font-black text-[#1688ff]">{pins}</p>
+      <p className="mt-2 min-h-8 text-[11px] font-bold leading-tight text-white sm:min-h-9 sm:text-xs">{team.name}</p>
+      <p className="font-display text-sm font-black text-[#1688ff] sm:text-base">{pins}</p>
     </div>
   );
 }
@@ -212,3 +212,4 @@ function isHlohovecName(value: string) {
 function homeNormalizeText(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
+
