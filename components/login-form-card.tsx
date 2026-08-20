@@ -8,7 +8,7 @@ import { ArrowRight, Eye, EyeOff, Facebook, Loader2, LockKeyhole, Mail } from "l
 export function LoginFormCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("admin@kkhlohovec.sk");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ export function LoginFormCard() {
         </p>
       </div>
 
-      <form className="space-y-5" onSubmit={onSubmit}>
+      <form className="space-y-5" onSubmit={onSubmit} autoComplete="off">
         <label className="block">
           <span className="mb-2.5 block text-xs font-black uppercase tracking-[0.08em] text-white">E-mail</span>
           <span className="flex h-14 items-center gap-4 rounded-xl border border-[#1683ff]/20 bg-[#071a33]/60 px-5 text-white/74 shadow-[inset_0_1px_0_rgba(20,124,255,.10)] transition focus-within:border-[#1683ff]/74 focus-within:bg-[#071a33]/82 focus-within:ring-4 focus-within:ring-[#1683ff]/12">
@@ -72,7 +72,7 @@ export function LoginFormCard() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
+              autoComplete="off"
               disabled={loading}
             />
           </span>
@@ -145,3 +145,4 @@ export function LoginFormCard() {
     </div>
   );
 }
+
