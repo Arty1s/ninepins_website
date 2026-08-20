@@ -1,5 +1,13 @@
 import { CircleDot } from "lucide-react";
+import type { Metadata } from "next";
 import { LiveTeamsList } from "@/components/live-teams-list";
+
+export const metadata: Metadata = {
+  title: "Tímy KK Hlohovec",
+  description: "Prehľad súťažných tímov KK Hlohovec, ich hráčov, zápasov a výsledkov.",
+  alternates: { canonical: "/timy" },
+  openGraph: { title: "Tímy KK Hlohovec", description: "Súťažné tímy Kolkárskeho klubu Hlohovec.", url: "/timy" }
+};
 
 export default function TeamsPage() {
   return (
@@ -14,7 +22,7 @@ export default function TeamsPage() {
               Tímy KK Hlohovec
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-[#d8e7ff]">
-              Prehľad družstiev, trénerov, kapitánov a úspechov. Admin vie meniť zostavy a verejnosť ich vidí hneď bez zásahu do kódu.
+              Prehľad súťažných družstiev KK Hlohovec, ich hráčov, zápasov a výsledkov podľa sezón.
             </p>
             <div className="mt-9 flex items-center gap-5 text-[#4aa2ff]">
               <span className="h-px w-16 bg-[#4aa2ff]" />

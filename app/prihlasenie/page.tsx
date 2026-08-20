@@ -1,5 +1,13 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { LoginFormCard } from "@/components/login-form-card";
+
+export const metadata: Metadata = {
+  title: "Prihlásenie člena",
+  description: "Prihlásenie do členského účtu KK Hlohovec.",
+  alternates: { canonical: "/prihlasenie" },
+  robots: { index: false, follow: false }
+};
 
 export default function PrihlaseniePage() {
   return (

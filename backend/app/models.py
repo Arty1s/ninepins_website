@@ -103,6 +103,7 @@ class MatchPlayerStat(BaseModel):
 
 class MatchTeamStats(BaseModel):
     name: str
+    logoUrl: str = ""
     players: list[MatchPlayerStat] = Field(default_factory=list)
     fullTotal: int | None = None
     clearingTotal: int | None = None

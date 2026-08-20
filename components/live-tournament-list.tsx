@@ -46,7 +46,7 @@ const grandPrixPlaceholder: LiveTournament = {
   capacity: "0",
   fee: "zadarmo",
   entryType: "free",
-  description: "Podrobnosti a výsledky turnaja doplní admin neskôr.",
+  description: "Podrobnosti a výsledky turnaja budú doplnené neskôr.",
   lanes: "4",
   paymentUrl: "",
   type: "past"
@@ -84,7 +84,7 @@ export function LiveTournamentList() {
                 <h2 className="sport-title text-4xl text-navy">Minulé turnaje</h2>
               </div>
               <p className="max-w-xl text-sm leading-6 text-navy/60">
-                Výsledky, fotografie a ďalšie podrobnosti k odohraným turnajom doplní admin.
+                Pri odohraných turnajoch postupne zverejňujeme výsledky, fotografie a ďalšie podrobnosti.
               </p>
             </div>
 
@@ -113,7 +113,7 @@ export function LiveTournamentList() {
               </div>
             ) : (
               <div className="rounded-xl border border-navy/10 bg-white p-6 shadow-sm">
-                <p className="text-sm text-navy/65">GrandPrix 2026 | 2-Bodový — podrobnosti doplní admin neskôr.</p>
+                <p className="text-sm text-navy/65">GrandPrix 2026 | 2-Bodový — podrobnosti budú doplnené neskôr.</p>
               </div>
             )}
           </div>
@@ -155,7 +155,7 @@ function TournamentCard({
             </div>
             <h3 className="sport-title mt-3 text-4xl leading-none text-navy md:text-5xl">{tournament.name}</h3>
             <p className="mt-5 max-w-3xl text-sm leading-7 text-navy/65">
-              {tournament.description || "Podrobnosti a výsledky turnaja doplní admin neskôr."}
+              {tournament.description || "Podrobnosti a výsledky turnaja budú doplnené neskôr."}
             </p>
           </div>
           <div className="grid min-w-52 gap-3 text-sm text-navy/75">
@@ -182,7 +182,7 @@ function TournamentCard({
           </div>
 
           <p className="mt-5 max-w-3xl text-sm leading-7 text-navy/70">
-            {tournament.description || "Turnajový záznam sa aktualizuje priamo z admin dashboardu. Detailné pravidlá a propozície doplní organizátor."}
+            {tournament.description || "Detailné pravidlá, propozície a ďalšie informácie k turnaju zverejní organizátor."}
           </p>
 
           <div className="mt-6 grid gap-3 text-sm text-navy/75 sm:grid-cols-2 xl:grid-cols-4">
@@ -486,4 +486,3 @@ function buildSlots(tournament: LiveTournament) {
     return Array.from({ length: lanes }).map((__, lane) => `${time} · dráha ${lane + 1}`);
   }).slice(0, capacity);
 }
-

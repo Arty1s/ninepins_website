@@ -1,6 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowRight, Clock, Mail, MapPin, MessageSquareText, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Kontakt a rezervácia kolkárne v Hlohovci",
+  description: "Kontaktujte KK Hlohovec pre členstvo, tréning kolkov alebo rezerváciu kolkárne na Bernolákovej 720 v Hlohovci.",
+  alternates: { canonical: "/kontakt" },
+  openGraph: { title: "Kontakt | KK Hlohovec", description: "Členstvo, tréningy a rezervácia kolkárne v Hlohovci.", url: "/kontakt" }
+};
 
 const contactCards = [
   {
@@ -41,7 +49,7 @@ export default function KontaktPage() {
               Kontakt
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-[#c7d6ee]">
-              Máte otázky, záujem o členstvo, turnaj alebo rezerváciu dráh Napíšte nám a ozveme sa vám čo najskôr.
+              Chcete hrať kolky v Hlohovci, pridať sa na tréning alebo rezervovať dráhu? Napíšte KK Hlohovec a dohodneme ďalší postup.
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -96,7 +104,7 @@ export default function KontaktPage() {
                 Odoslať správu
                 <Send size={17} />
               </button>
-              <p className="text-sm text-[#9fb0c8]">Formulár je pripravený pre napojenie na Resend. Zatiaľ nás kontaktujte priamo e-mailom.</p>
+              <p className="text-sm text-[#9fb0c8]">Kým sa formulár odosielania pripravuje, kontaktujte nás priamo na prezidentkkz@gmail.com.</p>
             </form>
           </section>
         </div>

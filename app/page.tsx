@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import { homeWidgetRegistry } from "@/components/home-widgets";
+
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://kolkyhlohovec.com").replace(/\/$/, "");
+
+export const metadata: Metadata = {
+  title: "KK Hlohovec | Kolkársky klub a kolky v Hlohovci",
+  description: "Kolkársky klub Hlohovec – tímy, zápasy, turnaje, tréningy a informácie pre každého, kto chce hrať kolky v Hlohovci.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "KK Hlohovec | Kolky v Hlohovci",
+    description: "Spoznajte KK Hlohovec, naše tímy, zápasy, turnaje a možnosti tréningu kolkov v Hlohovci.",
+    url: "/"
+  }
+};
 
 const schema = {
   "@context": "https://schema.org",
-  "@type": ["SportsClub", "LocalBusiness"],
+  "@type": "SportsClub",
   name: "Kolkársky Klub Hlohovec",
   alternateName: "KK Hlohovec",
   address: {
@@ -12,7 +26,7 @@ const schema = {
     addressCountry: "SK"
   },
   sport: "Nine-pin bowling",
-  url: "https://kkhlohovec.sk",
+  url: siteUrl,
   keywords: "kolky Hlohovec, kolkársky klub Hlohovec, kolkáreň Hlohovec, šport Hlohovec, turnaje kolky Hlohovec"
 };
 

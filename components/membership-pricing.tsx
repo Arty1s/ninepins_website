@@ -10,7 +10,7 @@ export function MembershipPricingPage() {
         <div className="max-w-3xl">
           <p className="text-xs font-black uppercase tracking-[0.28em] text-[#58a3ff]">Členstvo a cenník</p>
           <h1 className="mt-4 font-display text-5xl font-black uppercase leading-tight md:text-7xl">
-            Vyber si možnosť, ktorá ti najviac vyhovuje.
+            Členstvo a rezervácia kolkárne v Hlohovci
           </h1>
           <p className="mt-5 text-lg leading-8 text-[#b9c7db]">
             Členstvo, pravidelné tréningy a prenájom kolkárne alebo samostatnej dráhy na jednom mieste.
@@ -26,9 +26,9 @@ export function MembershipPricingPage() {
 
       <section className="container-page pb-20">
         <div className="grid gap-4 rounded-2xl border border-[#1e7dff]/22 bg-[#061b35] p-6 shadow-[0_18px_60px_rgba(0,0,0,.22)] md:grid-cols-3">
-          <Feature icon={Mail} title="Mesačné pripomienky" text="Resend e-maily upozornia členov pred splatnosťou." />
+          <Feature icon={Mail} title="Mesačné pripomienky" text="Člen dostane upozornenie pred splatnosťou." />
           <Feature icon={CreditCard} title="História platieb" text="Profil bude zobrazovať úhrady a stav členstva." />
-          <Feature icon={FileText} title="Faktúry" text="Placeholder pre generovanie dokladov a export." />
+          <Feature icon={FileText} title="Doklady" text="Prehľad dokladov a platieb na jednom mieste." />
         </div>
       </section>
     </main>
@@ -78,4 +78,3 @@ function Feature({ icon: Icon, title, text }: { icon: LucideIcon; title: string;
     </div>
   );
 }
-
