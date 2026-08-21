@@ -24,7 +24,7 @@ type PlayerCard = {
   average: string;
   matches: number | null;
   bestPerformance?: string;
-  source: LiveMember;
+  source?: LiveMember;
 };
 
 const FALLBACK_TEAMS: LiveTeam[] = [
@@ -338,7 +338,7 @@ function buildPlayers(team: LiveTeam | undefined, members: LiveMember[], syncedP
     const source = linkedMembers.find((member) => normalize(member.name) === normalize(name));
     return {
       name,
-      role: source.role === "coach" ? "Tréner" : source.role === "admin" ? "Admin" : "Hráč",
+      role: source?.role === "coach" ? "Tréner" : source?.role === "admin" ? "Admin" : "Hráč",
       description: playerDescriptions[index % playerDescriptions.length],
       source
     };
