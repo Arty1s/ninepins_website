@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const pageSize = Math.min(Math.max(Number(request.nextUrl.searchParams.get("page_size") || 500), 1), 1000);
   const storeData = await readClubData();
   const syncData = await readLocalSyncResult();
-  const data = syncData.matches.length && syncData.matches.length > storeData.matches.length
+  const data = syncData?.matches?.length && syncData.matches.length > storeData.matches.length
     ? { ...storeData, ...syncData }
     : storeData;
   let rows = data.matches;
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 }
 
 function normalizeSeason(value: string) {
-  const explicit = value.match(/(20\d{2})\s*[/-]\s*(20\d{2})/).slice(1, 3);
+  const explicit = value.match(/(20\d{2})\s*[/-]\s*(20\d{2})/)?.slice(1, 3);
   if (explicit) return `${explicit[0]}/${explicit[1]}`;
   const match = value.match(/(\d{1,2})\.(\d{1,2})\.(20\d{2})/);
   if (!match) return value.toLowerCase().trim();
