@@ -5,6 +5,7 @@ export interface Team {
   name: string;
   shortName: string;
   badgeClass: string;
+  logoUrl?: string;
 }
 
 export interface Player {
@@ -152,4 +153,3 @@ export const pricingPlans: MembershipPlan[] = [
 ];
 
 export const calendarIcon = CalendarDays;
-

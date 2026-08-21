@@ -97,7 +97,7 @@ function TeamCard({ team }: { team: LiveTeam }) {
             </div>
             <div>
               <p className="text-xs font-black uppercase tracking-[0.12em] text-[#071a3d]/45">Úspechy</p>
-              <p className="mt-1 font-black text-[#071a3d]">{achievements.length || "Doplní admin"}</p>
+              <p className="mt-1 font-black text-[#071a3d]">{achievements.length || "Zatiaľ bez údajov"}</p>
             </div>
           </div>
 

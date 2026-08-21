@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import { SectionHeading } from "@/components/section-heading";
 import { LiveTournamentList } from "@/components/live-tournament-list";
+
+export const metadata: Metadata = {
+  title: "Turnaje v kolkoch | KK Hlohovec",
+  description: "Minulé turnaje KK Hlohovec, výsledky a fotografie z kolkárskych podujatí v Hlohovci.",
+  alternates: { canonical: "/turnaje" },
+  openGraph: { title: "Turnaje v kolkoch | KK Hlohovec", description: "Turnaje, výsledky a fotografie KK Hlohovec.", url: "/turnaje" }
+};
 
 export default function TournamentsPage() {
   return (
@@ -11,8 +19,8 @@ export default function TournamentsPage() {
           <SectionHeading
             light
             eyebrow="Archív a výsledky"
-            title="Turnaje"
-            text="Prehľad minulých turnajov. Výsledky, fotografie a ďalšie podrobnosti bude priebežne dopĺňať admin."
+            title="Turnaje KK Hlohovec"
+            text="Archív kolkárskych turnajov KK Hlohovec. Pri jednotlivých podujatiach postupne nájdete výsledky, fotografie a ďalšie informácie."
           />
         </div>
       </section>
@@ -20,4 +28,3 @@ export default function TournamentsPage() {
     </main>
   );
 }
-

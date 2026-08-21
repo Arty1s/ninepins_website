@@ -6,7 +6,7 @@ from datetime import date, datetime
 from hashlib import sha1
 from html import unescape
 from pathlib import Path
-from urllib.parse import urljoin, unquote
+from urllib.parse import urljoin, unquote, urlparse
 
 import httpx
 
@@ -1397,6 +1397,8 @@ def parse_match_api_payload(source_url: str, payload: dict, competition: str, lo
     round_name = f"{payload.get('round')}. kolo" if payload.get("round") is not None else "Import"
     league_title = f"{competition} {season}" if season else competition
     home_stats, away_stats = parse_api_team_stats(payload, home_name, away_name, logs, match_id)
+    home_stats.logoUrl = extract_team_logo(home_team)
+    away_stats.logoUrl = extract_team_logo(away_team)
     import_key = normalized_match_key(match_url or source_url, home_name, away_name, match_date, competition, round_name)
 
     return LiveMatch(
@@ -1423,6 +1425,25 @@ def parse_match_api_payload(source_url: str, payload: dict, competition: str, lo
         importedAt=datetime.utcnow().isoformat(),
         importStatus="auto",
     )
+
+
+def extract_team_logo(team: dict) -> str:
+    club = team.get("club") if isinstance(team.get("club"), dict) else {}
+    candidate = clean_text(
+        club.get("photo")
+        or club.get("logo")
+        or team.get("photo")
+        or team.get("logo")
+        or ""
+    )
+    if not candidate:
+        return ""
+    absolute = urljoin("https://files.kolky.sk/", candidate)
+    parsed = urlparse(absolute)
+    hostname = (parsed.hostname or "").lower()
+    if parsed.scheme != "https" or (hostname != "files.kolky.sk" and not hostname.endswith(".files.kolky.sk")):
+        return ""
+    return absolute
 
 
 def parse_api_player_rows(payload: dict) -> str:

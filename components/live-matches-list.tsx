@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronDown, ChevronRight, Filter, MapPin, SlidersHorizontal } from "lucide-react";
 import { type LiveMatch } from "@/lib/live-store";
 import { getLeagueTheme } from "@/lib/league-theme";
+import { ClubLogo } from "@/components/club-logo";
 
 const ALL_COMPETITIONS = "Všetky";
 const COMPETITIONS = [ALL_COMPETITIONS, "Extraliga muži", "Extraliga ženy", "1. liga", "2. liga", "3. liga", "Dorast"];
@@ -229,12 +230,12 @@ function MatchCard({ match }: { match: NormalizedMatch }) {
       </div>
 
       <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-3 py-6 text-center">
-        <TeamBlock name={match.home} />
+        <TeamBlock name={match.home} externalTeamId={match.homeExternalTeamId} logoUrl={match.homeTeam?.logoUrl} />
         <div>
           <strong className={`block whitespace-nowrap text-4xl font-black ${theme.text}`}>{formatScore(match.score)}</strong>
           <p className={`mt-2 text-sm font-black ${theme.text}`}>{formatPins(match.pins)}</p>
         </div>
-        <TeamBlock name={match.away} />
+        <TeamBlock name={match.away} externalTeamId={match.awayExternalTeamId} logoUrl={match.awayTeam?.logoUrl} />
       </div>
 
       <div className="grid gap-2 border-t border-white/[0.06] pt-4 text-sm text-[#b9c7db] sm:grid-cols-2">
@@ -252,8 +253,8 @@ function MatchCard({ match }: { match: NormalizedMatch }) {
   );
 }
 
-function TeamBlock({ name }: { name: string }) {
-  return <p className="text-sm font-black leading-tight text-white">{name}</p>;
+function TeamBlock({ name, externalTeamId, logoUrl }: { name: string; externalTeamId?: number | null; logoUrl?: string }) {
+  return <div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={name} externalTeamId={externalTeamId} logoUrl={logoUrl} /><p className="text-sm font-black leading-tight text-white">{name}</p></div>;
 }
 
 function PillSelect({

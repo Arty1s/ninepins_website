@@ -101,7 +101,7 @@ export default function MatchDetailPage({ params }: { params: { slug: string } }
           <div className="rounded-lg border border-white/15 bg-white/8 p-6">
             <h2 className="text-2xl font-black">Detailná zápisnica čaká na doplnenie</h2>
             <p className="mt-2 max-w-2xl text-white/70">
-              Zápas je pripravený v systéme. Admin môže doplniť hráčov, plné, dorážku, chyby, súčet a body podľa oficiálnej zápisnice.
+              Detailné výkony hráčov, plné, dorážka, chyby, súčet a body zatiaľ nie sú zverejnené.
             </p>
           </div>
         )}
