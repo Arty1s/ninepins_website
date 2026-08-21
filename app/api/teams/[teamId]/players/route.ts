@@ -18,7 +18,8 @@ export async function GET(_: NextRequest, { params }: { params: { teamId: string
 
   const storeData = await readClubData();
   const syncData = await readLocalSyncResult();
-  const data = syncData.players.length && syncData.players.length > storeData.players.length
+  const syncPlayers = Array.isArray(syncData?.players) ? syncData.players : [];
+  const data = syncPlayers.length > storeData.players.length
     ? { ...storeData, ...syncData }
     : storeData;
   const team = data.teams.find((row) => String(row.id) === params.teamId || String(row.externalTeamId || "") === params.teamId);

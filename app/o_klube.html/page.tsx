@@ -185,16 +185,33 @@ function ComparisonSection() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr_220px] lg:items-center">
         <SportVisual title="Kolky" image="/images/hero-ball.png" primary />
         <div>
-          <div className="grid grid-cols-[1fr_150px_1fr] text-sm max-md:grid-cols-[1fr]">
+          <div className="hidden grid-cols-[1fr_150px_1fr] text-sm md:grid">
             {comparisonRows.map(([kolky, label, bowling]) => (
-              <div key={label} className="contents max-md:block">
+              <div key={label} className="contents">
                 <div className="flex items-center gap-2 border-t border-white/[0.07] py-3 font-bold text-white">
                   <Check className="h-4 w-4 shrink-0 text-[#1688ff]" />
                   {kolky}
                 </div>
-                <div className="border-t border-white/[0.07] py-3 text-center text-xs font-black uppercase text-white/72 max-md:text-left">{label}</div>
-                <div className="border-t border-white/[0.07] py-3 text-right text-white/72 max-md:text-left">{bowling}</div>
+                <div className="border-t border-white/[0.07] py-3 text-center text-xs font-black uppercase text-white/72">{label}</div>
+                <div className="border-t border-white/[0.07] py-3 text-right text-white/72">{bowling}</div>
               </div>
+            ))}
+          </div>
+          <div className="space-y-3 md:hidden">
+            {comparisonRows.map(([kolky, label, bowling]) => (
+              <article key={label} className="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.035]">
+                <p className="border-b border-white/[0.08] px-4 py-2 text-center text-[10px] font-black uppercase tracking-[0.16em] text-[#77b7ff]">{label}</p>
+                <div className="grid grid-cols-2 divide-x divide-white/[0.08]">
+                  <div className="p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#1688ff]">Kolky</p>
+                    <p className="mt-2 flex gap-2 text-sm font-bold leading-5 text-white"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1688ff]" />{kolky}</p>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/45">Bowling</p>
+                    <p className="mt-2 text-sm leading-5 text-white/72">{bowling}</p>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
           <p className="mx-auto mt-6 max-w-2xl text-center text-sm leading-7 text-[#a9bad3]">

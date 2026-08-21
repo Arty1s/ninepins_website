@@ -56,6 +56,7 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
         const nextTeams = rows.length ? rows : FALLBACK_TEAMS;
         setTeams(nextTeams);
         const selected = nextTeams.find((item) => item.slug === slug);
+        if (!selected) return;
         const teamId = selected.externalTeamId || selected.id;
         if (!teamId) return;
         const playerResponse = await fetch(`/api/teams/${teamId}/players`, { cache: "no-store" });
@@ -69,10 +70,11 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
   }, [slug]);
 
   const team = teams.find((item) => item.slug === slug) || data.teams.find((item) => item.slug === slug) || FALLBACK_TEAMS.find((item) => item.slug === slug);
-  const players = useMemo(() => buildPlayers(team, data.members, syncedPlayers.length ? syncedPlayers : data.players), [team, data.members, data.players, syncedPlayers]);
-  const achievements = useMemo(() => splitList(team.achievements || "", ";"), [team.achievements]);
-  const theme = getLeagueTheme(`${team.category || ""} ${team.name || ""} ${team.league || ""}`);
-  const teamMatches = useMemo(() => data.matches.filter((match) => isTeamMatch(match, team)).sort((a, b) => dateValue(b.date) - dateValue(a.date)), [data.matches, team]);
+  const resolvedTeam = team ?? FALLBACK_TEAMS[0];
+  const players = useMemo(() => buildPlayers(resolvedTeam, data.members || [], syncedPlayers.length ? syncedPlayers : data.players || []), [resolvedTeam, data.members, data.players, syncedPlayers]);
+  const achievements = useMemo(() => splitList(resolvedTeam.achievements || "", ";"), [resolvedTeam.achievements]);
+  const theme = getLeagueTheme(`${resolvedTeam.category || ""} ${resolvedTeam.name || ""} ${resolvedTeam.league || ""}`);
+  const teamMatches = useMemo(() => (data.matches || []).filter((match) => isTeamMatch(match, resolvedTeam)).sort((a, b) => dateValue(b.date) - dateValue(a.date)), [data.matches, resolvedTeam]);
   const seasons = useMemo(() => Array.from(new Set(teamMatches.map(matchSeason))).sort().reverse(), [teamMatches]);
 
   useEffect(() => {
@@ -356,11 +358,11 @@ const playerDescriptions = [
   "Ambiciózny hráč s chuťou neustále napredovať."
 ];
 
-function splitList(value: string, separator = ",") {
+function splitList(value = "", separator = ",") {
   return value.split(separator).map((item) => item.trim()).filter(Boolean);
 }
 
-function normalize(value: string) {
+function normalize(value = "") {
   return value.trim().toLocaleLowerCase("sk-SK");
 }
 
