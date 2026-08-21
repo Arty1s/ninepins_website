@@ -4,6 +4,7 @@ import { existsSync, promises as fs } from "fs";
 import path from "path";
 import { createClient } from "@supabase/supabase-js";
 import { defaultLiveData, type LiveClubData, type TournamentRegistration } from "@/lib/live-store";
+import productionClubData from "@/lib/production-club-data.json";
 import productionMatches from "@/lib/production-matches.json";
 
 const CLUB_DATA_KEY = "club-data";
@@ -13,6 +14,7 @@ const LOCAL_DATA_DIR = process.env.KKHC_DATA_DIR || PROJECT_DATA_DIR;
 const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, "kkhc-live-store.json");
 const LOCAL_SYNC_RESULT_FILE = path.join(LOCAL_DATA_DIR, "kolky-sync-result.json");
 const PRODUCTION_MATCHES = productionMatches as LiveClubData["matches"];
+const PRODUCTION_CLUB_DATA = productionClubData as Pick<LiveClubData, "players" | "teams" | "standings">;
 
 type LocalDocument = {
   [CLUB_DATA_KEY]: LiveClubData;
@@ -136,17 +138,25 @@ async function readLocalDocument(): Promise<LocalDocument> {
 }
 
 function normalizeClubData(data: Partial<LiveClubData> | null): LiveClubData {
-  if (!data) return { ...defaultLiveData, matches: PRODUCTION_MATCHES };
+  if (!data) {
+    return {
+      ...defaultLiveData,
+      players: PRODUCTION_CLUB_DATA.players,
+      teams: PRODUCTION_CLUB_DATA.teams,
+      matches: PRODUCTION_MATCHES,
+      standings: PRODUCTION_CLUB_DATA.standings
+    };
+  }
 
   return {
-    tournaments: data.tournaments.length ? data.tournaments : defaultLiveData.tournaments,
-    leagues: data.leagues.length ? data.leagues : defaultLiveData.leagues,
-    players: data.players.length ? data.players : defaultLiveData.players,
-    members: data.members.length ? data.members : defaultLiveData.members,
-    teams: data.teams.length ? data.teams : defaultLiveData.teams,
-    matches: data.matches.length ? data.matches : PRODUCTION_MATCHES,
-    standings: data.standings.length ? data.standings : defaultLiveData.standings,
-    gallery: data.gallery.length ? data.gallery : defaultLiveData.gallery
+    tournaments: data.tournaments?.length ? data.tournaments : defaultLiveData.tournaments,
+    leagues: data.leagues?.length ? data.leagues : defaultLiveData.leagues,
+    players: data.players?.length ? data.players : PRODUCTION_CLUB_DATA.players,
+    members: data.members?.length ? data.members : defaultLiveData.members,
+    teams: data.teams?.length ? data.teams : PRODUCTION_CLUB_DATA.teams,
+    matches: data.matches?.length ? data.matches : PRODUCTION_MATCHES,
+    standings: data.standings?.length ? data.standings : PRODUCTION_CLUB_DATA.standings,
+    gallery: data.gallery?.length ? data.gallery : defaultLiveData.gallery
   };
 }
 
