@@ -61,7 +61,7 @@ SCHEDULE_ROUND_SCAN_LIMIT = 40
 SUSPICIOUS_SEASON_MATCH_COUNT = 8
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CACHE_FILE = "fixtures/kolky-hlohovec-matches.json"
-ALLOWED_COMPETITIONS = ["Extraliga muži", "Extraliga ženy", "2. liga", "3. liga", "Dorast"]
+ALLOWED_COMPETITIONS = ["Extraliga muži", "Extraliga ženy", "1. liga", "2. liga", "3. liga", "Dorast"]
 CURRENT_SEASON = "2025/2026"
 TEAM_DISCOVERY_FIELDS = [
     "league",
@@ -119,9 +119,43 @@ HLOHOVEC_TEAM_DEFINITIONS = [
         "description": "Dorastenecký tím pre mladých hráčov a hráčky, ktorí zbierajú súťažné skúsenosti.",
     },
 ]
+HLOHOVEC_SCHEDULE_DEFINITIONS = [
+    *[{**item, "season": CURRENT_SEASON} for item in HLOHOVEC_TEAM_DEFINITIONS],
+    {
+        "id": 5041,
+        "slug": "prva-liga",
+        "name": "KKZ Hlohovec A",
+        "category": "1. liga",
+        "leagueId": 372,
+        "season": "2026/2027",
+        "sourceSlug": "KKZ-Hlohovec-A",
+        "description": "A-tím KKZ Hlohovec v 1. kolkárskej lige Západ.",
+    },
+    {
+        "id": 5054,
+        "slug": "druha-liga",
+        "name": "KKZ Hlohovec B",
+        "category": "2. liga",
+        "leagueId": 373,
+        "season": "2026/2027",
+        "sourceSlug": "KKZ-Hlohovec-B",
+        "description": "B-tím KKZ Hlohovec v 2. kolkárskej lige Západ.",
+    },
+    {
+        "id": 5084,
+        "slug": "dorast",
+        "name": "KKZ Hlohovec",
+        "category": "Dorast",
+        "leagueId": 376,
+        "season": "2026/2027",
+        "sourceSlug": "KKZ-Hlohovec",
+        "description": "Dorastenecký tím KKZ Hlohovec v Dorasteneckej lige Západ.",
+    },
+]
 HLOHOVEC_TEAM_KEYS = {(item["leagueId"], item["id"]): item for item in HLOHOVEC_TEAM_DEFINITIONS}
 HLOHOVEC_TEAM_IDS = {item["id"] for item in HLOHOVEC_TEAM_DEFINITIONS}
-HLOHOVEC_LEAGUE_IDS = {item["leagueId"] for item in HLOHOVEC_TEAM_DEFINITIONS}
+HLOHOVEC_SCHEDULE_TEAM_KEYS = {(item["leagueId"], item["id"]): item for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
+HLOHOVEC_LEAGUE_IDS = {item["leagueId"] for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
 
 
 async def import_hlohovec_matches(
@@ -326,7 +360,7 @@ async def discover_complete_hlohovec_schedule(
 
     matches: list[LiveMatch] = []
     checked_urls: list[str] = []
-    for team in HLOHOVEC_TEAM_DEFINITIONS:
+    for team in HLOHOVEC_SCHEDULE_DEFINITIONS:
         team_matches, team_checked_urls = await discover_league_schedule_for_team(client, team, start, end, logs)
         matches.extend(team_matches)
         checked_urls.extend(team_checked_urls)
@@ -392,7 +426,7 @@ async def discover_global_match_list_schedule(
             normalized_rows.append(normalized)
 
     parsed_matches: list[LiveMatch] = []
-    for team in HLOHOVEC_TEAM_DEFINITIONS:
+    for team in HLOHOVEC_SCHEDULE_DEFINITIONS:
         league_rows = [row for row in normalized_rows if (extract_league_id(row) or team["leagueId"]) == team["leagueId"]]
         team_rows = [row for row in league_rows if schedule_payload_belongs_to_team(row, team)]
         team_matches: list[LiveMatch] = []
@@ -601,15 +635,16 @@ async def discover_league_schedule_for_team(
 
 
 def build_league_schedule_probes(team: dict) -> list[tuple[str, dict]]:
+    season = team.get("season") or CURRENT_SEASON
     base_payloads = [
         {"id": team["leagueId"], "fields": SCHEDULE_FIELDS},
         {"leagueId": team["leagueId"], "fields": SCHEDULE_FIELDS},
         {"league_id": team["leagueId"], "fields": SCHEDULE_FIELDS},
-        {"id": team["leagueId"], "season": CURRENT_SEASON, "fields": SCHEDULE_FIELDS},
-        {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "fields": SCHEDULE_FIELDS},
-        {"leagueId": team["leagueId"], "seasonName": CURRENT_SEASON, "fields": SCHEDULE_FIELDS},
-        {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "teamId": team["id"], "fields": SCHEDULE_FIELDS},
-        {"teamId": team["id"], "leagueId": team["leagueId"], "season": CURRENT_SEASON, "fields": SCHEDULE_FIELDS},
+        {"id": team["leagueId"], "season": season, "fields": SCHEDULE_FIELDS},
+        {"leagueId": team["leagueId"], "season": season, "fields": SCHEDULE_FIELDS},
+        {"leagueId": team["leagueId"], "seasonName": season, "fields": SCHEDULE_FIELDS},
+        {"leagueId": team["leagueId"], "season": season, "teamId": team["id"], "fields": SCHEDULE_FIELDS},
+        {"teamId": team["id"], "leagueId": team["leagueId"], "season": season, "fields": SCHEDULE_FIELDS},
     ]
     paths = [
         "league/detail",
@@ -625,8 +660,8 @@ def build_league_schedule_probes(team: dict) -> list[tuple[str, dict]]:
     probes = [(path, payload) for path in paths for payload in base_payloads]
     for page in range(1, 4):
         probes.extend([
-            ("match/list", {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "page": page, "fields": SCHEDULE_FIELDS}),
-            ("league/matches", {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "page": page, "fields": SCHEDULE_FIELDS}),
+            ("match/list", {"leagueId": team["leagueId"], "season": season, "page": page, "fields": SCHEDULE_FIELDS}),
+            ("league/matches", {"leagueId": team["leagueId"], "season": season, "page": page, "fields": SCHEDULE_FIELDS}),
         ])
     for round_number in range(1, SCHEDULE_ROUND_SCAN_LIMIT + 1):
         probes.extend(build_round_schedule_probes(team, round_number))
@@ -634,11 +669,12 @@ def build_league_schedule_probes(team: dict) -> list[tuple[str, dict]]:
 
 
 def build_round_schedule_probes(team: dict, round_number: int) -> list[tuple[str, dict]]:
+    season = team.get("season") or CURRENT_SEASON
     return [
-        ("match/list", {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "round": round_number, "fields": SCHEDULE_FIELDS}),
-        ("match/list", {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "roundNumber": round_number, "fields": SCHEDULE_FIELDS}),
-        ("league/matches", {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "round": round_number, "fields": SCHEDULE_FIELDS}),
-        ("league/schedule", {"leagueId": team["leagueId"], "season": CURRENT_SEASON, "round": round_number, "fields": SCHEDULE_FIELDS}),
+        ("match/list", {"leagueId": team["leagueId"], "season": season, "round": round_number, "fields": SCHEDULE_FIELDS}),
+        ("match/list", {"leagueId": team["leagueId"], "season": season, "roundNumber": round_number, "fields": SCHEDULE_FIELDS}),
+        ("league/matches", {"leagueId": team["leagueId"], "season": season, "round": round_number, "fields": SCHEDULE_FIELDS}),
+        ("league/schedule", {"leagueId": team["leagueId"], "season": season, "round": round_number, "fields": SCHEDULE_FIELDS}),
     ]
 
 
@@ -699,6 +735,8 @@ def normalize_schedule_match_payload(value: dict, league_id: int) -> dict | None
     start_date = first_available(value, ["startDate", "date", "matchDate", "scheduledAt", "playedAt", "datetime", "created"])
     status = first_available(value, ["status", "state", "matchStatus"]) or ""
     hall = first_available(value, ["hall", "place", "venue", "arena", "location"]) or {}
+    if not hall:
+        hall = {"id": first_available(value, ["hallId"]), "name": first_available(value, ["hallName", "locationName"]) or ""}
     league = value.get("league") if isinstance(value.get("league"), dict) else {"id": league_id, "name": first_available(value, ["leagueName", "competition", "competitionName"]) or ""}
     team_result = normalize_schedule_team_result(value)
     line_up = value.get("lineUp") or value.get("lineup") or value.get("players") or {}
@@ -741,7 +779,8 @@ def extract_schedule_team(value: dict, side: str) -> dict | None:
     team_id = first_int(value, flat_id_keys)
     name = clean_text(first_available(value, flat_name_keys) or "")
     if team_id is not None or name:
-        return {"id": team_id, "name": name}
+        photo = first_available(value, [f"{side}ClubPhoto", f"{side}TeamPhoto", f"{side}Logo"])
+        return {"id": team_id, "name": name, "photo": photo or ""}
     return None
 
 
@@ -815,7 +854,7 @@ def parse_schedule_match_payload(item: dict, team: dict, logs: list[dict]) -> Li
         payload["startDate"] = item.get("date") or item.get("matchDate") or item.get("scheduledAt") or item.get("created") or ""
     match = parse_match_api_payload(source_url, payload, team["category"], logs, team)
     match.externalLeagueId = team["leagueId"]
-    match.season = match.season or CURRENT_SEASON
+    match.season = match.season or team.get("season") or infer_season(str(item.get("startDate") or "")) or CURRENT_SEASON
     match.competition = team["category"]
     match.league = f"{team['category']} {match.season}".strip()
     if match.score == "-" and match.pins == "-":
@@ -1771,12 +1810,12 @@ def match_hlohovec_team(payload: dict) -> dict | None:
     home_id = extract_team_id(payload.get("homeTeam") or {})
     away_id = extract_team_id(payload.get("awayTeam") or {})
     for team_id in [home_id, away_id]:
-        if league_id is not None and team_id is not None and (league_id, team_id) in HLOHOVEC_TEAM_KEYS:
-            return HLOHOVEC_TEAM_KEYS[(league_id, team_id)]
+        if league_id is not None and team_id is not None and (league_id, team_id) in HLOHOVEC_SCHEDULE_TEAM_KEYS:
+            return HLOHOVEC_SCHEDULE_TEAM_KEYS[(league_id, team_id)]
 
     # Last resort only when the API omits IDs. Never use this if IDs say the match is unrelated.
     if league_id in HLOHOVEC_LEAGUE_IDS and contains_query(json.dumps(payload, ensure_ascii=False), "Hlohovec"):
-        for item in HLOHOVEC_TEAM_DEFINITIONS:
+        for item in HLOHOVEC_SCHEDULE_DEFINITIONS:
             if item["leagueId"] == league_id:
                 return item
     return None
@@ -1784,9 +1823,9 @@ def match_hlohovec_team(payload: dict) -> dict | None:
 
 def is_hlohovec_match(match: LiveMatch) -> bool:
     if match.externalLeagueId is not None:
-        if (match.externalLeagueId, match.homeExternalTeamId or -1) in HLOHOVEC_TEAM_KEYS:
+        if (match.externalLeagueId, match.homeExternalTeamId or -1) in HLOHOVEC_SCHEDULE_TEAM_KEYS:
             return True
-        if (match.externalLeagueId, match.awayExternalTeamId or -1) in HLOHOVEC_TEAM_KEYS:
+        if (match.externalLeagueId, match.awayExternalTeamId or -1) in HLOHOVEC_SCHEDULE_TEAM_KEYS:
             return True
         return False
     value = normalize_for_search(f"{match.home} {match.away} {match.competition} {match.league}")
@@ -2044,8 +2083,8 @@ def team_source_url(item: dict) -> str:
 
 def canonical_competition_name(value: str) -> str | None:
     normalized = normalize_for_search(value)
-    if any(token in normalized for token in ["1. liga", "1 liga", "i. liga", "i liga", "1. kl", "1 kl"]):
-        return None
+    if any(token in normalized for token in ["1. liga", "1 liga", "i. liga", "i liga", "1.kl", "1 kl", "1kl"]):
+        return "1. liga"
     if any(token in normalized for token in ["dorast", "dorastenci", "dorastenecka"]):
         return "Dorast"
     if "extraliga" in normalized and any(token in normalized for token in ["zen", "zena", "zenska", "zeny"]):
