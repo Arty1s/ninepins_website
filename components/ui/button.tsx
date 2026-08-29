@@ -24,8 +24,9 @@ export function Button({ children, href, variant = "primary", className }: Butto
   );
 
   if (href) {
+    const external = /^https?:\/\//.test(href);
     return (
-      <Link className={classes} href={href}>
+      <Link className={classes} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>
         {children}
       </Link>
     );

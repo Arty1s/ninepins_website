@@ -294,14 +294,19 @@ function ArenaSection() {
           <Image src="/images/hero-lane.jpg" alt="4-dráhová kolkáreň KK Hlohovec" fill className="object-cover" sizes="(min-width: 1024px) 560px, 100vw" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#031225]/42 to-transparent" />
         </div>
-        <div className="rounded-2xl bg-white/78 p-5 shadow-[0_16px_45px_rgba(7,26,51,.09),inset_0_1px_0_rgba(255,255,255,.75)] ring-1 ring-[#b9d7ff]/55">
+        <address
+          className="rounded-2xl bg-white/78 p-5 not-italic shadow-[0_16px_45px_rgba(7,26,51,.09),inset_0_1px_0_rgba(255,255,255,.75)] ring-1 ring-[#b9d7ff]/55"
+          itemScope
+          itemType="https://schema.org/PostalAddress"
+        >
           <div className="grid h-40 place-items-center rounded-xl bg-[radial-gradient(circle_at_50%_50%,rgba(22,136,255,.28),transparent_52%),linear-gradient(135deg,#092044,#051428)]">
             <MapPin className="h-12 w-12 text-[#1688ff]" />
           </div>
-          <p className="mt-5 font-black">Bernolákova 720</p>
-          <p className="mt-1 text-sm text-[#46617f]">Hlohovec</p>
-          <Button href="/kontakt" className="mt-5 w-full">Zobraziť na mape</Button>
-        </div>
+          <p className="mt-5 font-black" itemProp="streetAddress">Bernolákova 720</p>
+          <p className="mt-1 text-sm text-[#46617f]"><span itemProp="postalCode">920 01</span> <span itemProp="addressLocality">Hlohovec</span></p>
+          <meta itemProp="addressCountry" content="SK" />
+          <Button href="https://www.google.com/maps/search/?api=1&query=Bernol%C3%A1kova+720%2C+920+01+Hlohovec%2C+Slovakia" className="mt-5 w-full">Zobraziť na mape</Button>
+        </address>
       </div>
     </SectionSurface>
   );
