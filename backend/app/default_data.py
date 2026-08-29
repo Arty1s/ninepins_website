@@ -56,7 +56,7 @@ DEFAULT_CLUB_DATA = LiveClubData(
         {
             "id": 2,
             "name": "Admin",
-            "email": "admin@kkhlohovec.sk",
+            "email": "prezidentkkz@gmail.com",
             "team": "Administrácia klubu",
             "role": "admin",
             "memberSince": "2026-07-22",

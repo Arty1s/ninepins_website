@@ -2,12 +2,12 @@ import crypto from "crypto";
 
 export const ADMIN_SESSION_COOKIE = "kkhc_admin_session";
 
-const DEFAULT_ADMIN_EMAIL = "admin@kkhlohovec.sk";
-const DEFAULT_PASSWORD_SALT = "kkhc-demo-admin-salt";
-const DEFAULT_PASSWORD_HASH = "f5a6db06bbedf3e0cad8623e63502b58324bff9727bb7d6990b375b49af90198";
+const DEFAULT_ADMIN_EMAIL = "prezidentkkz@gmail.com";
+const DEFAULT_PASSWORD_SALT = "kkhc-admin-2026-08";
+const DEFAULT_PASSWORD_HASH = "3b95cbe520e5d75f68f9d5a7ad98aefeddea0b6d81418948962b19fd1bd6809f";
 
 function getSecret() {
-  return process.env.ADMIN_SESSION_SECRET || "kkhc-local-dev-session-secret-change-me";
+  return process.env.ADMIN_SESSION_SECRET || "kkhc-admin-session-2026-08-rotated";
 }
 
 export function getAdminEmail() {

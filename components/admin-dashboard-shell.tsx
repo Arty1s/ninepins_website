@@ -63,7 +63,7 @@ export function AdminDashboardShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [data, setData] = useState<LiveClubData>(defaultLiveData);
   const [registrations, setRegistrations] = useState<TournamentRegistration[]>([]);
-  const [adminEmail, setAdminEmail] = useState("admin@kkhlohovec.sk");
+  const [adminEmail, setAdminEmail] = useState("prezidentkkz@gmail.com");
 
   useEffect(() => {
     setData(readLiveData());

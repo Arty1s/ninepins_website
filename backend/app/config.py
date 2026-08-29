@@ -13,9 +13,10 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:3003"
     frontend_origins: str = ""
 
-    admin_email: str = "admin@kkhlohovec.sk"
-    admin_password: str = "admin123"
-    session_secret: str = "change-this-long-random-string"
+    admin_email: str = "prezidentkkz@gmail.com"
+    admin_password_salt: str = "kkhc-admin-2026-08"
+    admin_password_hash: str = "3b95cbe520e5d75f68f9d5a7ad98aefeddea0b6d81418948962b19fd1bd6809f"
+    session_secret: str = "kkhc-fastapi-session-2026-08-rotated"
     cookie_secure: bool = False
 
     kkhc_data_dir: str = ".data"

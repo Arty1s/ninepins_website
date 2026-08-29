@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 from typing import Any
 
 from fastapi import HTTPException, Request, Response, status
@@ -69,7 +71,14 @@ def authenticate(email: str, password: str) -> dict[str, str] | None:
     settings = get_settings()
     normalized = email.strip().lower()
 
-    if normalized == settings.admin_email.lower() and password == settings.admin_password:
+    password_hash = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        settings.admin_password_salt.encode("utf-8"),
+        100_000,
+        dklen=32,
+    ).hex()
+    if normalized == settings.admin_email.lower() and hmac.compare_digest(password_hash, settings.admin_password_hash):
         return {"email": settings.admin_email.lower(), "role": "admin", "name": "Admin"}
 
     if normalized in DEMO_MEMBER_EMAILS and password in DEMO_MEMBER_PASSWORDS:

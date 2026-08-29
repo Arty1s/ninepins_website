@@ -62,7 +62,6 @@ Paid tournament cancellations are marked as refund-eligible only when cancelled 
 
 FastAPI also starts a 24h background import loop when `KOLKY_AUTO_IMPORT_ENABLED=true`.
 
-Default demo/admin login:
+Admin login is configured with `ADMIN_EMAIL`, `ADMIN_PASSWORD_SALT` and `ADMIN_PASSWORD_HASH` environment variables.
 
-- `admin@kkhlohovec.sk` / `admin123`
 - `michaela@kkhlohovec.sk` / `michaela123`

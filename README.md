@@ -48,9 +48,10 @@ http://127.0.0.1:8000
 ## Lokálne účty
 
 ```text
-Admin: admin@kkhlohovec.sk / admin123
 Člen:  michaela@kkhlohovec.sk / michaela123
 ```
+
+Admin účet sa nastavuje cez `ADMIN_EMAIL`, `ADMIN_PASSWORD_SALT` a `ADMIN_PASSWORD_HASH`; heslo sa do repozitára neukladá.
 
 ## Konfigurácia
 
