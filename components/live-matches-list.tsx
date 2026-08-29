@@ -20,7 +20,6 @@ export function LiveMatchesList() {
   const [rows, setRows] = useState<LiveMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [competition, setCompetition] = useState(ALL_COMPETITIONS);
-  const [sort, setSort] = useState<"newest" | "oldest">("newest");
   const [openSeasons, setOpenSeasons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -59,8 +58,8 @@ export function LiveMatchesList() {
   const matches = useMemo(() => {
     return normalizedRows
       .filter((match) => competition === ALL_COMPETITIONS || match.competitionName === competition)
-      .sort((a, b) => sort === "newest" ? dateValue(b.date) - dateValue(a.date) : dateValue(a.date) - dateValue(b.date));
-  }, [competition, normalizedRows, sort]);
+      .sort((a, b) => dateValue(a.date) - dateValue(b.date));
+  }, [competition, normalizedRows]);
 
   const seasonGroups = useMemo(() => {
     const grouped = new Map<string, NormalizedMatch[]>();
@@ -119,20 +118,13 @@ export function LiveMatchesList() {
           <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#8bbfff]">
             <Filter size={15} /> Filter zápasov
           </div>
-          <div className="grid gap-3 lg:grid-cols-[1fr_.55fr]">
+          <div>
             <PillSelect
               label="Súťaž"
               value={competition}
               onChange={setCompetition}
               options={COMPETITIONS.filter((name) => competitionCounts[name] > 0)}
               labels={Object.fromEntries(COMPETITIONS.map((name) => [name, `${name} (${competitionCounts[name] || 0})`]))}
-            />
-            <PillSelect
-              label="Zoradenie"
-              value={sort}
-              onChange={(value) => setSort(value as "newest" | "oldest")}
-              options={["newest", "oldest"]}
-              labels={{ newest: "Najnovšie", oldest: "Najstaršie" }}
             />
           </div>
           <p className="mt-3 text-xs leading-6 text-[#9fb7d8]">
