@@ -226,7 +226,7 @@ function ComparisonSection() {
 
 function TimelineSection() {
   return (
-    <SectionSurface className="mt-6" tone="dark">
+    <SectionSurface className="" tone="dark">
       <p className="section-eyebrow">Naša história</p>
       <h2 className="mt-2 text-3xl font-black tracking-tight">Dôležité míľniky klubu</h2>
       <div className="relative mt-10 grid gap-6 md:grid-cols-3 xl:grid-cols-6">
