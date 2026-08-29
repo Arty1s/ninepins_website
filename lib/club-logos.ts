@@ -77,11 +77,12 @@ const LOGOS_BY_NAME: Array<[string, string]> = [
 ];
 
 export function resolveClubLogo(name: string, externalTeamId?: number | null, importedLogo?: string) {
+  const normalized = normalizeClubName(name);
+  if (externalTeamId === 4925 || normalized.includes("kkz hlohovec c")) return "/logos/kkhc-3-liga.jpeg";
   if (importedLogo) return importedLogo;
-  if (normalizeClubName(name).includes("hlohovec")) return "/kkhc-logo.png";
+  if (normalized.includes("hlohovec")) return "/kkhc-logo.png";
   const byId = externalTeamId ? LOGOS_BY_TEAM_ID[externalTeamId] : undefined;
   if (byId) return clubFileUrl(byId);
-  const normalized = normalizeClubName(name);
   const byName = LOGOS_BY_NAME.find(([key]) => normalized.includes(key))?.[1];
   return byName ? clubFileUrl(byName) : "";
 }

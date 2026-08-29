@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CircleDot, Target, Trophy, UserRound, Users } from "lucide-react";
 import { type LiveTeam } from "@/lib/live-store";
@@ -66,6 +67,7 @@ function TeamCard({ team }: { team: LiveTeam }) {
   const achievements = useMemo(() => splitList(team.achievements, ";"), [team.achievements]);
   const Icon = pickIcon(team);
   const theme = getLeagueTheme(`${team.category || ""} ${team.name} ${team.league}`);
+  const isThirdLeague = team.externalTeamId === 4925 || team.slug === "tretia-liga";
 
   return (
     <Link
@@ -76,8 +78,18 @@ function TeamCard({ team }: { team: LiveTeam }) {
         <div className={`relative overflow-hidden ${theme.panel} p-6 text-white`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_0%,rgba(255,255,255,.16),transparent_32%),linear-gradient(135deg,transparent_0_58%,rgba(255,255,255,.08)_59%,transparent_75%)]" />
           <div className="relative flex gap-5">
-            <div className={`grid h-[92px] w-[92px] shrink-0 place-items-center rounded-[26px] bg-white/10 ring-1 ${theme.ring}`}>
-              <Icon size={42} strokeWidth={1.55} />
+            <div className={`grid h-[92px] w-[92px] shrink-0 place-items-center overflow-hidden rounded-[26px] ring-1 ${isThirdLeague ? "bg-white" : "bg-white/10"} ${theme.ring}`}>
+              {isThirdLeague ? (
+                <Image
+                  src="/logos/kkhc-3-liga.jpeg"
+                  alt="Logo KKHC 3. liga"
+                  width={92}
+                  height={92}
+                  className="h-[84px] w-[84px] object-contain"
+                />
+              ) : (
+                <Icon size={42} strokeWidth={1.55} />
+              )}
             </div>
             <div className="min-w-0">
               <span className={`inline-flex rounded-md px-3 py-1 text-xs font-black uppercase tracking-[0.18em] ring-1 ${theme.badge}`}>
