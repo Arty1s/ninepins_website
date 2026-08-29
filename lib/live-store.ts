@@ -13,6 +13,7 @@ export type LiveTournament = {
   description: string;
   lanes: string;
   paymentUrl: string;
+  streamUrl?: string;
   type: "upcoming" | "current" | "past";
 };
 
@@ -89,6 +90,7 @@ export type LiveTeam = {
 export type LiveMatch = {
   id: number;
   sourceUrl: string;
+  streamUrl?: string;
   league: string;
   competition: string;
   season: string;

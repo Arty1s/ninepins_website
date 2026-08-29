@@ -53,6 +53,7 @@ SCHEDULE_FIELDS = [
     "awayTeam",
     "teamResult",
     "hall",
+    "videoUrl",
 ]
 MAX_DISCOVERED_URLS = 250
 ID_SCAN_CONCURRENCY = 8
@@ -1443,6 +1444,7 @@ def parse_match_api_payload(source_url: str, payload: dict, competition: str, lo
     return LiveMatch(
         id=match_id,
         sourceUrl=match_url or source_url,
+        streamUrl=clean_text(payload.get("videoUrl") or payload.get("streamUrl") or ""),
         league=league_title,
         competition=competition,
         season=season,

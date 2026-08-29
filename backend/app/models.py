@@ -18,6 +18,7 @@ class LiveTournament(BaseModel):
     description: str
     lanes: str
     paymentUrl: str = ""
+    streamUrl: str = ""
     type: Literal["upcoming", "current", "past"] = "upcoming"
 
 
@@ -115,6 +116,7 @@ class MatchTeamStats(BaseModel):
 class LiveMatch(BaseModel):
     id: int
     sourceUrl: str = ""
+    streamUrl: str = ""
     league: str
     competition: str = ""
     season: str = ""

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Bell, CalendarDays, CheckCircle2, CreditCard, MapPin, Users } from "lucide-react";
+import { ArrowRight, Bell, CalendarDays, CheckCircle2, CreditCard, MapPin, Radio, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   cancelTournamentRegistrationInBackend,
@@ -157,6 +157,7 @@ function TournamentCard({
             <p className="mt-5 max-w-3xl text-sm leading-7 text-navy/65">
               {tournament.description || "Podrobnosti a výsledky turnaja budú doplnené neskôr."}
             </p>
+            {tournament.streamUrl ? <StreamLink url={tournament.streamUrl} /> : null}
           </div>
           <div className="grid min-w-52 gap-3 text-sm text-navy/75">
             <Info icon={CalendarDays} label="Rok" value={tournament.date} />
@@ -184,6 +185,7 @@ function TournamentCard({
           <p className="mt-5 max-w-3xl text-sm leading-7 text-navy/70">
             {tournament.description || "Detailné pravidlá, propozície a ďalšie informácie k turnaju zverejní organizátor."}
           </p>
+          {tournament.streamUrl ? <StreamLink url={tournament.streamUrl} /> : null}
 
           <div className="mt-6 grid gap-3 text-sm text-navy/75 sm:grid-cols-2 xl:grid-cols-4">
             <Info icon={CalendarDays} label="Dátum" value={`${tournament.date} · ${tournament.time}`} />
@@ -430,6 +432,14 @@ function Info({ icon: Icon, label, value }: { icon: typeof CalendarDays; label: 
       <p className="text-[11px] font-black uppercase text-navy/45">{label}</p>
       <p className="mt-1 font-bold text-navy">{value}</p>
     </div>
+  );
+}
+
+function StreamLink({ url }: { url: string }) {
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:bg-red-500">
+      <Radio size={17} /> Sledovať stream
+    </a>
   );
 }
 

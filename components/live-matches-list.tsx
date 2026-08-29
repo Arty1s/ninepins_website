@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronDown, ChevronRight, Filter, MapPin, SlidersHorizontal } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronRight, Filter, MapPin, Radio, SlidersHorizontal } from "lucide-react";
 import { type LiveMatch } from "@/lib/live-store";
 import { getLeagueTheme } from "@/lib/league-theme";
 import { ClubLogo } from "@/components/club-logo";
@@ -238,9 +238,15 @@ function MatchCard({ match }: { match: NormalizedMatch }) {
         <p className="flex gap-2"><MapPin size={17} className={theme.text} /> {match.location || "kolky.sk"}</p>
       </div>
 
+      {match.streamUrl ? (
+        <a href={match.streamUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:bg-red-500">
+          <Radio size={17} /> Sledovať stream
+        </a>
+      ) : null}
+
       <Link
         href={`/zapasy/${match.id}`}
-        className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:-translate-y-0.5 ${theme.button}`}
+        className={`${match.streamUrl ? "mt-3" : "mt-5"} inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:-translate-y-0.5 ${theme.button}`}
       >
         Zobraziť detail <ChevronRight size={17} />
       </Link>

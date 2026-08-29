@@ -140,7 +140,7 @@ export function AdminCrudDashboard({ initialActive = "turnaje", compactHeader = 
 }
 
 function TournamentCrud({ rows, setRows }: { rows: LiveTournament[]; setRows: (rows: LiveTournament[]) => void }) {
-  const empty: Omit<LiveTournament, "id"> = { name: "", date: "", dateFrom: "", dateTo: "", time: "18:00", status: "Pripravuje sa", location: "Kolkáreň Hlohovec", capacity: "32 hráčov", fee: "", entryType: "paid", description: "", lanes: "4", paymentUrl: "", type: "upcoming" };
+  const empty: Omit<LiveTournament, "id"> = { name: "", date: "", dateFrom: "", dateTo: "", time: "18:00", status: "Pripravuje sa", location: "Kolkáreň Hlohovec", capacity: "32 hráčov", fee: "", entryType: "paid", description: "", lanes: "4", paymentUrl: "", streamUrl: "", type: "upcoming" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -214,6 +214,7 @@ function TournamentCrud({ rows, setRows }: { rows: LiveTournament[]; setRows: (r
               <Select label="Štartovné" value={form.entryType} onChange={(entryType) => setForm({ ...form, entryType: entryType as LiveTournament["entryType"], fee: entryType === "free" ? "zadarmo" : form.fee === "zadarmo" ? "" : form.fee })} options={["paid", "free"]} />
               <Input label="Poplatok" value={form.entryType === "free" ? "zadarmo" : form.fee} onChange={(fee) => setForm({ ...form, fee })} disabled={form.entryType === "free"} />
               <Input label="Počet dráh" value={form.lanes} onChange={(lanes) => setForm({ ...form, lanes })} />
+              <Input label="YouTube stream URL" value={form.streamUrl || ""} onChange={(streamUrl) => setForm({ ...form, streamUrl })} />
               <Select label="Typ" value={form.type} onChange={(type) => setForm({ ...form, type: type as LiveTournament["type"] })} options={["upcoming", "current", "past"]} />
               <Textarea label="Popis" value={form.description} onChange={(description) => setForm({ ...form, description })} className="md:col-span-4" />
             </div>
@@ -455,7 +456,7 @@ function TeamCrud({ rows, members, setRows }: { rows: LiveTeam[]; members: LiveM
 }
 
 function MatchCrud({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveMatch[]) => void }) {
-  const empty: Omit<LiveMatch, "id"> = { sourceUrl: "", league: "", round: "", date: "", location: "", home: "", away: "", score: "", pins: "", status: "plánované", detailRows: "", importStatus: "manual" };
+  const empty: Omit<LiveMatch, "id"> = { sourceUrl: "", streamUrl: "", league: "", round: "", date: "", location: "", home: "", away: "", score: "", pins: "", status: "plánované", detailRows: "", importStatus: "manual" };
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -564,6 +565,7 @@ function MatchCrud({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveM
             <Input label="Kolky" value={form.pins} onChange={(pins) => setForm({ ...form, pins })} />
             <Select label="Stav" value={form.status} onChange={(status) => setForm({ ...form, status: status as LiveMatch["status"] })} options={["plánované", "odohrané", "import"]} />
             <Input label="Zdroj URL" value={form.sourceUrl} onChange={(sourceUrl) => setForm({ ...form, sourceUrl })} />
+            <Input label="YouTube stream URL" value={form.streamUrl || ""} onChange={(streamUrl) => setForm({ ...form, streamUrl })} />
             <Textarea label="Detailné riadky" value={form.detailRows} onChange={(detailRows) => setForm({ ...form, detailRows })} className="md:col-span-4" />
           </div>
         </EntityModal>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
+import { ArrowLeft, ExternalLink, MapPin, Radio } from "lucide-react";
 import {
   readLiveData,
   subscribeLiveData,
@@ -89,6 +89,18 @@ export function MatchDetailPage({ matchId }: { matchId: string }) {
         </div>
       </section>
 
+      {match.streamUrl ? (
+        <section className="container-page pt-10">
+          <div className="overflow-hidden rounded-2xl bg-[#08172e] shadow-[0_18px_55px_rgba(0,0,0,.32)] ring-1 ring-red-400/25">
+            <div className="flex items-center justify-between gap-4 px-5 py-4">
+              <h2 className="flex items-center gap-2 text-lg font-black"><Radio className="text-red-400" size={19} /> Stream zápasu</h2>
+              <a href={match.streamUrl} target="_blank" rel="noreferrer" className="text-xs font-black uppercase text-[#8ec5ff] hover:text-white">YouTube <ExternalLink className="inline" size={14} /></a>
+            </div>
+            {youtubeEmbedUrl(match.streamUrl) ? <div className="aspect-video bg-black"><iframe className="h-full w-full" src={youtubeEmbedUrl(match.streamUrl)!} title={`Stream ${match.home} vs ${match.away}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div> : null}
+          </div>
+        </section>
+      ) : null}
+
       <section className="container-page py-12">
         <div className="grid gap-6 xl:grid-cols-2">
           <TeamTable team={homeTeam} />
@@ -97,6 +109,11 @@ export function MatchDetailPage({ matchId }: { matchId: string }) {
       </section>
     </main>
   );
+}
+
+function youtubeEmbedUrl(value: string) {
+  const id = value.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|live\/|embed\/))([\w-]{11})/)?.[1];
+  return id ? `https://www.youtube-nocookie.com/embed/${id}` : "";
 }
 
 function TeamTable({ team }: { team: LiveMatchTeam }) {

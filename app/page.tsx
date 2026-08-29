@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { homeWidgetRegistry } from "@/components/home-widgets";
+import { YoutubeLiveFloat } from "@/components/youtube-live-float";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://kolkyhlohovec.com").replace(/\/$/, "");
 
@@ -43,6 +44,7 @@ export default function HomePage() {
       {pageWidgets.map((Widget, index) => (
         <Widget key={index} />
       ))}
+      <YoutubeLiveFloat />
     </main>
   );
 }
