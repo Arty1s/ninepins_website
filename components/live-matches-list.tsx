@@ -114,11 +114,12 @@ export function LiveMatchesList() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(22,136,255,.18),transparent_34%),linear-gradient(180deg,#071a33_0%,#041121_100%)]" />
       <div className="absolute inset-0 opacity-[.10] [background-image:linear-gradient(110deg,transparent_0%,transparent_46%,rgba(47,155,255,.30)_47%,transparent_48%,transparent_100%)] [background-size:420px_100%]" />
       <div className="container-page relative z-10 space-y-8">
-        <div className="rounded-2xl bg-[linear-gradient(180deg,rgba(10,29,58,.88),rgba(8,23,46,.82))] p-5 shadow-[0_18px_55px_rgba(0,0,0,.30),inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ring-white/[0.05]">
-          <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#8bbfff]">
-            <Filter size={15} /> Filter zápasov
+        <div className="flex flex-col gap-3 rounded-xl bg-[linear-gradient(180deg,rgba(10,29,58,.88),rgba(8,23,46,.82))] px-4 py-3 shadow-[0_14px_42px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ring-white/[0.05] sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center gap-2 pb-1 text-xs font-black uppercase tracking-[0.18em] text-[#8bbfff]">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#1688ff]/10 text-[#66b0ff]"><Filter size={15} /></span>
+            Zápasy
           </div>
-          <div>
+          <div className="w-full sm:max-w-[320px]">
             <PillSelect
               label="Súťaž"
               value={competition}
@@ -127,9 +128,6 @@ export function LiveMatchesList() {
               labels={Object.fromEntries(COMPETITIONS.map((name) => [name, `${name} (${competitionCounts[name] || 0})`]))}
             />
           </div>
-          <p className="mt-3 text-xs leading-6 text-[#9fb7d8]">
-            Zobrazené sú iba oficiálne družstvá KKZ Hlohovec. Súperi sú súčasťou zápasov, ale už nie sú samostatný filter.
-          </p>
         </div>
 
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -279,7 +277,7 @@ function PillSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-12 w-full rounded-xl bg-[#081a34] px-4 text-sm font-bold text-white outline-none ring-1 ring-white/[0.08] transition focus:ring-[#1688ff]/60"
+        className="h-10 w-full rounded-lg bg-[#081a34] px-3 text-sm font-bold text-white outline-none ring-1 ring-white/[0.08] transition focus:ring-[#1688ff]/60"
       >
         {options.map((option) => (
           <option key={option} value={option}>{labels?.[option] || option}</option>
