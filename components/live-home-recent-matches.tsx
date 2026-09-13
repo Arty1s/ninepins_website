@@ -44,6 +44,7 @@ export function LiveHomeRecentMatches({ fallbackMatches }: { fallbackMatches: Re
   const matches = useMemo(() => {
     const realMatches = dedupeHomeMatches(rows)
       .filter(isHomeHlohovecMatch)
+      .filter(isCompletedHomeMatch)
       .sort((a, b) => homeDateValue(b.date) - homeDateValue(a.date))
       .slice(0, 3)
       .map(toRecentMatchWidget);
@@ -209,6 +210,13 @@ function homeDateValue(value: string) {
   const match = value.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
   if (!match) return 0;
   return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])).getTime();
+}
+
+function isCompletedHomeMatch(match: LiveMatch) {
+  const score = match.score.trim();
+  const hasResult = /\d/.test(score) && score !== "-";
+  const status = homeNormalizeText(match.status);
+  return hasResult && !status.includes("plan");
 }
 
 function isHlohovecName(value: string) {

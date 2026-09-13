@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CircleDot, Target, Trophy, UserRound, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { type LiveTeam } from "@/lib/live-store";
 import { getLeagueTheme } from "@/lib/league-theme";
 
@@ -15,17 +15,6 @@ const OFFICIAL_FALLBACK_TEAMS: LiveTeam[] = [
   { id: 3, slug: "druha-liga", name: "2. liga", league: "KKZ Hlohovec B", externalLeagueId: 359, externalTeamId: 4889, category: "2. liga", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "B-tím v 2. lige prepája skúsených hráčov s novými členmi." },
   { id: 4, slug: "tretia-liga", name: "3. liga", league: "KKZ Hlohovec C", externalLeagueId: 362, externalTeamId: 4925, category: "3. liga", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "C-tím v 3. lige dáva priestor hráčom, ktorí chcú pravidelne hrávať." },
   { id: 5, slug: "dorast", name: "Dorast", league: "KKZ Hlohovec", externalLeagueId: 361, externalTeamId: 4923, category: "Dorast", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Dorastenecký tím pre mladých hráčov a hráčky, ktorí zbierajú súťažné skúsenosti." }
-];
-
-const iconMap = [
-  { match: "dorast", icon: CircleDot },
-  { match: "žensk", icon: UserRound },
-  { match: "zensk", icon: UserRound },
-  { match: "prvá", icon: Trophy },
-  { match: "prva", icon: Trophy },
-  { match: "druhá", icon: Users },
-  { match: "druha", icon: Users },
-  { match: "tretia", icon: Target }
 ];
 
 export function LiveTeamsList() {
@@ -65,9 +54,9 @@ export function LiveTeamsList() {
 function TeamCard({ team }: { team: LiveTeam }) {
   const members = useMemo(() => splitList(team.members), [team.members]);
   const achievements = useMemo(() => splitList(team.achievements, ";"), [team.achievements]);
-  const Icon = pickIcon(team);
   const theme = getLeagueTheme(`${team.category || ""} ${team.name} ${team.league}`);
   const isThirdLeague = team.externalTeamId === 4925 || team.slug === "tretia-liga";
+  const logoSource = isThirdLeague ? "/logos/kkhc-3-liga.jpeg" : "/kkhc-logo.png";
 
   return (
     <Link
@@ -78,18 +67,14 @@ function TeamCard({ team }: { team: LiveTeam }) {
         <div className={`relative overflow-hidden ${theme.panel} p-6 text-white`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_0%,rgba(255,255,255,.16),transparent_32%),linear-gradient(135deg,transparent_0_58%,rgba(255,255,255,.08)_59%,transparent_75%)]" />
           <div className="relative flex gap-5">
-            <div className={`grid h-[92px] w-[92px] shrink-0 place-items-center overflow-hidden rounded-[26px] ring-1 ${isThirdLeague ? "bg-white" : "bg-white/10"} ${theme.ring}`}>
-              {isThirdLeague ? (
-                <Image
-                  src="/logos/kkhc-3-liga.jpeg"
-                  alt="Logo KKHC 3. liga"
-                  width={92}
-                  height={92}
-                  className="h-[84px] w-[84px] object-contain"
-                />
-              ) : (
-                <Icon size={42} strokeWidth={1.55} />
-              )}
+            <div className={`grid h-[92px] w-[92px] shrink-0 place-items-center overflow-hidden rounded-[26px] bg-white ring-1 ${theme.ring}`}>
+              <Image
+                src={logoSource}
+                alt={isThirdLeague ? "Logo KKHC 3. liga" : "Logo KK Hlohovec"}
+                width={92}
+                height={92}
+                className={`${isThirdLeague ? "h-[84px] w-[84px]" : "kkhc-logo-cutout h-[74px] w-[78px]"} object-contain`}
+              />
             </div>
             <div className="min-w-0">
               <span className={`inline-flex rounded-md px-3 py-1 text-xs font-black uppercase tracking-[0.18em] ring-1 ${theme.badge}`}>
@@ -121,11 +106,6 @@ function TeamCard({ team }: { team: LiveTeam }) {
       </article>
     </Link>
   );
-}
-
-function pickIcon(team: LiveTeam) {
-  const haystack = `${team.name} ${team.league}`.toLocaleLowerCase("sk-SK");
-  return iconMap.find((item) => haystack.includes(item.match))?.icon ?? Trophy;
 }
 
 function splitList(value: string, separator = ",") {

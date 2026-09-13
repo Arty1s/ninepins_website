@@ -5,7 +5,6 @@ import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
-  Clock3,
   Newspaper,
   Target,
   Trophy,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiveHomeRecentMatches } from "@/components/live-home-recent-matches";
+import { LiveHomeUpcomingMatches } from "@/components/live-home-upcoming-matches";
 import { type Team } from "@/lib/landing-data";
 
 type FeatureWidget = {
@@ -26,14 +26,6 @@ type NewsWidget = {
   date: string;
   text: string;
   image: string;
-};
-
-type TournamentWidget = {
-  day: string;
-  month: string;
-  title: string;
-  location: string;
-  time: string;
 };
 
 export type RecentMatchWidget = {
@@ -85,12 +77,6 @@ const newsWidgets: NewsWidget[] = [
     text: "Naši mladí ukázali bojovnosť a odniesli si skvelé výsledky.",
     image: "/images/team-photo.jpg"
   }
-];
-
-const tournamentWidgets: TournamentWidget[] = [
-  { day: "25", month: "MÁJ", title: "2. liga západ - 18. kolo", location: "KK Hlohovec - ŠKK Trnava", time: "10:00" },
-  { day: "01", month: "JÚN", title: "Majstrovstvá Slovenska dorast", location: "Podbrezová", time: "09:00" },
-  { day: "15", month: "JÚN", title: "Hlohovec Cup 2024", location: "Medzinárodný turnaj", time: "09:30" }
 ];
 
 const recentMatchWidgets: RecentMatchWidget[] = [
@@ -251,9 +237,8 @@ export function IntroCardsWidget() {
         </div>
       </div>
 
-      <div className="container-page relative z-10 mt-12 grid gap-4 lg:grid-cols-3">
+      <div className="container-page relative z-10 mt-12 grid gap-4 lg:grid-cols-2">
         <NewsCardWidget />
-        <TournamentCardWidget />
         <JoinCardWidget />
       </div>
     </section>
@@ -289,9 +274,14 @@ export function RecentMatchesWidget() {
   return (
     <section className="relative z-10 pb-8 pt-10 text-white sm:pb-10 sm:pt-16">
       <div className="container-page relative z-10">
-        <DarkPanel title="Nedávne zápasy" action="Zobraziť všetky" href="/zapasy">
-          <LiveHomeRecentMatches fallbackMatches={recentMatchWidgets} />
-        </DarkPanel>
+        <div className="grid gap-4 xl:grid-cols-[minmax(320px,.72fr)_minmax(0,1.7fr)]">
+          <DarkPanel title="Najbližšie zápasy" action="Celý program" href="/zapasy">
+            <LiveHomeUpcomingMatches />
+          </DarkPanel>
+          <DarkPanel title="Nedávne zápasy" action="Zobraziť všetky" href="/zapasy">
+            <LiveHomeRecentMatches fallbackMatches={recentMatchWidgets} />
+          </DarkPanel>
+        </div>
       </div>
     </section>
   );
@@ -415,35 +405,6 @@ function NewsCardWidget() {
           </article>
         ))}
       </div>
-    </LightWidget>
-  );
-}
-
-function TournamentCardWidget() {
-  return (
-    <LightWidget title="Najbližšie turnaje" action="Zobraziť kalendár" href="/turnaje" icon={CalendarDays}>
-      <div className="space-y-3">
-        {tournamentWidgets.map((item) => (
-          <Link key={`${item.day}-${item.title}`} href="/turnaje" className="grid grid-cols-[64px_1fr_auto] items-center gap-4 rounded-lg border border-[#dbe4f2] bg-white px-3 py-3 transition hover:border-[#114bff]/40 hover:shadow-sm">
-            <div className="grid h-16 place-items-center rounded bg-[#164fff] text-center text-white">
-              <div>
-                <strong className="block font-display text-3xl leading-none">{item.day}</strong>
-                <span className="text-[11px] font-black">{item.month}</span>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-black text-[#071a3d]">{item.title}</h3>
-              <p className="mt-1 text-sm text-[#64748b]">{item.location}</p>
-            </div>
-            <span className="inline-flex items-center gap-2 text-sm text-[#071a3d]">
-              <Clock3 size={16} /> {item.time}
-            </span>
-          </Link>
-        ))}
-      </div>
-      <Link href="/turnaje" className="mt-5 flex justify-center gap-2 text-xs font-black uppercase text-[#114bff]">
-        Zobraziť všetky turnaje <ArrowRight size={14} />
-      </Link>
     </LightWidget>
   );
 }
