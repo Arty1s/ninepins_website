@@ -7,14 +7,14 @@ import { ArrowRight } from "lucide-react";
 import { type LiveTeam } from "@/lib/live-store";
 import { getLeagueTheme } from "@/lib/league-theme";
 
-const OFFICIAL_TEAM_IDS = new Set([4855, 4865, 4889, 4925, 4923]);
-const OFFICIAL_CATEGORIES = ["Extraliga muži", "Extraliga ženy", "2. liga", "3. liga", "Dorast"];
+const OFFICIAL_TEAM_IDS = [5041, 5054, 5084, 4855, 4865, 4925];
 const OFFICIAL_FALLBACK_TEAMS: LiveTeam[] = [
-  { id: 1, slug: "extraliga-muzi", name: "Extraliga muži", league: "KKZ Hlohovec A", externalLeagueId: 355, externalTeamId: 4855, category: "Extraliga muži", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Mužský A-tím KKZ Hlohovec v najvyššej slovenskej súťaži." },
-  { id: 2, slug: "extraliga-zeny", name: "Extraliga ženy", league: "KKZ Hlohovec", externalLeagueId: 356, externalTeamId: 4865, category: "Extraliga ženy", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitánku doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Ženský extraligový tím reprezentujúci Hlohovec v najvyššej súťaži." },
-  { id: 3, slug: "druha-liga", name: "2. liga", league: "KKZ Hlohovec B", externalLeagueId: 359, externalTeamId: 4889, category: "2. liga", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "B-tím v 2. lige prepája skúsených hráčov s novými členmi." },
-  { id: 4, slug: "tretia-liga", name: "3. liga", league: "KKZ Hlohovec C", externalLeagueId: 362, externalTeamId: 4925, category: "3. liga", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "C-tím v 3. lige dáva priestor hráčom, ktorí chcú pravidelne hrávať." },
-  { id: 5, slug: "dorast", name: "Dorast", league: "KKZ Hlohovec", externalLeagueId: 361, externalTeamId: 4923, category: "Dorast", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Dorastenecký tím pre mladých hráčov a hráčky, ktorí zbierajú súťažné skúsenosti." }
+  { id: 6, slug: "prva-liga", name: "1. liga", league: "KKZ Hlohovec A", externalLeagueId: 372, externalTeamId: 5041, category: "1. liga", season: "2026/2027", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "A-tím KKZ Hlohovec v aktuálnej sezóne 1. ligy." },
+  { id: 3, slug: "druha-liga", name: "2. liga", league: "KKZ Hlohovec B", externalLeagueId: 373, externalTeamId: 5054, category: "2. liga", season: "2026/2027", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "B-tím KKZ Hlohovec pokračuje v aktuálnej sezóne 2. ligy." },
+  { id: 5, slug: "dorast", name: "Dorast", league: "KKZ Hlohovec", externalLeagueId: 376, externalTeamId: 5084, category: "Dorast", season: "2026/2027", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Dorastenecký tím KKZ Hlohovec v sezóne 2026/2027." },
+  { id: 1, slug: "extraliga-muzi", name: "Extraliga muži", league: "KKZ Hlohovec A", externalLeagueId: 355, externalTeamId: 4855, category: "Extraliga muži", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Mužský extraligový tím KKZ Hlohovec zo sezóny 2025/2026." },
+  { id: 2, slug: "extraliga-zeny", name: "Extraliga ženy", league: "KKZ Hlohovec", externalLeagueId: 356, externalTeamId: 4865, category: "Extraliga ženy", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitánku doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Ženský extraligový tím KKZ Hlohovec zo sezóny 2025/2026." },
+  { id: 4, slug: "tretia-liga", name: "3. liga", league: "KKZ Hlohovec C", externalLeagueId: 362, externalTeamId: 4925, category: "3. liga", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "C-tím KKZ Hlohovec zo sezóny 2025/2026." }
 ];
 
 export function LiveTeamsList() {
@@ -80,6 +80,9 @@ function TeamCard({ team }: { team: LiveTeam }) {
               <span className={`inline-flex rounded-md px-3 py-1 text-xs font-black uppercase tracking-[0.18em] ring-1 ${theme.badge}`}>
                 {theme.label}
               </span>
+              <span className="ml-2 inline-flex rounded-md bg-white/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white/85 ring-1 ring-white/20">
+                {team.season}
+              </span>
               <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight">{team.name}</h2>
               <p className="mt-3 line-clamp-3 text-sm leading-6 text-white/82">{team.description}</p>
             </div>
@@ -113,12 +116,8 @@ function splitList(value: string, separator = ",") {
 }
 
 function officialTeams(teams: LiveTeam[]) {
-  const rows = teams
-    .filter((team) => {
-      if (team.externalTeamId && OFFICIAL_TEAM_IDS.has(team.externalTeamId)) return true;
-      const category = team.category || team.name;
-      return OFFICIAL_CATEGORIES.includes(category);
-    })
-    .sort((a, b) => OFFICIAL_CATEGORIES.indexOf(a.category || a.name) - OFFICIAL_CATEGORIES.indexOf(b.category || b.name));
-  return rows.length ? rows : OFFICIAL_FALLBACK_TEAMS;
+  const imported = new Map(teams.filter((team) => team.externalTeamId && OFFICIAL_TEAM_IDS.includes(team.externalTeamId)).map((team) => [team.externalTeamId, team]));
+  return OFFICIAL_FALLBACK_TEAMS
+    .map((fallback) => imported.get(fallback.externalTeamId) || fallback)
+    .sort((a, b) => OFFICIAL_TEAM_IDS.indexOf(a.externalTeamId || 0) - OFFICIAL_TEAM_IDS.indexOf(b.externalTeamId || 0));
 }
