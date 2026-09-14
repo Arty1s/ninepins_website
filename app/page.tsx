@@ -22,7 +22,7 @@ const schema = {
   alternateName: "KK Hlohovec",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Bernolákova 720",
+    streetAddress: "Bernolákova 720/34",
     addressLocality: "Hlohovec",
     addressCountry: "SK"
   },

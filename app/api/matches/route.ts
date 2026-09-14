@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { readClubData } from "@/lib/server-store";
 import { readLocalSyncResult } from "@/lib/server-sync-result";
+import { type LiveMatch } from "@/lib/live-store";
 
 export async function GET(request: NextRequest) {
+  let upstreamRows: LiveMatch[] = [];
   const backendBase = (process.env.FASTAPI_URL || process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
   if (backendBase) {
     try {
@@ -11,7 +13,11 @@ export async function GET(request: NextRequest) {
       const response = await fetch(upstreamUrl, { cache: "no-store", signal: AbortSignal.timeout(1500) });
       if (!response.ok) throw new Error(`FastAPI returned ${response.status}`);
       const payload = await response.json();
-      return NextResponse.json(payload, { status: response.ok ? 200 : response.status });
+      upstreamRows = Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
     } catch {
       // Fall back to the local Next store so the page still renders in local-only mode.
     }
@@ -24,10 +30,10 @@ export async function GET(request: NextRequest) {
   const pageSize = Math.min(Math.max(Number(request.nextUrl.searchParams.get("page_size") || 500), 1), 1000);
   const storeData = await readClubData();
   const syncData = await readLocalSyncResult();
-  const data = syncData?.matches?.length && syncData.matches.length > storeData.matches.length
-    ? { ...storeData, ...syncData }
-    : storeData;
-  let rows = data.matches;
+  const syncRows = Array.isArray(syncData?.matches) ? syncData.matches : [];
+  // The repository snapshot is the permanent baseline. Live sources may add or
+  // update records, but a partial response or an outage can never erase it.
+  let rows = mergeMatchSnapshots(storeData.matches, syncRows, upstreamRows);
   if (leagueId) rows = rows.filter((match) => String(match.externalLeagueId || "") === leagueId);
   if (teamId) rows = rows.filter((match) => String(match.homeExternalTeamId || "") === teamId || String(match.awayExternalTeamId || "") === teamId);
   if (season) rows = rows.filter((match) => normalizeSeason(match.season || match.league || match.date) === normalizeSeason(season));
@@ -43,6 +49,22 @@ export async function GET(request: NextRequest) {
     page_size: pageSize,
     pages: total ? Math.ceil(total / pageSize) : 1
   });
+}
+
+function mergeMatchSnapshots(...snapshots: LiveMatch[][]) {
+  const merged = new Map<string, LiveMatch>();
+  snapshots.flat().forEach((match) => {
+    const sourceId = match.sourceUrl?.match(/\/match\/detail\/(\d+)/)?.[1];
+    const key = sourceId
+      ? `source:${sourceId}`
+      : match.id
+        ? `id:${match.id}`
+        : [match.home, match.away, match.date, match.competition || match.league, match.round]
+            .map((value) => String(value || "").toLowerCase().trim())
+            .join("|");
+    merged.set(key, { ...merged.get(key), ...match });
+  });
+  return Array.from(merged.values());
 }
 
 function normalizeSeason(value: string) {

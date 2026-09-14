@@ -75,15 +75,14 @@ def get_team_players(team_id: int) -> dict[str, Any]:
     team = next((item for item in filter_hlohovec_teams(data.teams) if item.id == team_id or item.externalTeamId == team_id), None)
     if not team:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
-    rows = [
+    exact_rows = [
         player
         for player in data.players
-        if is_real_player_name(player.name)
-        and (
-            player.externalTeamId == team.externalTeamId
-            or player.team == team.name
-            or player.team == team.category
-        )
+        if is_real_player_name(player.name) and player.externalTeamId == team.externalTeamId
+    ]
+    rows = exact_rows or [
+        player for player in data.players
+        if is_real_player_name(player.name) and (player.team == team.name or player.team == team.category)
     ]
     return {"ok": True, "team": team, "data": rows}
 

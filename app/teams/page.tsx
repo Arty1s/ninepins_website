@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default function TeamsPage() {
   return (
-    <main className="bg-[#f6f8fc] text-[#071a33]">
+    <main className="bg-[#04162b] text-white">
       <section className="relative isolate overflow-hidden pt-[82px] text-white">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,11,24,.92)_0%,rgba(5,18,42,.64)_44%,rgba(5,18,42,.18)_100%),url('/images/teams-hero-bg.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,11,24,.96)_0%,rgba(5,18,42,.76)_48%,rgba(5,18,42,.22)_100%),url('/images/teams-hero-generated.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(40,137,255,.24),transparent_32%),linear-gradient(180deg,transparent_0%,rgba(2,11,24,.2)_100%)]" />
         <div className="container-page relative z-10 grid min-h-[330px] items-center py-16 md:min-h-[390px]">
           <div className="max-w-2xl">

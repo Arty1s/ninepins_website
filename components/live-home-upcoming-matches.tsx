@@ -10,7 +10,7 @@ const OFFICIAL_TEAM_PAIRS = new Set([
   "372:5041", "373:5054", "376:5084"
 ]);
 
-export function LiveHomeUpcomingMatches() {
+export function LiveHomeUpcomingMatches({ light = false }: { light?: boolean }) {
   const [rows, setRows] = useState<LiveMatch[]>([]);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function LiveHomeUpcomingMatches() {
   }, [rows]);
 
   if (!matches.length) {
-    return <p className="rounded-lg border border-white/[0.08] bg-white/[0.035] px-4 py-5 text-sm text-[#9db4d2]">Najbližší program zatiaľ nie je zverejnený.</p>;
+    return <p className={`rounded-lg px-4 py-5 text-sm ${light ? "border border-[#c8d9f2] bg-[#f4f8ff] text-[#52647d]" : "border border-white/[0.08] bg-white/[0.035] text-[#9db4d2]"}`}>Najbližší program zatiaľ nie je zverejnený.</p>;
   }
 
   return (
@@ -53,13 +53,13 @@ export function LiveHomeUpcomingMatches() {
       {matches.map((match) => {
         const date = parsedDate(match.date);
         return (
-          <Link key={match.id} href={`/zapasy/${match.id}`} className="grid grid-cols-[52px_1fr_auto] items-center gap-3 rounded-lg border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] p-3 transition hover:border-[#2c86d8]">
+          <Link key={match.id} href={`/zapasy/${match.id}`} className={`grid grid-cols-[52px_1fr_auto] items-center gap-3 rounded-lg p-3 transition ${light ? "border border-[#c8d9f2] bg-[#f7faff] hover:border-[#1688ff]" : "border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] hover:border-[#2c86d8]"}`}>
             <span className="grid h-14 place-items-center rounded-md bg-[#147cff] text-center text-white">
               <span><strong className="block font-display text-xl leading-none">{date ? String(date.getDate()).padStart(2, "0") : "--"}</strong><small className="text-[9px] font-black uppercase">{date ? date.toLocaleDateString("sk-SK", { month: "short" }).replace(".", "") : ""}</small></span>
             </span>
             <span className="min-w-0">
-              <strong className="block text-sm leading-5 text-white">{match.home} – {match.away}</strong>
-              <span className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-[#9db4d2]">
+              <strong className={`block text-sm leading-5 ${light ? "text-[#071a3d]" : "text-white"}`}>{match.home} – {match.away}</strong>
+              <span className={`mt-1 flex flex-wrap gap-x-3 text-[11px] ${light ? "text-[#607089]" : "text-[#9db4d2]"}`}>
                 <span>{[match.competition || match.league, match.round].filter(Boolean).join(" · ")}</span>
                 {match.location ? <span className="inline-flex items-center gap-1"><MapPin size={11} />{match.location}</span> : null}
               </span>

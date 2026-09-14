@@ -75,7 +75,7 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
   const players = useMemo(() => buildPlayers(resolvedTeam, data.members || [], syncedPlayers.length ? syncedPlayers : data.players || []), [resolvedTeam, data.members, data.players, syncedPlayers]);
   const achievements = useMemo(() => splitList(resolvedTeam.achievements || "", ";"), [resolvedTeam.achievements]);
   const theme = getLeagueTheme(`${resolvedTeam.category || ""} ${resolvedTeam.name || ""} ${resolvedTeam.league || ""}`);
-  const teamMatches = useMemo(() => (data.matches || []).filter((match) => isTeamMatch(match, resolvedTeam)).sort((a, b) => dateValue(b.date) - dateValue(a.date)), [data.matches, resolvedTeam]);
+  const teamMatches = useMemo(() => (data.matches || []).filter((match) => isTeamMatch(match, resolvedTeam)).sort((a, b) => roundValue(a.round) - roundValue(b.round) || dateValue(a.date) - dateValue(b.date)), [data.matches, resolvedTeam]);
   const seasons = useMemo(() => Array.from(new Set(teamMatches.map(matchSeason))).sort().reverse(), [teamMatches]);
 
   useEffect(() => {
@@ -99,9 +99,9 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8fc] text-[#071a33]">
+    <main className="min-h-screen bg-[#03152a] text-white">
       <section className="relative isolate overflow-hidden pt-[82px] text-white">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,11,24,.94)_0%,rgba(5,18,42,.70)_44%,rgba(5,18,42,.18)_100%),url('/images/teams-hero-bg.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,11,24,.96)_0%,rgba(5,18,42,.72)_46%,rgba(5,18,42,.15)_100%),url('/images/teams-hero-generated.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_20%,rgba(40,137,255,.22),transparent_34%),linear-gradient(180deg,transparent_0%,rgba(2,11,24,.18)_100%)]" />
 
         <div className="container-page relative z-10 grid min-h-[350px] items-end py-11 md:min-h-[420px]">
@@ -128,18 +128,18 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
         </div>
       </section>
 
-      <section className="container-page py-7">
-        <div className="flex flex-wrap items-center gap-8 border-b border-[#071a3d]/10">
+      <section className="container-page py-0">
+        <div className="flex flex-wrap items-center gap-8 border-b border-white/[0.1]">
           <Tab active={activeTab === "players"} icon={Users} label="Hráči" onClick={() => setActiveTab("players")} />
           <Tab active={activeTab === "matches"} icon={BarChart3} label="Zápasy" onClick={() => setActiveTab("matches")} />
         </div>
       </section>
 
-      {activeTab === "players" ? <section className="relative overflow-hidden bg-[#041225] px-0 py-12">
+      {activeTab === "players" ? <section className="relative overflow-hidden bg-[#03152a] px-0 py-6">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,12,26,.86),rgba(3,12,26,.95)),url('/images/premium-blue-bg.png')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(22,136,255,.2),transparent_30%),radial-gradient(circle_at_90%_62%,rgba(17,75,255,.12),transparent_34%)]" />
         <div className="container-page relative z-10">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {players.length ? players.map((player, index) => (
             <PremiumPlayerTile key={`${player.name}-${index}`} player={player} index={index} theme={theme} />
           )) : (
@@ -152,20 +152,20 @@ export function LiveTeamDetail({ slug }: { slug: string }) {
         </div>
       </section> : <section className="container-page py-10"><TeamMatches matches={seasonMatches} seasons={seasons} selectedSeason={selectedSeason} setSelectedSeason={setSelectedSeason} /></section>}
 
-      <section className="container-page pb-16 pt-7">
-        {activeTab === "players" ? <div className="mt-7 rounded-2xl bg-white p-6 shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06]">
+      <section className="container-page pb-16 pt-3">
+        {activeTab === "players" ? <div className="mt-5 rounded-2xl bg-[linear-gradient(90deg,#08203d,#05172e)] p-6 shadow-[0_18px_50px_rgba(0,0,0,.25)] ring-1 ring-[#2872b2]/30">
           <div className="mb-5 flex items-center gap-3">
             <Award className="text-[#114bff]" />
             <h2 className="text-2xl font-black">Úspechy tímu</h2>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {achievements.length ? achievements.map((achievement) => (
-              <p key={achievement} className="flex gap-3 rounded-xl bg-[#f3f7ff] p-4 text-sm font-semibold leading-6 text-[#071a3d]/75">
+              <p key={achievement} className="flex gap-3 rounded-xl bg-white/[0.04] p-4 text-sm font-semibold leading-6 text-[#c3d3e7]">
                 <Star size={18} className="mt-0.5 shrink-0 text-[#114bff]" />
                 {achievement}
               </p>
             )) : (
-              <p className="rounded-xl bg-[#f3f7ff] p-4 text-sm font-semibold text-[#071a3d]/60">Úspechy tímu zatiaľ nie sú zverejnené.</p>
+              <p className="rounded-xl bg-white/[0.04] p-4 text-sm font-semibold text-[#9eb2ca]">Úspechy tímu zatiaľ nie sú zverejnené.</p>
             )}
           </div>
         </div> : null}
@@ -188,7 +188,7 @@ function HeroStat({ icon: Icon, value, label }: { icon: ElementType; value: stri
 
 function Tab({ icon: Icon, label, active = false, onClick }: { icon: ElementType; label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className={`relative inline-flex items-center gap-2 py-4 text-lg font-bold ${active ? "text-[#114bff]" : "text-[#071a3d]/68"}`} type="button">
+    <button onClick={onClick} className={`relative inline-flex items-center gap-2 py-5 text-lg font-bold ${active ? "text-[#2492ff]" : "text-[#8fa7c2]"}`} type="button">
       <Icon size={22} strokeWidth={1.8} />
       {label}
       {active ? <span className="absolute bottom-[-1px] left-0 h-[2px] w-full rounded-full bg-[#114bff]" /> : null}
@@ -198,33 +198,27 @@ function Tab({ icon: Icon, label, active = false, onClick }: { icon: ElementType
 
 function PremiumPlayerTile({ player, index, theme }: { player: PlayerCard; index: number; theme: LeagueTheme }) {
   return (
-    <article className={`relative flex min-h-[390px] flex-col overflow-hidden rounded-2xl ${theme.panelSoft} p-6 text-white shadow-[0_22px_60px_rgba(0,0,0,.32),inset_0_1px_0_rgba(255,255,255,.05)] ring-1 ring-white/[0.06] transition duration-300 hover:-translate-y-1 hover:ring-white/[0.12]`}>
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,.08)_0%,transparent_34%,transparent_100%)]" />
-      <span className={`absolute left-6 top-6 grid h-11 w-11 place-items-center rounded-xl text-lg font-black text-white shadow-[0_8px_18px_rgba(0,0,0,.28)] ${theme.button}`}>
+    <article className={`relative flex min-h-[405px] flex-col overflow-hidden rounded-2xl bg-[linear-gradient(155deg,#0a294d,#061a33)] p-5 text-white shadow-[0_22px_60px_rgba(0,0,0,.3)] ring-1 ring-[#2872b2]/35 transition duration-300 hover:-translate-y-1 hover:ring-[#2994f5]/70`}>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_20%,rgba(28,126,225,.16),transparent_34%)]" />
+      <span className="absolute left-4 top-4 grid h-10 w-10 place-items-center rounded-lg bg-[#102f52] text-base font-black text-white ring-1 ring-[#2b6598]/30">
         {index + 1}
       </span>
-      <div className="relative mt-14">
-        <div className="grid h-24 w-24 place-items-center rounded-full bg-white/[0.08] text-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] ring-1 ring-white/[0.12]">
-          <UserRound size={54} strokeWidth={1.35} />
+      <div className="relative mt-2 text-center">
+        <div className="mx-auto grid h-28 w-28 place-items-center rounded-full bg-[linear-gradient(180deg,#173d65,#0a2748)] text-[#06182f] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] ring-1 ring-[#3a719f]/45">
+          <UserRound size={72} fill="currentColor" strokeWidth={0} />
         </div>
-        <h3 className="mt-5 min-h-[72px] text-3xl font-black leading-tight tracking-tight">{player.name}</h3>
-        <p className={`mt-2 text-sm font-black ${theme.text}`}>{player.role}</p>
-      </div>
-      <div className="relative mt-6 flex-1 border-t border-white/[0.08] pt-5">
-        <p className="text-[15px] leading-7 text-white/76">{player.description}</p>
+        <h3 className="mt-5 min-h-[56px] text-2xl font-black leading-tight tracking-tight">{player.name}</h3>
+        <p className="mt-1 text-sm text-[#a9bdd5]">{player.role}</p>
       </div>
       {player.bestPerformance ? (
-        <div className="relative mt-5 rounded-xl border border-white/[0.09] bg-white/[0.06] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.05)]">
-          <p className={`text-[10px] font-black uppercase tracking-[0.18em] ${theme.text}`}>Najlepší výkon</p>
-          <p className="mt-1 text-2xl font-black text-white">{player.bestPerformance}</p>
+        <div className="relative mt-4 rounded-xl border border-[#2a6699]/35 bg-[#0c2b4f] px-4 py-3 text-center">
+          <p className="text-[10px] font-bold text-[#8fb5da]">Najlepší výkon</p>
+          <p className="mt-1 text-3xl font-black text-white">{player.bestPerformance}</p>
         </div>
       ) : null}
-      <div className="relative -mx-6 -mb-6 mt-6 grid grid-cols-[1fr_auto_auto] items-center gap-3 bg-white/[0.055] px-6 py-4 text-sm">
-        <p className={`min-w-0 font-black leading-5 ${theme.text}`}>
-          <Trophy size={17} className="mr-1 inline align-[-3px]" /> Priemer {player.average || "-"}
-        </p>
-        <p className="text-white/78">{player.matches || 0} zápasov</p>
-        <Star className="text-white/42" size={21} strokeWidth={1.6} />
+      <div className="relative mt-auto grid grid-cols-2 gap-3 border-t border-white/[0.08] pt-4 text-sm text-[#b8c9dc]">
+        <p><BarChart3 size={17} className="mr-2 inline text-[#2492ff]" />{player.matches || 0} zápasov</p>
+        <p className="text-right"><Trophy size={17} className="mr-2 inline text-[#2492ff]" />Priemer {player.average || "-"}</p>
       </div>
     </article>
   );
@@ -267,13 +261,13 @@ function TeamMatches({ matches, seasons, selectedSeason, setSelectedSeason }: { 
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div><p className="text-xs font-black uppercase tracking-[.18em] text-[#114bff]">Sezónne výsledky</p><h2 className="mt-1 text-3xl font-black">Zápasy tímu</h2></div>
-        {seasons.length ? <label className="flex items-center gap-3 text-sm font-bold">Sezóna<select value={selectedSeason} onChange={(event) => setSelectedSeason(event.target.value)} className="rounded-xl border border-[#071a3d]/10 bg-white px-4 py-3 font-black outline-none focus:border-[#114bff]">{seasons.map((season) => <option key={season}>{season}</option>)}</select></label> : null}
+        {seasons.length ? <label className="flex items-center gap-3 text-sm font-bold text-[#b8c9dc]">Sezóna<select value={selectedSeason} onChange={(event) => setSelectedSeason(event.target.value)} className="rounded-xl border border-[#2b6598]/55 bg-[#08213e] px-4 py-3 font-black text-white outline-none focus:border-[#1688ff]">{seasons.map((season) => <option key={season} className="bg-[#08213e] text-white">{season}</option>)}</select></label> : null}
       </div>
-      {matches.length ? <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">{matches.map((match) => <article key={match.id} className="overflow-hidden rounded-2xl bg-white shadow-[0_18px_50px_rgba(7,26,61,.12)] ring-1 ring-[#071a3d]/[0.06]">
-        <div className="flex items-center justify-between gap-3 border-b border-[#071a3d]/10 px-5 py-4 text-xs font-black uppercase text-[#114bff]"><span>{match.competition || match.league} · {match.round}</span><span>{match.date}</span></div>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 p-5 text-center"><div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={match.home} externalTeamId={match.homeExternalTeamId} logoUrl={match.homeTeam?.logoUrl} light /><strong>{match.home}</strong></div><div><p className="text-3xl font-black text-[#114bff]">{match.score}</p><p className="mt-1 text-xs font-bold text-[#071a3d]/60">{match.pins}</p></div><div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={match.away} externalTeamId={match.awayExternalTeamId} logoUrl={match.awayTeam?.logoUrl} light /><strong>{match.away}</strong></div></div>
-        <div className="grid gap-2 border-t border-[#071a3d]/10 px-5 py-4 text-sm text-[#071a3d]/65 sm:grid-cols-2"><p className="flex items-center gap-2"><CalendarDays size={16} className="text-[#114bff]" />{match.status}</p><p className="flex items-center gap-2"><MapPin size={16} className="text-[#114bff]" />{match.location}</p></div>
-      </article>)}</div> : <div className="rounded-2xl border border-dashed border-[#114bff]/25 bg-white p-8 text-center text-[#071a3d]/60">Pre túto sezónu zatiaľ nie sú evidované žiadne zápasy.</div>}
+      {matches.length ? <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">{matches.map((match) => <article key={match.id} className="overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#092443,#06182f)] text-white shadow-[0_18px_50px_rgba(0,0,0,.26)] ring-1 ring-[#2b6598]/40">
+        <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4 text-xs font-black uppercase text-[#48a3ff]"><span>{match.competition || match.league} · {match.round}</span><span>{match.date}</span></div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 p-5 text-center"><div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={match.home} externalTeamId={match.homeExternalTeamId} logoUrl={match.homeTeam?.logoUrl} /><strong>{match.home}</strong></div><div><p className="text-3xl font-black text-[#48a3ff]">{match.score}</p><p className="mt-1 text-xs font-bold text-[#8fa7c2]">{match.pins}</p></div><div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={match.away} externalTeamId={match.awayExternalTeamId} logoUrl={match.awayTeam?.logoUrl} /><strong>{match.away}</strong></div></div>
+        <div className="grid gap-2 border-t border-white/[0.08] px-5 py-4 text-sm text-[#a9bdd5] sm:grid-cols-2"><p className="flex items-center gap-2"><CalendarDays size={16} className="text-[#48a3ff]" />{match.status}</p><p className="flex items-center gap-2"><MapPin size={16} className="text-[#48a3ff]" />{match.location}</p></div>
+      </article>)}</div> : <div className="rounded-2xl border border-dashed border-[#1688ff]/30 bg-[#071c36] p-8 text-center text-[#9eb2ca]">Pre túto sezónu zatiaľ nie sú evidované žiadne zápasy.</div>}
     </div>
   );
 }
@@ -378,4 +372,8 @@ function officialTeams(teams: LiveTeam[]) {
   return FALLBACK_TEAMS
     .map((fallback) => imported.get(fallback.externalTeamId) || fallback)
     .sort((a, b) => teamOrder.indexOf(a.externalTeamId || 0) - teamOrder.indexOf(b.externalTeamId || 0));
+}
+
+function roundValue(value: string) {
+  return Number(value.match(/\d+/)?.[0]) || Number.MAX_SAFE_INTEGER;
 }

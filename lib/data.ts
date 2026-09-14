@@ -80,7 +80,7 @@ export const clubIntro = {
 };
 
 export const tournaments = [
-  { name: "Memoriál KK Hlohovec", date: "18. 7. 2026", location: "Bernolákova 720", status: "Pripravuje sa", fee: "15 €", capacity: "64 hráčov", type: "upcoming" },
+  { name: "Memoriál KK Hlohovec", date: "18. 7. 2026", location: "Bernolákova 720/34", status: "Pripravuje sa", fee: "15 €", capacity: "64 hráčov", type: "upcoming" },
   { name: "Letný pohár mesta", date: "29. 8. 2026", location: "Kolkáreň Hlohovec", status: "Registrácia otvorená", fee: "12 €", capacity: "48 hráčov", type: "upcoming" },
   { name: "Mestská liga - jarné kolo", date: "Máj 2026", location: "Hlohovec", status: "Prebieha", fee: "Tímová úhrada", capacity: "12 tímov", type: "current" },
   { name: "Vianočný turnaj", date: "December 2025", location: "Hlohovec", status: "Ukončené", fee: "10 €", capacity: "56 hráčov", type: "past" }

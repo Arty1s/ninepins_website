@@ -24,10 +24,10 @@ export function SiteFooter() {
             Oficiálny web KK Hlohovec. Tímy, zápasy, turnaje a informácie pre ľudí, ktorí chcú hrať kolky v Hlohovci.
           </p>
           <div className="mt-6 flex gap-3">
-            <a href="#" aria-label="Facebook" className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-white transition hover:bg-[#0878ff]">
+            <a href="https://www.facebook.com/profile.php?id=100080568604136&locale=hi_IN" target="_blank" rel="noreferrer" aria-label="Facebook KK Hlohovec" className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-white transition hover:bg-[#0878ff]">
               <Facebook size={18} />
             </a>
-            <a href="#" aria-label="Instagram" className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-white transition hover:bg-[#0878ff]">
+            <a href="https://www.instagram.com/kolkyhc/" target="_blank" rel="noreferrer" aria-label="Instagram KK Hlohovec" className="grid h-10 w-10 place-items-center rounded-full bg-white/8 text-white transition hover:bg-[#0878ff]">
               <Instagram size={18} />
             </a>
           </div>
@@ -40,9 +40,9 @@ export function SiteFooter() {
         <div>
           <h3 className="mb-4 text-sm font-black uppercase tracking-[0.08em]">Kontakt</h3>
           <div className="space-y-4 text-sm text-[#9baac0]">
-            <p className="flex gap-3"><MapPin size={18} className="shrink-0 text-[#58a3ff]" /> Štúrova 35, 920 01 Hlohovec</p>
+            <p className="flex gap-3"><MapPin size={18} className="shrink-0 text-[#58a3ff]" /> Bernolákova 720/34, 920 01 Hlohovec</p>
             <p className="flex gap-3"><Phone size={18} className="shrink-0 text-[#58a3ff]" /> +421 905 123 456</p>
-            <p className="flex gap-3"><Mail size={18} className="shrink-0 text-[#58a3ff]" /> kkhlohovec@gmail.com</p>
+            <p className="flex gap-3"><Mail size={18} className="shrink-0 text-[#58a3ff]" /> kkzprezident@gmail.com</p>
           </div>
         </div>
       </div>

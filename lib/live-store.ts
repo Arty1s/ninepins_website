@@ -123,6 +123,17 @@ export type LiveMatchPlayer = {
   faults: number | null;
   total: number | null;
   point: number | null;
+  setPoints?: number | null;
+  lanes?: LiveMatchLane[];
+};
+
+export type LiveMatchLane = {
+  lane: number;
+  full: number | null;
+  clearing: number | null;
+  faults: number | null;
+  total: number | null;
+  point: number | null;
 };
 
 export type LiveMatchTeam = {

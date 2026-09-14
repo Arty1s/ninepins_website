@@ -278,7 +278,7 @@ function ArenaSection() {
               ["4 dráhy", "kvalitné kolkárske dráhy"],
               ["Tréningy", "pre všetky kategórie"],
               ["Zápasy", "domáce ligové kolá"],
-              ["Lokalita", "Bernolákova 720, Hlohovec"]
+              ["Lokalita", "Bernolákova 720/34, Hlohovec"]
             ].map(([title, text]) => (
               <div key={title} className="flex gap-3">
                 <CircleDot className="mt-1 h-6 w-6 shrink-0 text-[#1688ff]" />
@@ -302,10 +302,10 @@ function ArenaSection() {
           <div className="grid h-40 place-items-center rounded-xl bg-[radial-gradient(circle_at_50%_50%,rgba(22,136,255,.28),transparent_52%),linear-gradient(135deg,#092044,#051428)]">
             <MapPin className="h-12 w-12 text-[#1688ff]" />
           </div>
-          <p className="mt-5 font-black" itemProp="streetAddress">Bernolákova 720</p>
+          <p className="mt-5 font-black" itemProp="streetAddress">Bernolákova 720/34</p>
           <p className="mt-1 text-sm text-[#46617f]"><span itemProp="postalCode">920 01</span> <span itemProp="addressLocality">Hlohovec</span></p>
           <meta itemProp="addressCountry" content="SK" />
-          <Button href="https://www.google.com/maps/search/?api=1&query=Bernol%C3%A1kova+720%2C+920+01+Hlohovec%2C+Slovakia" className="mt-5 w-full">Zobraziť na mape</Button>
+          <Button href="https://www.google.com/maps/search/?api=1&query=Bernol%C3%A1kova+720%2F34%2C+920+01+Hlohovec%2C+Slovakia" className="mt-5 w-full">Zobraziť na mape</Button>
         </address>
       </div>
     </SectionSurface>

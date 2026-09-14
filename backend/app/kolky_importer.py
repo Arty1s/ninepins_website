@@ -11,7 +11,7 @@ from urllib.parse import urljoin, unquote, urlparse
 import httpx
 
 from backend.app.config import get_settings
-from backend.app.models import LiveMatch, LivePlayer, LiveStandingRow, LiveTeam, MatchPlayerStat, MatchTeamStats
+from backend.app.models import LiveMatch, LivePlayer, LiveStandingRow, LiveTeam, MatchLaneStat, MatchPlayerStat, MatchTeamStats
 
 DEFAULT_IMPORT_URLS = [
     "https://vysledky.kolky.sk/match/detail/43531/KO-Zarnovica-vs-KKZ-Hlohovec-A"
@@ -154,7 +154,7 @@ HLOHOVEC_SCHEDULE_DEFINITIONS = [
     },
 ]
 HLOHOVEC_TEAM_KEYS = {(item["leagueId"], item["id"]): item for item in HLOHOVEC_TEAM_DEFINITIONS}
-HLOHOVEC_TEAM_IDS = {item["id"] for item in HLOHOVEC_TEAM_DEFINITIONS}
+HLOHOVEC_TEAM_IDS = {item["id"] for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
 HLOHOVEC_SCHEDULE_TEAM_KEYS = {(item["leagueId"], item["id"]): item for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
 HLOHOVEC_LEAGUE_IDS = {item["leagueId"] for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
 
@@ -1549,7 +1549,30 @@ def parse_api_player_stats(items: list[dict], side: str, logs: list[dict], match
                 "player": name,
             })
         profile_url = f"https://vysledky.kolky.sk/player/detail/{player_id}" if player_id else ""
-        players.append(MatchPlayerStat(name=name, externalPlayerId=player_id, profileUrl=profile_url, full=full, clearing=clearing, faults=faults, total=total, point=point))
+        lanes = [
+            MatchLaneStat(
+                lane=to_int(lane.get("lane")) or index,
+                full=to_int(lane.get("full")),
+                clearing=to_int(lane.get("clean")),
+                faults=to_int(lane.get("faults")),
+                total=to_int(lane.get("total")),
+                point=to_float(lane.get("points")),
+            )
+            for index, lane in enumerate(item.get("lanes") or [], start=1)
+            if isinstance(lane, dict)
+        ]
+        players.append(MatchPlayerStat(
+            name=name,
+            externalPlayerId=player_id,
+            profileUrl=profile_url,
+            full=full,
+            clearing=clearing,
+            faults=faults,
+            total=total,
+            point=point,
+            setPoints=to_float(item.get("setPoints")),
+            lanes=lanes,
+        ))
     return players
 
 
@@ -1835,8 +1858,8 @@ def is_hlohovec_match(match: LiveMatch) -> bool:
 
 
 def build_official_teams(matches: list[LiveMatch]) -> list[LiveTeam]:
-    players_by_team: dict[int, set[str]] = {item["id"]: set() for item in HLOHOVEC_TEAM_DEFINITIONS}
-    results_by_team: dict[int, dict[str, int]] = {item["id"]: {"played": 0, "wins": 0, "draws": 0, "losses": 0} for item in HLOHOVEC_TEAM_DEFINITIONS}
+    players_by_team: dict[int, set[str]] = {item["id"]: set() for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
+    results_by_team: dict[int, dict[str, int]] = {item["id"]: {"played": 0, "wins": 0, "draws": 0, "losses": 0} for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
 
     for match in matches:
         definition = team_definition_for_match(match)
@@ -1850,11 +1873,12 @@ def build_official_teams(matches: list[LiveMatch]) -> list[LiveTeam]:
         update_result_summary(results_by_team[team_id], match, side)
 
     teams: list[LiveTeam] = []
-    for index, item in enumerate(HLOHOVEC_TEAM_DEFINITIONS, start=1):
+    for index, item in enumerate(HLOHOVEC_SCHEDULE_DEFINITIONS, start=1):
         summary = results_by_team[item["id"]]
+        season = item.get("season") or CURRENT_SEASON
         achievements = "Výsledky sa synchronizujú z vysledky.kolky.sk; Admin môže doplniť klubové úspechy"
         if summary["played"]:
-            achievements = f"{summary['played']} zápasov v sezóne {CURRENT_SEASON}; {summary['wins']} výhier, {summary['draws']} remíz, {summary['losses']} prehier"
+            achievements = f"{summary['played']} zápasov v sezóne {season}; {summary['wins']} výhier, {summary['draws']} remíz, {summary['losses']} prehier"
         teams.append(LiveTeam(
             id=index,
             slug=item["slug"],
@@ -1863,7 +1887,7 @@ def build_official_teams(matches: list[LiveMatch]) -> list[LiveTeam]:
             externalLeagueId=item["leagueId"],
             externalTeamId=item["id"],
             category=item["category"],
-            season=CURRENT_SEASON,
+            season=season,
             sourceUrl=team_source_url(item),
             isHlohovecTeam=True,
             coach="Trénera doplní admin",
@@ -1951,7 +1975,7 @@ def build_players_from_matches(matches: list[LiveMatch]) -> list[LivePlayer]:
 
 def build_standings_from_matches(matches: list[LiveMatch]) -> list[LiveStandingRow]:
     rows: list[LiveStandingRow] = []
-    summaries: dict[int, dict[str, int]] = {item["id"]: {"played": 0, "wins": 0, "draws": 0, "losses": 0, "points": 0} for item in HLOHOVEC_TEAM_DEFINITIONS}
+    summaries: dict[int, dict[str, int]] = {item["id"]: {"played": 0, "wins": 0, "draws": 0, "losses": 0, "points": 0} for item in HLOHOVEC_SCHEDULE_DEFINITIONS}
     for match in matches:
         definition = team_definition_for_match(match)
         if not definition:
@@ -1964,13 +1988,14 @@ def build_standings_from_matches(matches: list[LiveMatch]) -> list[LiveStandingR
         elif summaries[definition["id"]]["draws"] > before["draws"]:
             summaries[definition["id"]]["points"] += 1
 
-    for index, item in enumerate(HLOHOVEC_TEAM_DEFINITIONS, start=1):
+    for index, item in enumerate(HLOHOVEC_SCHEDULE_DEFINITIONS, start=1):
         summary = summaries[item["id"]]
+        season = item.get("season") or CURRENT_SEASON
         rows.append(LiveStandingRow(
             id=index,
             league=item["category"],
             category=item["category"],
-            season=CURRENT_SEASON,
+            season=season,
             team=item["name"],
             externalLeagueId=item["leagueId"],
             externalTeamId=item["id"],
@@ -1999,7 +2024,7 @@ def build_team_sync_results(matches: list[LiveMatch], logs: list[dict]) -> list[
         if log.get("level") == "error":
             errors_by_team.setdefault(key, []).append(log.get("message", "Neznáma chyba importu."))
 
-    for team in HLOHOVEC_TEAM_DEFINITIONS:
+    for team in HLOHOVEC_SCHEDULE_DEFINITIONS:
         key = (team["leagueId"], team["id"])
         team_matches = [
             match for match in matches
@@ -2069,14 +2094,15 @@ def team_definition_for_match(match: LiveMatch) -> dict | None:
         (match.externalLeagueId, match.awayExternalTeamId),
     ]
     for league_id, team_id in pairs:
-        if league_id is not None and team_id is not None and (league_id, team_id) in HLOHOVEC_TEAM_KEYS:
-            return HLOHOVEC_TEAM_KEYS[(league_id, team_id)]
+        if league_id is not None and team_id is not None and (league_id, team_id) in HLOHOVEC_SCHEDULE_TEAM_KEYS:
+            return HLOHOVEC_SCHEDULE_TEAM_KEYS[(league_id, team_id)]
     competition = match.competition or canonical_competition_name(match.league)
-    return next((item for item in HLOHOVEC_TEAM_DEFINITIONS if item["category"] == competition), None)
+    season = match.season or infer_season(match.date)
+    return next((item for item in HLOHOVEC_SCHEDULE_DEFINITIONS if item["category"] == competition and item.get("season") == season), None)
 
 
 def get_hlohovec_team_definitions() -> list[dict]:
-    return [dict(item) for item in HLOHOVEC_TEAM_DEFINITIONS]
+    return [dict(item) for item in HLOHOVEC_SCHEDULE_DEFINITIONS]
 
 
 def team_source_url(item: dict) -> str:

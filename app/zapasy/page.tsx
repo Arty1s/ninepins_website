@@ -1,6 +1,4 @@
-import Image from "next/image";
 import type { Metadata } from "next";
-import { SectionHeading } from "@/components/section-heading";
 import { LiveMatchesList } from "@/components/live-matches-list";
 
 export const metadata: Metadata = {
@@ -12,17 +10,13 @@ export const metadata: Metadata = {
 
 export default function ZapasyPage() {
   return (
-    <main className="bg-[#f5f8fd]">
-      <section className="relative overflow-hidden bg-navy py-24 text-white">
-        <Image src="/images/premium-blue-bg.png" alt="" fill className="object-cover opacity-70" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/35 to-navy" />
+    <main className="bg-[#06182f]">
+      <section className="relative overflow-hidden border-b border-white/[0.06] bg-[#071a33] py-10 text-white sm:py-12">
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#071a33_0%,rgba(7,26,51,.9)_47%,rgba(7,26,51,.28)_100%),url('/images/hero-lane.jpg')] bg-cover bg-right" />
         <div className="container-page relative z-10">
-          <SectionHeading
-            light
-            eyebrow="Zápasy KK Hlohovec"
-            title="Výsledky, program a detailné zápisnice"
-            text="Pozrite si odohrané aj plánované zápasy tímov KK Hlohovec podľa súťaže a sezóny. Pri odohraných stretnutiach nájdete výsledok aj zápisnicu."
-          />
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#67aff8]">Domov&nbsp;&nbsp;/&nbsp;&nbsp; Zápasy</p>
+          <h1 className="sport-title mt-2 text-3xl text-white sm:text-4xl">Výsledky a program</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#b9c7db]">Všetky zápasy KK Hlohovec na jednom mieste. Sledujte výsledky, nadchádzajúce stretnutia a detailné zápisnice tímov.</p>
         </div>
       </section>
       <LiveMatchesList />

@@ -5,7 +5,6 @@ import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
-  Newspaper,
   Target,
   Trophy,
   Users
@@ -19,13 +18,6 @@ type FeatureWidget = {
   title: string;
   text: string;
   icon: ElementType;
-};
-
-type NewsWidget = {
-  title: string;
-  date: string;
-  text: string;
-  image: string;
 };
 
 export type RecentMatchWidget = {
@@ -61,21 +53,6 @@ export const heroFeatureWidgets: FeatureWidget[] = [
     title: "Súťaže & turnaje",
     text: "Ligové zápasy a turnaje KK Hlohovec.",
     icon: CalendarDays
-  }
-];
-
-const newsWidgets: NewsWidget[] = [
-  {
-    title: "Víťazstvo doma!",
-    date: "12. máj 2024",
-    text: "Naši muži vyhrali posledné kolo ligy a posúvajú sa na prvé miesto.",
-    image: "/images/gallery-2.jpg"
-  },
-  {
-    title: "Mládež na turnaji v Trnave",
-    date: "8. máj 2024",
-    text: "Naši mladí ukázali bojovnosť a odniesli si skvelé výsledky.",
-    image: "/images/team-photo.jpg"
   }
 ];
 
@@ -238,7 +215,9 @@ export function IntroCardsWidget() {
       </div>
 
       <div className="container-page relative z-10 mt-12 grid gap-4 lg:grid-cols-2">
-        <NewsCardWidget />
+        <LightWidget title="Najbližšie zápasy" icon={CalendarDays} action="Celý program" href="/zapasy">
+          <LiveHomeUpcomingMatches light />
+        </LightWidget>
         <JoinCardWidget />
       </div>
     </section>
@@ -274,10 +253,7 @@ export function RecentMatchesWidget() {
   return (
     <section className="relative z-10 pb-8 pt-10 text-white sm:pb-10 sm:pt-16">
       <div className="container-page relative z-10">
-        <div className="grid gap-4 xl:grid-cols-[minmax(320px,.72fr)_minmax(0,1.7fr)]">
-          <DarkPanel title="Najbližšie zápasy" action="Celý program" href="/zapasy">
-            <LiveHomeUpcomingMatches />
-          </DarkPanel>
+        <div>
           <DarkPanel title="Nedávne zápasy" action="Zobraziť všetky" href="/zapasy">
             <LiveHomeRecentMatches fallbackMatches={recentMatchWidgets} />
           </DarkPanel>
@@ -289,74 +265,45 @@ export function RecentMatchesWidget() {
 
 export function MembershipCtaWidget() {
   return (
-    <section className="relative pb-16 text-white">
+    <section className="relative pb-16 pt-4 text-white sm:pb-20">
       <div className="container-page relative z-10">
-        <WidgetShell className="relative overflow-hidden border-white/[0.06] bg-[linear-gradient(135deg,rgba(8,31,62,.96),rgba(5,18,39,.98))] p-0 shadow-[0_28px_90px_rgba(0,0,0,.32),inset_0_1px_0_rgba(255,255,255,.05)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(22,136,255,.20),transparent_32%),radial-gradient(circle_at_78%_12%,rgba(22,136,255,.12),transparent_30%)]" />
-          <div className="absolute inset-y-0 right-0 hidden w-[44%] lg:block">
-            <Image src="/images/hero-lane.jpg" alt="Kolkáreň KK Hlohovec" fill className="object-cover" sizes="44vw" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,#061b35_0%,rgba(6,27,53,.72)_26%,rgba(6,27,53,.24)_58%,rgba(6,27,53,.04)_100%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,27,53,.1),rgba(6,27,53,.48))]" />
-          </div>
-          <div className="relative z-10 grid gap-6 p-4 sm:p-8 md:p-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-8 lg:p-14">
-            <div className="max-w-3xl">
+        <WidgetShell className="relative overflow-hidden border-[#2d6fa8]/35 bg-[#061a34] p-0 shadow-[0_28px_90px_rgba(0,0,0,.32)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(22,136,255,.18),transparent_32%)]" />
+          <div className="relative grid lg:grid-cols-[1fr_.78fr_.72fr]">
+            <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Tréningy v Hlohovci</p>
-              <h2 className="mt-4 font-display text-3xl font-black uppercase leading-tight sm:text-5xl">
+              <h2 className="mt-4 font-display text-4xl font-black leading-[1.02] sm:text-5xl">
                 Príď si zahrať
-                <span className="block text-[#1688ff]">kolky v Hlohovci</span>
+                <span className="block text-[#1688ff]">kolky v Hlohovci.</span>
               </h2>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-[#b9c7db]">
-                Ak máš záujem o tréning, členstvo alebo rezerváciu dráhy, pozri si cenník alebo nám napíš.
+              <p className="mt-5 max-w-lg text-base leading-7 text-[#b9c7db]">
+                Či už máš záujem o pravidelné tréningy, členstvo alebo si chceš len vyskúšať, radi ťa privítame.
               </p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Button href="/cennik">Členstvo a cenník</Button>
-                <Button href="/kontakt" variant="secondary">Kontaktuj nás</Button>
-                <Button href="/o_klube.html" variant="secondary" className="border-[#1688ff]/70 bg-[#06172f]/80 text-[#9dccff] hover:border-[#1688ff] hover:bg-[#0a2448] hover:text-white">
-                  Kolky nie sú bowling <ArrowRight size={16} />
-                </Button>
-              </div>
-              <div className="mt-8 grid gap-5 md:grid-cols-3">
-                {[
-                  { title: "KK Hlohovec", text: "Informácie o klube, tímoch a hráčoch.", icon: Users },
-                  { title: "Pravidelné tréningy", text: "Tréning techniky, presnosti a kondície.", icon: Target },
-                  { title: "Zápasy a turnaje", text: "Program, výsledky a klubové podujatia.", icon: Trophy }
-                ].map((item) => (
-                  <div key={item.title} className="flex gap-3">
-                    <item.icon className="mt-1 h-8 w-8 shrink-0 text-[#1688ff]" strokeWidth={1.8} />
-                    <div>
-                      <h3 className="text-sm font-black text-[#2f9bff]">{item.title}</h3>
-                      <p className="mt-1 text-sm leading-6 text-[#b9c7db]">{item.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Button href="/kontakt" className="mt-8 w-fit">Chcem si zahrať <ArrowRight size={18} /></Button>
             </div>
-
-            <div className="relative lg:pr-[22%]">
-              <div className="rounded-2xl border border-white/[0.08] bg-[linear-gradient(180deg,rgba(10,29,58,.92),rgba(8,23,46,.9))] p-4 shadow-[0_20px_60px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur sm:p-6">
+            <div className="relative z-10 flex items-center p-5 sm:p-8 lg:-mr-8 lg:p-6">
+              <div className="w-full rounded-2xl border border-[#3273aa]/35 bg-[#071d39]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,.28)] backdrop-blur sm:p-7">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#1688ff]">Vedeli ste</p>
-                <h3 className="mt-2 whitespace-nowrap font-display text-xl font-black uppercase sm:mt-3 sm:text-2xl">Kolky ≠ Bowling</h3>
-                <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-1.5 text-xs sm:mt-6 sm:gap-3 sm:text-sm">
-                  <div className="text-center text-xs font-black uppercase tracking-[0.12em] text-[#1688ff]">Kolky</div>
-                  <div />
-                  <div className="text-center text-xs font-black uppercase tracking-[0.12em] text-white/72">Bowling</div>
+                <h3 className="mt-2 font-display text-xl font-black uppercase sm:text-2xl">Kolky ≠ Bowling</h3>
+                <div className="mt-5 grid grid-cols-2 gap-x-6 text-xs sm:text-sm">
+                  <div className="pb-3 font-black uppercase tracking-[0.12em] text-[#1688ff]">Kolky</div>
+                  <div className="pb-3 font-black uppercase tracking-[0.12em] text-white/72">Bowling</div>
                   {[
-                    ["9 kolkov", "VS.", "10 kolkov"],
-                    ["Guľa bez otvorov", "VS.", "Guľa s otvormi"],
-                    ["Užšia dráha", "VS.", "Širšia dráha"],
-                    ["Európska tradícia", "VS.", "Moderný globálny šport"]
-                  ].map(([kolky, vs, bowling]) => (
+                    ["9 kolkov", "10 kolkov"], ["Guľa bez otvorov", "Guľa s otvormi"],
+                    ["1,70 m dráha", "2,23 m dráha"], ["120 hodov", "Rôzne formáty"],
+                    ["Európska tradícia", "Moderný globálny šport"]
+                  ].map(([kolky, bowling]) => (
                     <div key={kolky} className="contents">
-                      <div className="border-t border-white/[0.07] py-3 font-bold text-white">{kolky}</div>
-                      <div className="grid place-items-center border-t border-white/[0.07] py-3 text-[11px] font-black text-[#8bbfff]">{vs}</div>
-                      <div className="border-t border-white/[0.07] py-3 text-right font-bold text-white/70">{bowling}</div>
+                      <div className="border-t border-white/[0.07] py-3 text-white">{kolky}</div>
+                      <div className="border-t border-white/[0.07] py-3 text-white/70">{bowling}</div>
                     </div>
                   ))}
                 </div>
-                <Link href="/o_klube.html" className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.1em] text-[#1688ff] transition hover:text-white">
-                  Zisti rozdiely <ArrowRight size={15} />
-                </Link>
               </div>
+            </div>
+            <div className="relative min-h-[300px] lg:min-h-[520px]">
+              <Image src="/images/teams-hero-generated.png" alt="Kolkáreň s kolkárskou guľou" fill className="object-cover object-center" sizes="35vw" />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,#061a34_0%,rgba(6,26,52,.28)_30%,transparent_70%),linear-gradient(180deg,transparent_60%,rgba(3,16,33,.7))]" />
             </div>
           </div>
         </WidgetShell>
@@ -382,30 +329,6 @@ function FeaturePillWidget({ feature, last }: { feature: FeatureWidget; last: bo
         <p className="mt-2 text-xs leading-5 text-white/72">{feature.text}</p>
       </div>
     </div>
-  );
-}
-
-function NewsCardWidget() {
-  return (
-    <LightWidget title="Aktuality" icon={Newspaper}>
-      <div className="space-y-5">
-        {newsWidgets.map((item) => (
-          <article key={item.title} className="grid grid-cols-[128px_1fr] gap-5">
-            <div className="relative h-28 overflow-hidden rounded-md">
-              <Image src={item.image} alt={item.title} fill className="object-cover" sizes="128px" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-[#64748b]">{item.date}</p>
-              <h3 className="mt-1 text-lg font-black text-[#071a3d]">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#334155]">{item.text}</p>
-              <Link href="/gallery" className="mt-3 inline-flex items-center gap-2 text-xs font-black uppercase text-[#114bff]">
-                Čítať viac <ArrowRight size={14} />
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
-    </LightWidget>
   );
 }
 

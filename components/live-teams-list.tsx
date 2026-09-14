@@ -38,8 +38,8 @@ export function LiveTeamsList() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden py-10 sm:py-14">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_8%,rgba(17,75,255,.08),transparent_28%),radial-gradient(circle_at_84%_42%,rgba(17,75,255,.07),transparent_32%)]" />
+    <section className="relative overflow-hidden bg-[#04162b] py-10 sm:py-14">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_8%,rgba(17,117,255,.12),transparent_28%),radial-gradient(circle_at_84%_42%,rgba(17,75,255,.08),transparent_32%)]" />
       <div className="container-page relative z-10">
         <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
           {teams.map((team) => (
@@ -57,23 +57,29 @@ function TeamCard({ team }: { team: LiveTeam }) {
   const theme = getLeagueTheme(`${team.category || ""} ${team.name} ${team.league}`);
   const isThirdLeague = team.externalTeamId === 4925 || team.slug === "tretia-liga";
   const logoSource = isThirdLeague ? "/logos/kkhc-3-liga.jpeg" : "/kkhc-logo.png";
+  const imageSource = team.externalTeamId === 4865
+    ? "/images/team-red-ball.png"
+    : team.externalTeamId === 5041 || team.externalTeamId === 5084
+      ? "/images/team-ninepins.png"
+      : "/images/team-blue-balls.png";
 
   return (
     <Link
       href={`/timy/${team.slug}`}
-      className={`group block overflow-hidden rounded-[22px] bg-white shadow-[0_26px_70px_rgba(7,26,61,.16),0_2px_8px_rgba(7,26,61,.08)] ring-1 ring-[#071a3d]/[0.06] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_90px_rgba(7,26,61,.22),0_5px_18px_rgba(7,26,61,.1)] focus:outline-none focus:ring-4 ${theme.ring}`}
+      className={`group block overflow-hidden rounded-2xl bg-[#071c36] shadow-[0_26px_70px_rgba(0,0,0,.28)] ring-1 ring-[#4387c5]/25 transition duration-300 hover:-translate-y-1 hover:ring-[#45a2ff]/55 focus:outline-none focus:ring-4 ${theme.ring}`}
     >
       <article>
-        <div className={`relative overflow-hidden ${theme.panel} p-6 text-white`}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_0%,rgba(255,255,255,.16),transparent_32%),linear-gradient(135deg,transparent_0_58%,rgba(255,255,255,.08)_59%,transparent_75%)]" />
+        <div className="relative min-h-[245px] overflow-hidden p-6 text-white">
+          <Image src={imageSource} alt="" fill className="object-cover object-center transition duration-500 group-hover:scale-105" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,18,36,.98)_0%,rgba(4,23,45,.90)_53%,rgba(4,23,45,.30)_100%),linear-gradient(180deg,transparent_45%,rgba(2,13,27,.85)_100%)]" />
           <div className="relative flex gap-5">
-            <div className={`grid h-[92px] w-[92px] shrink-0 place-items-center overflow-hidden rounded-[26px] bg-white ring-1 ${theme.ring}`}>
+            <div className={`grid h-[70px] w-[70px] shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/95 ring-1 ${theme.ring}`}>
               <Image
                 src={logoSource}
                 alt={isThirdLeague ? "Logo KKHC 3. liga" : "Logo KK Hlohovec"}
-                width={92}
-                height={92}
-                className={`${isThirdLeague ? "h-[84px] w-[84px]" : "kkhc-logo-cutout h-[74px] w-[78px]"} object-contain`}
+                width={70}
+                height={70}
+                className={`${isThirdLeague ? "h-16 w-16" : "kkhc-logo-cutout h-14 w-14"} object-contain`}
               />
             </div>
             <div className="min-w-0">
@@ -89,15 +95,15 @@ function TeamCard({ team }: { team: LiveTeam }) {
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="bg-[#071c36] p-6">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#071a3d]/45">Členovia</p>
-              <p className="mt-1 font-black text-[#071a3d]">{Math.min(members.length, 10)} zobrazených</p>
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#7797ba]">Členovia</p>
+              <p className="mt-1 font-black text-white">{Math.min(members.length, 10)} zobrazených</p>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#071a3d]/45">Úspechy</p>
-              <p className="mt-1 font-black text-[#071a3d]">{achievements.length || "Zatiaľ bez údajov"}</p>
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#7797ba]">Úspechy</p>
+              <p className="mt-1 font-black text-white">{achievements.length || "Zatiaľ bez údajov"}</p>
             </div>
           </div>
 

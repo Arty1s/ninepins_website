@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronDown, ChevronRight, Filter, MapPin, Radio, SlidersHorizontal } from "lucide-react";
+import { CalendarDays, ChevronRight, MapPin, Radio } from "lucide-react";
 import { type LiveMatch } from "@/lib/live-store";
-import { getLeagueTheme } from "@/lib/league-theme";
 import { ClubLogo } from "@/components/club-logo";
 
 const ALL_COMPETITIONS = "Všetky";
@@ -20,7 +19,7 @@ export function LiveMatchesList() {
   const [rows, setRows] = useState<LiveMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [competition, setCompetition] = useState(ALL_COMPETITIONS);
-  const [openSeasons, setOpenSeasons] = useState<Set<string>>(new Set());
+  const [season, setSeason] = useState("2026/2027");
 
   useEffect(() => {
     let cancelled = false;
@@ -57,28 +56,11 @@ export function LiveMatchesList() {
 
   const matches = useMemo(() => {
     return normalizedRows
-      .filter((match) => competition === ALL_COMPETITIONS || match.competitionName === competition)
+      .filter((match) => (competition === ALL_COMPETITIONS || match.competitionName === competition) && match.seasonName === season)
       .sort((a, b) => dateValue(a.date) - dateValue(b.date));
-  }, [competition, normalizedRows]);
+  }, [competition, normalizedRows, season]);
 
-  const seasonGroups = useMemo(() => {
-    const grouped = new Map<string, NormalizedMatch[]>();
-    matches.forEach((match) => {
-      const seasonName = match.seasonName || "Staršie";
-      grouped.set(seasonName, [...(grouped.get(seasonName) || []), match]);
-    });
-    SEASON_SHELLS.forEach((seasonName) => {
-      if (!grouped.has(seasonName)) grouped.set(seasonName, []);
-    });
-
-    return Array.from(grouped.entries())
-      .map(([seasonName, seasonMatches]) => ({
-        seasonName,
-        rows: seasonMatches,
-        byCompetition: groupByCompetition(seasonMatches, competition)
-      }))
-      .sort((a, b) => b.seasonName.localeCompare(a.seasonName, "sk"));
-  }, [competition, matches]);
+  const monthGroups = useMemo(() => groupByMonth(matches), [matches]);
 
   const competitionCounts = useMemo(() => {
     return COMPETITIONS.reduce<Record<string, number>>((acc, name) => {
@@ -89,107 +71,30 @@ export function LiveMatchesList() {
     }, {});
   }, [normalizedRows]);
 
-  useEffect(() => {
-    setOpenSeasons((current) => {
-      if (current.size) return current;
-      const next = new Set<string>();
-      seasonGroups.forEach((group) => {
-        if (!DEFAULT_COLLAPSED_SEASONS.has(group.seasonName)) next.add(group.seasonName);
-      });
-      return next;
-    });
-  }, [seasonGroups]);
-
-  const toggleSeason = (seasonName: string) => {
-    setOpenSeasons((current) => {
-      const next = new Set(current);
-      if (next.has(seasonName)) next.delete(seasonName);
-      else next.add(seasonName);
-      return next;
-    });
-  };
-
   return (
-    <section className="relative overflow-hidden bg-[#06182f] py-14 text-white">
+    <section className="relative overflow-hidden bg-[#06182f] py-5 text-white sm:py-7">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(22,136,255,.18),transparent_34%),linear-gradient(180deg,#071a33_0%,#041121_100%)]" />
       <div className="absolute inset-0 opacity-[.10] [background-image:linear-gradient(110deg,transparent_0%,transparent_46%,rgba(47,155,255,.30)_47%,transparent_48%,transparent_100%)] [background-size:420px_100%]" />
-      <div className="container-page relative z-10 space-y-8">
-        <div className="flex w-full flex-col gap-2 rounded-xl bg-[linear-gradient(180deg,rgba(10,29,58,.88),rgba(8,23,46,.82))] p-3 shadow-[0_14px_42px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ring-white/[0.05] sm:w-fit sm:flex-row sm:items-end sm:gap-3">
-          <div className="flex h-10 items-center gap-2 px-1 text-xs font-black uppercase tracking-[0.18em] text-[#8bbfff]">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#1688ff]/10 text-[#66b0ff]"><Filter size={15} /></span>
-            Filter
+      <div className="container-page relative z-10">
+        <div className="flex flex-col gap-3 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {COMPETITIONS.filter((name) => competitionCounts[name] > 0).map((name) => (
+              <button key={name} type="button" onClick={() => setCompetition(name)} className={`shrink-0 rounded-md px-4 py-2.5 text-xs font-bold transition ring-1 ${competition === name ? "bg-[#1688ff] text-white ring-[#42a0ff]" : "bg-[#0a2341] text-[#afc3dc] ring-white/[0.08] hover:bg-[#103158]"}`}>{name}{name === ALL_COMPETITIONS ? ` (${competitionCounts[name]})` : ""}</button>
+            ))}
           </div>
-          <div className="w-full sm:w-[280px]">
-            <PillSelect
-              label="Súťaž"
-              value={competition}
-              onChange={setCompetition}
-              options={COMPETITIONS.filter((name) => competitionCounts[name] > 0)}
-              labels={Object.fromEntries(COMPETITIONS.map((name) => [name, `${name} (${competitionCounts[name] || 0})`]))}
-            />
-          </div>
+          <label className="flex shrink-0 items-center gap-3 text-xs font-black text-[#afc3dc]"><span>Sezóna</span><span className="flex items-center gap-2 rounded-md bg-[#0a2341] px-3 ring-1 ring-white/[0.09]"><CalendarDays size={15} className="text-[#48a3ff]" /><select value={season} onChange={(event) => setSeason(event.target.value)} className="h-10 bg-transparent font-bold text-white outline-none">{SEASON_SHELLS.map((value) => <option key={value} value={value} className="bg-[#081a34]">{value}</option>)}</select></span></label>
         </div>
-
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1688ff]">Výsledky KK Hlohovec</p>
-            <h2 className="sport-title mt-2 text-4xl text-white">Zápasy podľa sezón</h2>
-          </div>
-          <span className="w-fit rounded-full bg-white/[0.06] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#9bcaff] ring-1 ring-white/[0.06]">
-            {matches.length} zápasov
-          </span>
-        </div>
-
+        <div className="mt-6">
         {loading ? (
           <EmptyState text="Načítavam zápasy z backendu..." />
         ) : !matches.length ? (
           <EmptyState text={`Backend vrátil ${rows.length} zápasov, ale pre vybraný filter sa nič nenašlo. Skús zmeniť súťaž.`} />
         ) : (
-          <div className="space-y-5">
-            {seasonGroups.map((group) => {
-              const isOpen = openSeasons.has(group.seasonName);
-              return (
-                <section
-                  key={group.seasonName}
-                  className="overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(10,29,58,.80),rgba(8,23,46,.70))] shadow-[0_20px_55px_rgba(0,0,0,.30),inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ring-white/[0.05]"
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleSeason(group.seasonName)}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left transition hover:bg-white/[0.035]"
-                  >
-                    <span>
-                      <span className="block text-xs font-black uppercase tracking-[0.18em] text-[#1688ff]">Sezóna</span>
-                      <span className="mt-1 block text-2xl font-black text-white">{group.seasonName}</span>
-                    </span>
-                    <span className="flex items-center gap-3">
-                      <span className="rounded-full bg-white/[0.06] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#9bcaff]">
-                        {group.rows.length} zápasov
-                      </span>
-                      <ChevronDown className={`text-[#1688ff] transition ${isOpen ? "rotate-180" : ""}`} size={24} />
-                    </span>
-                  </button>
-
-                  {isOpen ? (
-                    <div className="space-y-9 border-t border-white/[0.06] p-5">
-                      {group.byCompetition.map((competitionGroup) => (
-                        <div key={`${group.seasonName}-${competitionGroup.name}`} className="space-y-4">
-                          <h3 className={`inline-flex w-fit rounded-full px-4 py-2 text-sm font-black uppercase tracking-[0.08em] ring-1 ${getLeagueTheme(competitionGroup.name).badge}`}>{competitionGroup.name}</h3>
-                          <div className="grid gap-4 xl:grid-cols-3">
-                            {competitionGroup.rows.map((match) => <MatchCard key={matchKey(match)} match={match} />)}
-                          </div>
-                        </div>
-                      ))}
-                      {!group.rows.length ? (
-                        <EmptyState text="Táto sezóna je pripravená. Po importe nového rozpisu z vysledky.kolky.sk sa sem automaticky doplnia zápasy KKZ Hlohovec." />
-                      ) : null}
-                    </div>
-                  ) : null}
-                </section>
-              );
-            })}
+          <div className="space-y-7">
+            {monthGroups.map((group) => <section key={group.key}><div className="mb-3 flex items-center gap-4"><h2 className="text-lg font-black text-white">{group.label}</h2><span className="h-px flex-1 bg-white/[0.09]" /><span className="text-[11px] text-[#8fa7c5]">{group.rows.length} zápasov</span></div><div className="overflow-hidden rounded-xl ring-1 ring-[#245a8b]/45">{group.rows.map((match) => <MatchRow key={matchKey(match)} match={match} />)}</div></section>)}
           </div>
         )}
+        </div>
       </div>
     </section>
   );
@@ -205,6 +110,19 @@ function groupByCompetition(matches: NormalizedMatch[], selectedCompetition: str
   })).filter((group) => group.rows.length);
 }
 
+function groupByMonth(matches: NormalizedMatch[]) {
+  const grouped = new Map<string, { label: string; rows: NormalizedMatch[] }>();
+  matches.forEach((match) => {
+    const date = parsedDate(match.date);
+    const key = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}` : "unknown";
+    const label = date ? date.toLocaleDateString("sk-SK", { month: "long", year: "numeric" }).replace(/^./, (letter) => letter.toUpperCase()) : "Bez dátumu";
+    const group = grouped.get(key) || { label, rows: [] };
+    group.rows.push(match);
+    grouped.set(key, group);
+  });
+  return Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => ({ key, ...value }));
+}
+
 function EmptyState({ text }: { text: string }) {
   return (
     <div className="rounded-2xl bg-[linear-gradient(180deg,rgba(10,29,58,.72),rgba(8,23,46,.55))] p-8 text-[#b9c7db] shadow-[inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ring-white/[0.05]">
@@ -213,78 +131,29 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function MatchCard({ match }: { match: NormalizedMatch }) {
-  const theme = getLeagueTheme(match.competitionName);
+function MatchRow({ match }: { match: NormalizedMatch }) {
+  const completed = isCompletedMatch(match);
+  const date = parsedDate(match.date);
   return (
-    <article className={`flex min-h-[245px] flex-col rounded-2xl bg-[linear-gradient(180deg,#0a1d3a_0%,#08172e_100%)] p-5 shadow-[0_16px_48px_rgba(0,0,0,.32),inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ${theme.ring}`}>
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] pb-4 text-[11px] font-black uppercase tracking-[0.08em] text-[#9bcaff]">
-        <span>{match.competitionName} · {match.round}</span>
-        <span>{match.date}</span>
+    <article className="grid min-w-0 items-stretch border-b border-white/[0.06] bg-[linear-gradient(90deg,#0b2341,#071b34)] last:border-0 hover:bg-[#0e2b50] lg:grid-cols-[76px_minmax(0,1fr)_260px]">
+      <div className="flex items-center justify-center border-b border-white/[0.06] bg-[#0c294b] px-3 py-3 text-center lg:border-b-0 lg:border-r">
+        <div><span className="block text-[9px] font-bold uppercase text-[#8fa7c5]">{date ? date.toLocaleDateString("sk-SK", { weekday: "short" }) : ""}</span><strong className="block text-lg leading-5 text-white">{date ? `${date.getDate()}. ${date.getMonth() + 1}.` : match.date}</strong></div>
       </div>
-
-      <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-3 py-6 text-center">
-        <TeamBlock name={match.home} externalTeamId={match.homeExternalTeamId} logoUrl={match.homeTeam?.logoUrl} />
-        <div>
-          <strong className={`block whitespace-nowrap text-4xl font-black ${theme.text}`}>{formatScore(match.score)}</strong>
-          <p className={`mt-2 text-sm font-black ${theme.text}`}>{formatPins(match.pins)}</p>
+      <div className="min-w-0 px-4 py-3">
+        <p className="mb-2 text-[9px] font-black uppercase tracking-[0.1em] text-[#48a3ff]">{match.competitionName} <span className="ml-2 text-[#8fa7c5]">· {match.round}</span></p>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <RowTeam name={match.home} externalTeamId={match.homeExternalTeamId} logoUrl={match.homeTeam?.logoUrl} />
+          <div className="min-w-24 text-center"><strong className="block whitespace-nowrap text-2xl font-black text-white">{completed ? formatScore(match.score) : "— : —"}</strong><span className={`mt-1 inline-block rounded px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.08em] ${completed ? "bg-emerald-500/20 text-emerald-300" : "bg-[#1d4168] text-[#91bce8]"}`}>{completed ? "Odohrané" : "Nadchádzajúci zápas"}</span></div>
+          <RowTeam right name={match.away} externalTeamId={match.awayExternalTeamId} logoUrl={match.awayTeam?.logoUrl} />
         </div>
-        <TeamBlock name={match.away} externalTeamId={match.awayExternalTeamId} logoUrl={match.awayTeam?.logoUrl} />
       </div>
-
-      <div className="grid gap-2 border-t border-white/[0.06] pt-4 text-sm text-[#b9c7db] sm:grid-cols-2">
-        <p className="flex gap-2"><CalendarDays size={17} className={theme.text} /> {readableStatus(match.status)}</p>
-        <p className="flex gap-2"><MapPin size={17} className={theme.text} /> {match.location || "kolky.sk"}</p>
-      </div>
-
-      {match.streamUrl ? (
-        <a href={match.streamUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:bg-red-500">
-          <Radio size={17} /> Sledovať stream
-        </a>
-      ) : null}
-
-      <Link
-        href={`/zapasy/${match.id}`}
-        className={`${match.streamUrl ? "mt-3" : "mt-5"} inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:-translate-y-0.5 ${theme.button}`}
-      >
-        Zobraziť detail <ChevronRight size={17} />
-      </Link>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-white/[0.06] px-4 py-3 xl:border-l xl:border-t-0"><div className="flex min-w-0 items-start gap-2"><MapPin size={16} className="mt-0.5 shrink-0 text-[#48a3ff]" /><div className="min-w-0"><span className="block break-words text-[10px] leading-4 text-[#8fa7c5]">{match.location || "Miesto bude doplnené"}</span>{match.streamUrl ? <a href={match.streamUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-[9px] font-black uppercase text-red-400"><Radio size={11} />{completed ? "Záznam" : "Stream"}</a> : null}</div></div><Link href={`/zapasy/${match.id}`} className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-[#0e3158] px-3 text-[10px] font-black uppercase text-white ring-1 ring-[#2874b9]/60 hover:bg-[#164575]">{completed ? "Zápisnica" : "Detail"}<ChevronRight size={14} /></Link></div>
     </article>
   );
 }
 
-function TeamBlock({ name, externalTeamId, logoUrl }: { name: string; externalTeamId?: number | null; logoUrl?: string }) {
-  return <div className="flex min-w-0 flex-col items-center gap-2"><ClubLogo name={name} externalTeamId={externalTeamId} logoUrl={logoUrl} /><p className="text-sm font-black leading-tight text-white">{name}</p></div>;
-}
-
-function PillSelect({
-  label,
-  value,
-  options,
-  labels,
-  onChange
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  labels: Record<string, string>;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-[#9bcaff]">
-        <SlidersHorizontal size={13} /> {label}
-      </span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-lg bg-[#081a34] px-3 text-sm font-bold text-white outline-none ring-1 ring-white/[0.08] transition focus:ring-[#1688ff]/60"
-      >
-        {options.map((option) => (
-          <option key={option} value={option}>{labels?.[option] || option}</option>
-        ))}
-      </select>
-    </label>
-  );
+function RowTeam({ name, externalTeamId, logoUrl, right = false }: { name: string; externalTeamId?: number | null; logoUrl?: string; right?: boolean }) {
+  return <div className={`flex min-w-0 items-center gap-2 ${right ? "flex-row-reverse text-right" : ""}`}><div className="[&>span]:h-9 [&>span]:w-9"><ClubLogo name={name} externalTeamId={externalTeamId} logoUrl={logoUrl} /></div><p className="truncate text-xs font-black text-white sm:text-sm">{name}</p></div>;
 }
 
 type NormalizedMatch = LiveMatch & {
@@ -363,6 +232,10 @@ function readableStatus(value: string) {
   return "Importované";
 }
 
+function isCompletedMatch(match: LiveMatch) {
+  return normalizeText(match.status).includes("odohran") || /^\s*\d+(?:[.,]\d+)?\s*:\s*\d+(?:[.,]\d+)?\s*$/.test(match.score);
+}
+
 function formatScore(value: string) {
   return value.replace(/\.0/g, "").replace(/\s*:\s*/g, " : ");
 }
@@ -372,7 +245,7 @@ function formatPins(value: string) {
 }
 
 function dateValue(value: string) {
-  return parsedDate(value).getTime() || 0;
+  return parsedDate(value)?.getTime() || 0;
 }
 
 function parsedDate(value: string) {

@@ -8,7 +8,10 @@ import { type Team } from "@/lib/landing-data";
 import { type LiveMatch } from "@/lib/live-store";
 import { resolveClubLogo } from "@/lib/club-logos";
 
-const OFFICIAL_TEAM_PAIRS = new Set(["355:4855", "356:4865", "359:4889", "362:4925", "361:4923"]);
+const OFFICIAL_TEAM_PAIRS = new Set([
+  "355:4855", "356:4865", "359:4889", "362:4925", "361:4923",
+  "372:5041", "373:5054", "376:5084"
+]);
 
 export function LiveHomeRecentMatches({ fallbackMatches }: { fallbackMatches: RecentMatchWidget[] }) {
   const [rows, setRows] = useState<LiveMatch[]>([]);

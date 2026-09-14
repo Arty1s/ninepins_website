@@ -142,7 +142,7 @@ def _supabase_headers() -> dict[str, str]:
 def _remote_url(key: str) -> str:
     settings = get_settings()
     table = settings.supabase_live_state_table
-    return f"{settings.supabase_url}/rest/v1/{table}key=eq.{key}"
+    return f"{settings.supabase_url}/rest/v1/{table}"
 
 
 def _read_remote_state(key: str) -> Any | None:
@@ -153,7 +153,7 @@ def _read_remote_state(key: str) -> Any | None:
         response = httpx.get(
             _remote_url(key),
             headers=_supabase_headers(),
-            params={"select": "payload", "limit": "1"},
+            params={"key": f"eq.{key}", "select": "payload", "limit": "1"},
             timeout=8,
         )
         if response.status_code >= 400:

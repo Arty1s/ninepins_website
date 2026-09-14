@@ -91,6 +91,15 @@ class LiveTeam(BaseModel):
     points: int | None = None
 
 
+class MatchLaneStat(BaseModel):
+    lane: int
+    full: int | None = None
+    clearing: int | None = None
+    faults: int | None = None
+    total: int | None = None
+    point: float | None = None
+
+
 class MatchPlayerStat(BaseModel):
     name: str
     externalPlayerId: int | None = None
@@ -100,6 +109,8 @@ class MatchPlayerStat(BaseModel):
     faults: int | None = None
     total: int | None = None
     point: float | None = None
+    setPoints: float | None = None
+    lanes: list[MatchLaneStat] = Field(default_factory=list)
 
 
 class MatchTeamStats(BaseModel):
