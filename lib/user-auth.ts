@@ -13,6 +13,7 @@ type UserSessionPayload = {
   accessToken: string;
   refreshToken: string;
   exp: number;
+  accountType?: "member" | "parent";
 };
 
 function getSecret() {
@@ -37,12 +38,20 @@ export function createUserSession(user: User, session: Session, provider: string
 }
 
 export function createDemoMemberSession(email = "michaela@kkhlohovec.sk", name = "Michaela Vavrová") {
+  return createLocalMemberSession(email, name, "demo");
+}
+
+export function createLocalMemberSession(email: string, name: string, provider = "password", accountType: "member" | "parent" = "member") {
   return signPayload({
     email: email.trim().toLowerCase(),
     role: "member",
     name,
-    provider: "demo",
-    exp: Date.now() + 1000 * 60 * 60 * 8
+    avatarUrl: "",
+    provider,
+    accessToken: "",
+    refreshToken: "",
+    exp: Date.now() + 1000 * 60 * 60 * 8,
+    accountType
   });
 }
 
@@ -68,13 +77,13 @@ function getUserName(user: User): string {
   const metadata = user.user_metadata || {};
   const metadataName = metadata.full_name || metadata.name || metadata.user_name;
   if (typeof metadataName === "string" && metadataName.trim()) return metadataName.trim();
-  return user.email.split("@")[0] || "Člen KK Hlohovec";
+  return user.email?.split("@")[0] || "Člen KK Hlohovec";
 }
 
-function getAvatarUrl(user: User): string | undefined {
+function getAvatarUrl(user: User): string {
   const metadata = user.user_metadata || {};
   const avatarUrl = metadata.avatar_url || metadata.picture;
-  return typeof avatarUrl === "string" && avatarUrl.trim() ? avatarUrl.trim() : undefined;
+  return typeof avatarUrl === "string" && avatarUrl.trim() ? avatarUrl.trim() : "";
 }
 
 function signPayload(payload: UserSessionPayload) {

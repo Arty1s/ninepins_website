@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ArrowRight, Eye, EyeOff, Facebook, Loader2, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Facebook, Loader2, LockKeyhole, UserRound } from "lucide-react";
 
 export function LoginFormCard() {
   const router = useRouter();
@@ -63,13 +63,13 @@ export function LoginFormCard() {
 
       <form className="space-y-5" onSubmit={onSubmit} autoComplete="off">
         <label className="block">
-          <span className="mb-2.5 block text-xs font-black uppercase tracking-[0.08em] text-white">E-mail</span>
+          <span className="mb-2.5 block text-xs font-black uppercase tracking-[0.08em] text-white">E-mail alebo prihlasovacie meno</span>
           <span className="flex h-14 items-center gap-4 rounded-xl border border-[#1683ff]/20 bg-[#071a33]/60 px-5 text-white/74 shadow-[inset_0_1px_0_rgba(20,124,255,.10)] transition focus-within:border-[#1683ff]/74 focus-within:bg-[#071a33]/82 focus-within:ring-4 focus-within:ring-[#1683ff]/12">
-            <Mail size={20} />
+            <UserRound size={20} />
             <input
               className="h-full min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/46"
-              placeholder="Zadaj svoj e-mail"
-              type="email"
+              placeholder="E-mail alebo meno"
+              type="text"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="off"

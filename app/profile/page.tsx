@@ -14,8 +14,10 @@ import {
   Users
 } from "lucide-react";
 import { ADMIN_SESSION_COOKIE, readAdminSession } from "@/lib/admin-auth";
+import { getFileUser } from "@/lib/file-user-store";
 import { readClubData } from "@/lib/server-store";
 import { readUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
+import { ProfileSettings } from "@/components/profile-settings";
 
 const paymentRows = [
   {
@@ -48,8 +50,8 @@ const tournaments = [
 ];
 
 export default async function ProfilePage() {
-  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE).value);
-  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE).value);
+  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE)?.value || "");
+  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE)?.value || "");
   const session = userSession || adminSession;
 
   if (!session) {
@@ -59,15 +61,18 @@ export default async function ProfilePage() {
   const isAdmin = session.role === "admin";
   const email = session.email;
   const clubData = await readClubData();
+  const fileUser = !isAdmin ? await getFileUser(email) : null;
+  const isParent = fileUser?.accountType === "parent";
+  const child = fileUser?.children[0];
   const member = clubData.members.find((item) => item.email.trim().toLowerCase() === email.trim().toLowerCase());
   const rawName = "name" in session ? session.name : undefined;
   const rawAvatarUrl = "avatarUrl" in session ? session.avatarUrl : undefined;
   const rawProvider = "provider" in session ? session.provider : undefined;
-  const name = isAdmin ? "Admin" : member.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
+  const name = isAdmin ? "Admin" : member?.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Člen KK Hlohovec");
   const avatarUrl = typeof rawAvatarUrl === "string" && rawAvatarUrl.trim() ? rawAvatarUrl.trim() : undefined;
   const provider = typeof rawProvider === "string" && rawProvider.trim() ? rawProvider.trim() : isAdmin ? "password" : "email";
-  const currentTeam = isAdmin ? "Administrácia klubu" : member.team || "KK Hlohovec";
-  const teamRole = isAdmin ? "Správa klubu" : roleLabel(member.role);
+  const currentTeam = isAdmin ? "Administrácia klubu" : member?.team || (isParent ? "Rodič / zákonný zástupca" : "KK Hlohovec");
+  const teamRole = isAdmin ? "Správa klubu" : isParent ? "Správa profilu dieťaťa" : roleLabel(member?.role || "member");
   const matchCount = "Čaká na import";
 
   return (
@@ -80,9 +85,7 @@ export default async function ProfilePage() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.32em] text-[#1683ff]">Môj profil</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Vitaj späť, {name}</h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-white/70">
-                Členský účet pripravený pre platby, tím, turnaje a hráčsku históriu. Zápasy z vysledky.kolky.sk budú napojené cez import podľa hráčskeho ID.
-              </p>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-white/70">{isParent ? `Rodičovský účet na správu členstva a športového progresu hráčky ${child?.name || "dieťaťa"}.` : "Členský účet pripravený pre platby, tím, turnaje a hráčsku históriu."}</p>
             </div>
             {isAdmin ? (
               <Link className="inline-flex h-12 items-center justify-center rounded-xl bg-[#1683ff] px-5 text-sm font-black uppercase tracking-[0.04em] text-white shadow-[0_18px_44px_rgba(22,131,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#2d90ff]" href="/admin">
@@ -103,15 +106,15 @@ export default async function ProfilePage() {
                 )}
                 <div className="min-w-0">
                   <h2 className="truncate text-2xl font-black">{name}</h2>
-                  <p className="truncate text-sm text-white/62">{email}</p>
+                  <p className="truncate text-sm text-white/62">{email.endsWith("@local.kkhc") ? `Prihlasovacie meno: ${fileUser?.username}` : email}</p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[#1683ff]/14 px-3 py-1 text-xs font-bold text-[#74bdff]">{isAdmin ? "Admin" : "Členka"}</span>
+                    <span className="rounded-full bg-[#1683ff]/14 px-3 py-1 text-xs font-bold text-[#74bdff]">{isAdmin ? "Admin" : isParent ? "Rodičovský účet" : "Členka"}</span>
                     <span className="rounded-full bg-white/6 px-3 py-1 text-xs font-bold text-white/68">{provider}</span>
                   </div>
                 </div>
               </div>
               <div className="mt-6 grid gap-3">
-                <StatusLine label="Členstvo" value={membershipLabel(member.membershipStatus)} />
+                <StatusLine label="Členstvo" value={isParent && child ? membershipLabel(child.membershipStatus) : membershipLabel(member?.membershipStatus || "pending")} />
                 <StatusLine label="Aktuálny tím" value={currentTeam} />
                 <StatusLine label="Rola v klube" value={teamRole} />
               </div>
@@ -119,7 +122,7 @@ export default async function ProfilePage() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Info icon={CreditCard} title="Členstvo" value="Online platby" />
-              <Info icon={CalendarClock} title="Ďalšia platba" value={member.nextPayment || "Po aktivácii"} />
+              <Info icon={CalendarClock} title="Ďalšia platba" value={isParent && child ? child.nextPayment : member?.nextPayment || "Po aktivácii"} />
               <Info icon={Users} title="Tím" value={currentTeam} />
               <Info icon={Database} title="Zápasy kolky.sk" value={matchCount} />
             </div>
@@ -128,6 +131,19 @@ export default async function ProfilePage() {
       </section>
 
       <section className="container-page grid gap-5 py-8 lg:grid-cols-[1.25fr_0.75fr]">
+        {isParent && child ? <Surface title="Spravované dieťa" icon={Users}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <StatusLine label="Hráčka" value={child.name} />
+            <StatusLine label="Členské" value={membershipLabel(child.membershipStatus)} />
+            <StatusLine label="Najbližšia platba" value={child.nextPayment} />
+            <StatusLine label="Progres" value="Čaká na prepojenie s kolky.sk" />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-white/60">Platby aj športový progres v tomto profile patria Liliane. Zuzana ich spravuje ako rodič.</p>
+        </Surface> : null}
+
+        {isParent ? <Surface title="Nastavenia účtu" icon={UserRound}>
+          <ProfileSettings provisionalEmail={email.endsWith("@local.kkhc")} />
+        </Surface> : null}
         <Surface title="Členstvo a história platieb" icon={CreditCard}>
           <div className="overflow-hidden rounded-2xl bg-white/[0.025]">
             {paymentRows.map((row) => (

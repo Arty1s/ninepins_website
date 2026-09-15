@@ -2,11 +2,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ADMIN_SESSION_COOKIE, readAdminSession } from "@/lib/admin-auth";
 import { readClubData } from "@/lib/server-store";
+import { getFileUser } from "@/lib/file-user-store";
 import { readUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
 
 export async function GET() {
-  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE).value);
-  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE).value);
+  const adminSession = readAdminSession(cookies().get(ADMIN_SESSION_COOKIE)?.value || "");
+  const userSession = readUserSession(cookies().get(USER_SESSION_COOKIE)?.value || "");
   const session = userSession || adminSession;
 
   if (!session) {
@@ -16,11 +17,12 @@ export async function GET() {
   const isAdmin = session.role === "admin";
   const email = session.email;
   const clubData = await readClubData();
+  const fileUser = !isAdmin ? await getFileUser(email) : null;
   const member = clubData.members.find((item) => item.email.trim().toLowerCase() === email.trim().toLowerCase());
   const rawName = "name" in session ? session.name : undefined;
   const rawAvatarUrl = "avatarUrl" in session ? session.avatarUrl : undefined;
   const rawProvider = "provider" in session ? session.provider : undefined;
-  const name = isAdmin ? "Admin" : member.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Michaela Vavrová");
+  const name = isAdmin ? "Admin" : member?.name || (typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Člen KK Hlohovec");
 
   return NextResponse.json({
     authenticated: true,
@@ -30,16 +32,19 @@ export async function GET() {
       name,
       avatarUrl: typeof rawAvatarUrl === "string" && rawAvatarUrl.trim() ? rawAvatarUrl.trim() : null,
       provider: typeof rawProvider === "string" && rawProvider.trim() ? rawProvider.trim() : isAdmin ? "password" : "email"
+      ,accountType: fileUser?.accountType || "member",
+      username: fileUser?.username || null,
+      children: fileUser?.children || []
     },
     membership: {
-      status: member.membershipStatus || "pending_payment",
-      label: member.membershipStatus === "paid" ? "Zaplatené" : member.membershipStatus === "unpaid" ? "Nezaplatené" : "Čaká na prvú platbu",
-      nextPayment: member.nextPayment || null,
+      status: member?.membershipStatus || fileUser?.children[0]?.membershipStatus || "pending_payment",
+      label: (member?.membershipStatus || fileUser?.children[0]?.membershipStatus) === "paid" ? "Zaplatené" : (member?.membershipStatus || fileUser?.children[0]?.membershipStatus) === "unpaid" ? "Nezaplatené" : "Čaká na prvú platbu",
+      nextPayment: member?.nextPayment || fileUser?.children[0]?.nextPayment || null,
       stripeReady: false
     },
     team: {
-      name: isAdmin ? "Administrácia klubu" : member.team || "KK Hlohovec",
-      category: isAdmin ? "Správa klubu" : member.role || "member",
+      name: isAdmin ? "Administrácia klubu" : member?.team || (fileUser?.accountType === "parent" ? "Rodič / zákonný zástupca" : "KK Hlohovec"),
+      category: isAdmin ? "Správa klubu" : member?.role || fileUser?.accountType || "member",
       captain: null,
       coach: null
     },

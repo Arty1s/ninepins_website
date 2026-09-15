@@ -57,7 +57,7 @@ export function LiveHomeRecentMatches({ fallbackMatches }: { fallbackMatches: Re
 
   return (
     <>
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-3">
+      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4 lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0">
         {matches.map((match) => (
           <MatchResultWidget key={`${match.date}-${match.home.name}-${match.away.name}-${match.href}`} match={match} />
         ))}
@@ -69,7 +69,7 @@ export function LiveHomeRecentMatches({ fallbackMatches }: { fallbackMatches: Re
 
 function MatchResultWidget({ match }: { match: RecentMatchWidget }) {
   return (
-    <article className="rounded-lg border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] px-3 pb-3 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_14px_34px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-0.5 hover:border-[#2c86d8]/75 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_20px_42px_rgba(0,0,0,.2)] sm:px-4 sm:pb-4">
+    <article className="basis-[88%] shrink-0 snap-start rounded-lg border border-[#1b5790]/70 bg-[linear-gradient(180deg,rgba(8,38,78,.92),rgba(6,28,58,.88))] px-3 pb-3 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,.055),0_14px_34px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-0.5 hover:border-[#2c86d8]/75 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_20px_42px_rgba(0,0,0,.2)] sm:basis-[58%] sm:px-4 sm:pb-4 lg:basis-auto">
       <div className="flex items-start justify-between gap-3 border-b border-[#183e67]/80 pb-3 text-[10px] uppercase leading-4 text-[#9db4d2] sm:text-[11px]">
         <span className="min-w-0 flex-1">{match.league}</span>
         <span className="shrink-0">{match.date}</span>

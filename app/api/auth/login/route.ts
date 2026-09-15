@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { ADMIN_SESSION_COOKIE, createAdminSession, getAdminEmail, verifyAdminPassword } from "@/lib/admin-auth";
 import { createSupabaseAuthClient, isSupabaseAuthConfigured } from "@/lib/supabase-auth-server";
-import { createDemoMemberSession, createUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
+import { verifyFileUser } from "@/lib/file-user-store";
+import { createLocalMemberSession, createUserSession, USER_SESSION_COOKIE } from "@/lib/user-auth";
 
-const DEMO_MEMBER_PASSWORDS = new Set(["clen123", "michaela123"]);
-const DEMO_MEMBER_EMAILS = new Set(["clen@kkhlohovec.sk", "michaela@kkhlohovec.sk"]);
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
@@ -30,17 +30,17 @@ export async function POST(request: Request) {
       return response;
     }
 
-    if (DEMO_MEMBER_EMAILS.has(email) && DEMO_MEMBER_PASSWORDS.has(password)) {
-      const demoEmail = email === "clen@kkhlohovec.sk" ? "michaela@kkhlohovec.sk" : email;
+    const localUser = await verifyFileUser(email, password);
+    if (localUser) {
       const response = NextResponse.json({
         ok: true,
-        user: { email: demoEmail, role: "member", name: "Michaela Vavrová" },
+        user: { email: localUser.email, role: "member", name: localUser.name, accountType: localUser.accountType },
         redirectTo: "/profile"
       });
-      response.cookies.set(USER_SESSION_COOKIE, createDemoMemberSession(demoEmail, "Michaela Vavrová"), {
+      response.cookies.set(USER_SESSION_COOKIE, createLocalMemberSession(localUser.email, localUser.name, "password", localUser.accountType), {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.ADMIN_COOKIE_SECURE === "true",
+        secure: process.env.NODE_ENV === "production" || process.env.ADMIN_COOKIE_SECURE === "true",
         path: "/",
         maxAge: 60 * 60 * 8
       });
@@ -65,10 +65,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Nesprávny e-mail alebo heslo." }, { status: 401 });
     }
 
-    const role = data.user.email.trim().toLowerCase() === getAdminEmail() ? "admin" : "member";
+    const authenticatedEmail = (data.user.email || "").trim().toLowerCase();
+    if (!authenticatedEmail) return NextResponse.json({ ok: false, message: "Účet nemá platný e-mail." }, { status: 401 });
+    const role = authenticatedEmail === getAdminEmail() ? "admin" : "member";
     const response = NextResponse.json({
       ok: true,
-      user: { email: data.user.email, role },
+      user: { email: authenticatedEmail, role },
       redirectTo: role === "admin" ? "/admin" : "/profile"
     });
     response.cookies.set(USER_SESSION_COOKIE, createUserSession(data.user, data.session, "email"), {
