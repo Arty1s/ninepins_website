@@ -10,7 +10,7 @@ const ALL_COMPETITIONS = "Všetky";
 const COMPETITIONS = [ALL_COMPETITIONS, "Extraliga muži", "Extraliga ženy", "1. liga", "2. liga", "3. liga", "Dorast"];
 const OFFICIAL_TEAM_PAIRS = new Set([
   "355:4855", "356:4865", "359:4889", "362:4925", "361:4923",
-  "372:5041", "373:5054", "376:5084"
+  "372:5041", "373:5054"
 ]);
 const DEFAULT_COLLAPSED_SEASONS = new Set(["2025/2026"]);
 const SEASON_SHELLS = ["2026/2027", "2025/2026"];

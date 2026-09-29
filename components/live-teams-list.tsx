@@ -7,11 +7,10 @@ import { ArrowRight } from "lucide-react";
 import { type LiveTeam } from "@/lib/live-store";
 import { getLeagueTheme } from "@/lib/league-theme";
 
-const OFFICIAL_TEAM_IDS = [5041, 5054, 5084, 4855, 4865, 4925];
+const OFFICIAL_TEAM_IDS = [5041, 5054, 4855, 4865, 4925];
 const OFFICIAL_FALLBACK_TEAMS: LiveTeam[] = [
   { id: 6, slug: "prva-liga", name: "1. liga", league: "KKZ Hlohovec A", externalLeagueId: 372, externalTeamId: 5041, category: "1. liga", season: "2026/2027", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "A-tím KKZ Hlohovec v aktuálnej sezóne 1. ligy." },
   { id: 3, slug: "druha-liga", name: "2. liga", league: "KKZ Hlohovec B", externalLeagueId: 373, externalTeamId: 5054, category: "2. liga", season: "2026/2027", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "B-tím KKZ Hlohovec pokračuje v aktuálnej sezóne 2. ligy." },
-  { id: 5, slug: "dorast", name: "Dorast", league: "KKZ Hlohovec", externalLeagueId: 376, externalTeamId: 5084, category: "Dorast", season: "2026/2027", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Dorastenecký tím KKZ Hlohovec v sezóne 2026/2027." },
   { id: 1, slug: "extraliga-muzi", name: "Extraliga muži", league: "KKZ Hlohovec A", externalLeagueId: 355, externalTeamId: 4855, category: "Extraliga muži", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Mužský extraligový tím KKZ Hlohovec zo sezóny 2025/2026." },
   { id: 2, slug: "extraliga-zeny", name: "Extraliga ženy", league: "KKZ Hlohovec", externalLeagueId: 356, externalTeamId: 4865, category: "Extraliga ženy", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitánku doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "Ženský extraligový tím KKZ Hlohovec zo sezóny 2025/2026." },
   { id: 4, slug: "tretia-liga", name: "3. liga", league: "KKZ Hlohovec C", externalLeagueId: 362, externalTeamId: 4925, category: "3. liga", season: "2025/2026", coach: "Trénera doplní admin", captain: "Kapitána doplní admin", members: "", achievements: "Výsledky sa synchronizujú z vysledky.kolky.sk", description: "C-tím KKZ Hlohovec zo sezóny 2025/2026." }

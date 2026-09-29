@@ -531,7 +531,7 @@ function MatchCrud({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: LiveM
       <div className="flex flex-col gap-3 rounded-xl border border-white/[0.05] bg-[#061a33]/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-bold text-white">Dáta KKZ Hlohovec</p>
-          <p className="mt-1 text-xs text-[#9fb0c8]">Synchronizuje iba päť oficiálnych tímov: Extraliga muži, Extraliga ženy, 2. liga, 3. liga a Dorast.</p>
+          <p className="mt-1 text-xs text-[#9fb0c8]">Synchronizuje iba oficiálne aktívne tímy klubu pre zvolenú sezónu.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <ActionButton onClick={() => importSeason("live")}><Download size={17} /> {importing ? "Synchronizujem..." : "Synchronizovať dáta KKZ Hlohovec"}</ActionButton>
