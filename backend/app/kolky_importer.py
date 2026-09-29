@@ -143,14 +143,14 @@ HLOHOVEC_SCHEDULE_DEFINITIONS = [
         "description": "B-tím KKZ Hlohovec v 2. kolkárskej lige Západ.",
     },
     {
-        "id": 5084,
-        "slug": "dorast",
-        "name": "KKZ Hlohovec",
-        "category": "Dorast",
-        "leagueId": 376,
+        "id": 5093,
+        "slug": "tretia-liga",
+        "name": "KKZ Hlohovec C",
+        "category": "3. liga",
+        "leagueId": 377,
         "season": "2026/2027",
-        "sourceSlug": "KKZ-Hlohovec",
-        "description": "Dorastenecký tím KKZ Hlohovec v Dorasteneckej lige Západ.",
+        "sourceSlug": "KKZ-Hlohovec-C",
+        "description": "C-tím KKZ Hlohovec v aktuálnej 3. lige TTNR.",
     },
 ]
 HLOHOVEC_TEAM_KEYS = {(item["leagueId"], item["id"]): item for item in HLOHOVEC_TEAM_DEFINITIONS}
