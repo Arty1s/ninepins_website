@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     kolky_import_index_urls: str = "https://vysledky.kolky.sk/archive,https://vysledky.kolky.sk/"
     kolky_import_cache_file: str = "fixtures/kolky-hlohovec-matches.json"
     kolky_import_id_from: int = 43000
-    kolky_import_id_to: int = 44050
+    kolky_import_id_to: int = 47000
     kolky_auto_import_enabled: bool = False
     kolky_auto_import_interval_seconds: int = 60 * 60 * 24
 

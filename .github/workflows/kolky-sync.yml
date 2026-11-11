@@ -1,0 +1,35 @@
+name: Kolky daily sync
+
+on:
+  schedule:
+    # Daily after midnight CET. vercel.json crons do not run on Cloudflare Pages, so this workflow is the production scheduler.
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Trigger kolky.sk sync on the backend
+        shell: bash
+        env:
+          KOLKY_SYNC_URL: ${{ secrets.KOLKY_SYNC_URL }}
+          KOLKY_IMPORT_SECRET: ${{ secrets.KOLKY_IMPORT_SECRET }}
+        run: |
+          SYNC_URL="${KOLKY_SYNC_URL:-https://api.kolkyhlohovec.com/api/admin/sync?from=2025-09-01&to=2027-06-30&mode=live}"
+          echo "POST $SYNC_URL"
+          HTTP_CODE=$(curl --silent --show-error --output /tmp/kolky-sync.json --write-out "%{http_code}" \
+            --retry 3 --retry-delay 10 --max-time 600 \
+            -X POST "$SYNC_URL" \
+            -H "x-kkhc-import-secret: $KOLKY_IMPORT_SECRET")
+          echo "HTTP $HTTP_CODE"
+          head -c 2000 /tmp/kolky-sync.json; echo
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Kolky sync failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+          python3 -c "import json; d=json.load(open('/tmp/kolky-sync.json')); print('ok:', d.get('ok'), 'status:', d.get('status'), 'counts:', d.get('counts'))"
