@@ -1,0 +1,22 @@
+# Backend-only deploy. Frontend lives on Cloudflare Pages.
+# Friend's server: copy this file + backend/.env, then `docker compose up -d`.
+services:
+  api:
+    build: ./backend
+    image: ghcr.io/arty1s/ninepins_website-backend:latest
+    env_file:
+      - backend/.env
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - kkhc-data:/app/.data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('BACKEND_PORT','8000')+'/health',timeout=8)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  kkhc-data:

@@ -13,11 +13,31 @@ copy .env.example .env
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Health check:
+## Docker (server)
+
+Build context is `backend/`:
 
 ```powershell
+docker build -t kkhc-api ./backend
+copy backend\.env.example backend\.env
+# edit backend\.env: FRONTEND_ORIGIN=https://kolkyhlohovec.com, COOKIE_SECURE=true, KOLKY_AUTO_IMPORT_ENABLED=true
+docker run -d --name kkhc-api --restart unless-stopped -p 8000:8000 --env-file backend/.env -v kkhc-data:/app/.data kkhc-api
 Invoke-WebRequest http://127.0.0.1:8000/health
 ```
+
+Or with compose from the repo root (uses the prebuilt GHCR image when available):
+
+```powershell
+copy backend\.env.example backend\.env
+docker compose up -d --build
+docker compose ps
+Invoke-WebRequest http://127.0.0.1:8000/health
+```
+
+The image runs as non-root, exposes `8000`, includes a `/health` healthcheck,
+and persists the local JSON fallback store in the `kkhc-data` volume
+(`KKHC_DATA_DIR=.data`). With Supabase env vars set, state is shared with the
+Cloudflare frontend; without them, each backend keeps its own `.data` files.
 
 ## Important endpoints
 
