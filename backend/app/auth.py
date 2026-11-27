@@ -1,21 +1,31 @@
 import hashlib
 import hmac
+import time
 from typing import Any
 
 from fastapi import HTTPException, Request, Response, status
-from itsdangerous import BadSignature, URLSafeSerializer
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from backend.app.config import get_settings
 from backend.app.storage import read_club_data
 
 ADMIN_SESSION_COOKIE = "kkhc_admin_session"
 USER_SESSION_COOKIE = "kkhc_user_session"
+
+# Local-dev only credentials. Active only when DEMO_LOGIN_ENABLED=true.
 DEMO_MEMBER_PASSWORDS = {"clen123", "michaela123"}
 DEMO_MEMBER_EMAILS = {"clen@kkhlohovec.sk", "michaela@kkhlohovec.sk"}
 
+SESSION_MAX_AGE_SECONDS = 60 * 60 * 8
 
-def _serializer() -> URLSafeSerializer:
-    return URLSafeSerializer(get_settings().session_secret, salt="kkhc-fastapi-session")
+# Login brute-force protection: max attempts per (IP, e-mail) in a window.
+LOGIN_ATTEMPT_LIMIT = 10
+LOGIN_ATTEMPT_WINDOW_SECONDS = 600
+_login_attempts: dict[str, list[float]] = {}
+
+
+def _serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(get_settings().session_secret, salt="kkhc-fastapi-session")
 
 
 def create_session(email: str, role: str, name: str | None = None) -> str:
@@ -29,8 +39,8 @@ def read_session_token(token: str | None) -> dict[str, Any] | None:
     if not token:
         return None
     try:
-        payload = _serializer().loads(token)
-    except BadSignature:
+        payload = _serializer().loads(token, max_age=SESSION_MAX_AGE_SECONDS)
+    except (BadSignature, SignatureExpired):
         return None
     return payload if isinstance(payload, dict) else None
 
@@ -81,9 +91,28 @@ def authenticate(email: str, password: str) -> dict[str, str] | None:
     if normalized == settings.admin_email.lower() and hmac.compare_digest(password_hash, settings.admin_password_hash):
         return {"email": settings.admin_email.lower(), "role": "admin", "name": "Admin"}
 
-    if normalized in DEMO_MEMBER_EMAILS and password in DEMO_MEMBER_PASSWORDS:
+    if settings.demo_login_enabled and normalized in DEMO_MEMBER_EMAILS and password in DEMO_MEMBER_PASSWORDS:
         member_email = "michaela@kkhlohovec.sk" if normalized == "clen@kkhlohovec.sk" else normalized
         member = next((item for item in read_club_data().members if item.email.lower() == member_email), None)
         return {"email": member_email, "role": "member", "name": member.name if member else "Michaela Vavrová"}
 
     return None
+
+
+def _login_attempt_key(client_ip: str, email: str) -> str:
+    return f"{client_ip}|{email.strip().lower()}"
+
+
+def is_login_blocked(client_ip: str, email: str) -> bool:
+    now = time.monotonic()
+    attempts = [ts for ts in _login_attempts.get(_login_attempt_key(client_ip, email), []) if now - ts < LOGIN_ATTEMPT_WINDOW_SECONDS]
+    _login_attempts[_login_attempt_key(client_ip, email)] = attempts
+    return len(attempts) >= LOGIN_ATTEMPT_LIMIT
+
+
+def record_login_attempt(client_ip: str, email: str, success: bool) -> None:
+    key = _login_attempt_key(client_ip, email)
+    if success:
+        _login_attempts.pop(key, None)
+        return
+    _login_attempts.setdefault(key, []).append(time.monotonic())

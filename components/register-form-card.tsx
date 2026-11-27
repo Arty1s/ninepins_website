@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Facebook, Loader2, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail, UserRound } from "lucide-react";
 
 type RegisterResult = {
   ok: boolean;
@@ -76,14 +76,10 @@ export function RegisterFormCard() {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         <a className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-[#1683ff]/28 bg-[#147cff] px-4 text-sm font-black text-white shadow-[0_16px_40px_rgba(20,124,255,.28)] transition hover:-translate-y-0.5 hover:bg-[#238bff]" href={`/api/auth/oauth/google${nextQuery}`}>
           <span className="text-lg font-black">G</span>
           Registrovať cez Google
-        </a>
-        <a className="inline-flex h-12 items-center justify-center gap-3 rounded-xl border border-[#1683ff]/20 bg-[#071a33]/48 px-4 text-sm font-bold text-white transition hover:border-[#1683ff]/50 hover:bg-[#071a33]/76" href={`/api/auth/oauth/facebook${nextQuery}`}>
-          <Facebook size={18} className="text-[#1683ff]" />
-          Facebook
         </a>
       </div>
 

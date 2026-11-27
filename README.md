@@ -55,4 +55,4 @@ Admin účet sa nastavuje cez `ADMIN_EMAIL`, `ADMIN_PASSWORD_SALT` a `ADMIN_PASS
 
 ## Konfigurácia
 
-Použi `.env.example` a `backend/.env.example` ako šablóny. Produkčné prihlasovanie cez Google/Facebook potrebuje Supabase OAuth nastavenia. Platby cez Stripe potrebujú `STRIPE_SECRET_KEY`.
+Použi `.env.example` a `backend/.env.example` ako šablóny. Produkčné prihlasovanie cez Google potrebuje Supabase OAuth nastavenia. Platby cez Stripe potrebujú `STRIPE_SECRET_KEY`.

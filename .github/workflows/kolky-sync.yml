@@ -21,6 +21,8 @@ jobs:
           KOLKY_IMPORT_SECRET: ${{ secrets.KOLKY_IMPORT_SECRET }}
         run: |
           SYNC_URL="${KOLKY_SYNC_URL:-https://api.kolkyhlohovec.com/api/admin/sync?from=2025-09-01&to=2027-06-30&mode=live}"
+          # Secret travels in the header only, never in the URL.
+          SYNC_URL="$(echo "$SYNC_URL" | sed -E 's/([?&])secret=[^&]*(&|$)/\1/g; s/[?&]$//; s/\?&/?/')"
           echo "POST $SYNC_URL"
           HTTP_CODE=$(curl --silent --show-error --output /tmp/kolky-sync.json --write-out "%{http_code}" \
             --retry 3 --retry-delay 10 --max-time 600 \

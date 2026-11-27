@@ -82,6 +82,10 @@ Paid tournament cancellations are marked as refund-eligible only when cancelled 
 
 FastAPI also starts a 24h background import loop when `KOLKY_AUTO_IMPORT_ENABLED=true`.
 
-Admin login is configured with `ADMIN_EMAIL`, `ADMIN_PASSWORD_SALT` and `ADMIN_PASSWORD_HASH` environment variables.
+Admin login is configured with `ADMIN_EMAIL`, `ADMIN_PASSWORD_SALT` and `ADMIN_PASSWORD_HASH` environment variables. The backend refuses to start with missing or placeholder values. Generate a hash with:
 
-- `michaela@kkhlohovec.sk` / `michaela123`
+```powershell
+python scripts/make-admin-hash.py
+```
+
+Demo logins (`michaela@kkhlohovec.sk`, `clen@kkhlohovec.sk`) work only when `DEMO_LOGIN_ENABLED=true`, which is strictly local-dev only and defaults to off.

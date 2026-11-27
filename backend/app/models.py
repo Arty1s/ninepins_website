@@ -239,6 +239,9 @@ class MemberEnsureBody(BaseModel):
     name: str = ""
     provider: str = "google"
     avatarUrl: str = ""
+    # Supabase Auth access token proving the e-mail belongs to the caller.
+    # Verified server-side; never trust the browser alone.
+    providerToken: str = ""
 
 
 class RegistrationCancelBody(BaseModel):

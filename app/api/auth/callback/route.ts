@@ -29,8 +29,9 @@ export async function GET(request: NextRequest) {
   await ensureBackendMember({
     email: data.user.email || "",
     name: getUserName(data.user),
-    provider: data.user.app_metadata.provider || "google",
-    avatarUrl: getAvatarUrl(data.user) || ""
+    provider: "google",
+    avatarUrl: getAvatarUrl(data.user) || "",
+    providerToken: data.session.access_token
   });
 
   const response = NextResponse.redirect(new URL(next, request.url));
@@ -83,7 +84,7 @@ function getAvatarUrl(user: { user_metadata: Record<string, unknown> }) {
   return typeof avatar === "string" && avatar.trim() ? avatar.trim() : "";
 }
 
-async function ensureBackendMember(payload: { email: string; name: string; provider: string; avatarUrl: string }) {
+async function ensureBackendMember(payload: { email: string; name: string; provider: string; avatarUrl: string; providerToken: string }) {
   if (!payload.email) return;
   const fastApiUrl = process.env.FASTAPI_URL || process.env.NEXT_PUBLIC_API_URL;
   if (!fastApiUrl) return;

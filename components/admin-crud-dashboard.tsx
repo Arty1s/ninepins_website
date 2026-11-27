@@ -589,7 +589,7 @@ function KolkyImport({ rows, setRows }: { rows: LiveMatch[]; setRows: (rows: Liv
     setLogs([]);
     try {
       const params = new URLSearchParams({ url });
-      const response = await fetch(`${fastApiImportUrl()}${params.toString()}`, { method: "POST" });
+      const response = await fetch(`${fastApiImportUrl()}${params.toString()}`, { method: "POST", credentials: "include" });
       const payload = await response.json() as ImportPayload;
       setLogs(payload.logs || []);
       const imported = payload.matches || [];

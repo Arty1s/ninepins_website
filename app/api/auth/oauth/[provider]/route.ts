@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Provider, SupportedStorage } from "@supabase/supabase-js";
 import { createSupabaseAuthClient, getSiteUrl, isSupabaseAuthConfigured, SUPABASE_AUTH_STORAGE_KEY } from "@/lib/supabase-auth-server";
 
-const providers = new Set(["google", "facebook"]);
+const providers = new Set(["google"]);
 const OAUTH_VERIFIER_COOKIE = "kkhc_oauth_code_verifier";
 const OAUTH_REDIRECT_COOKIE = "kkhc_oauth_redirect";
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: { params: { provider
   }
 
   if (!isSupabaseAuthConfigured()) {
-    return redirectWithError(request, "Google/Facebook login potrebuje nastaviť Supabase URL a anon key v .env.");
+    return redirectWithError(request, "Google login potrebuje nastaviť Supabase URL a anon key v .env.");
   }
 
   const storage = new MemoryStorage();
@@ -26,10 +26,10 @@ export async function GET(request: NextRequest, { params }: { params: { provider
   const redirectTo = `${siteUrl}/api/auth/callbacknext=${encodeURIComponent(next)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
+    provider: "google",
     options: {
       redirectTo,
-      scopes: provider === "google" ? "email profile" : "email,public_profile"
+      scopes: "email profile"
     }
   });
 

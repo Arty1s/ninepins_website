@@ -1,11 +1,21 @@
 import asyncio
+import hmac
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlparse
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.auth import authenticate, clear_session_cookies, read_request_session, require_admin, set_session_cookie
+from backend.app.auth import (
+    authenticate,
+    clear_session_cookies,
+    is_login_blocked,
+    read_request_session,
+    record_login_attempt,
+    require_admin,
+    set_session_cookie,
+)
 from backend.app.config import get_settings
 from backend.app.kolky_importer import build_official_teams, get_hlohovec_team_definitions, import_hlohovec_matches, is_hlohovec_match, sync_hlohovec_club_data
 from backend.app.models import (
@@ -22,6 +32,10 @@ from backend.app.models import (
 from backend.app.storage import read_club_data, read_registrations, write_club_data, write_registrations
 
 settings = get_settings()
+
+IMPORT_SECRET_HEADER = "x-kkhc-import-secret"
+ALLOWED_IMPORT_HOSTS = {"vysledky.kolky.sk", "www.vysledky.kolky.sk"}
+MAX_IMPORT_ID_RANGE = 5000
 
 app = FastAPI(
     title="KK Hlohovec API",
@@ -42,6 +56,72 @@ app.add_middleware(
 async def start_background_import() -> None:
     if settings.kolky_auto_import_enabled:
         asyncio.create_task(kolky_auto_import_loop())
+
+
+def _require_import_auth(request: Request) -> None:
+    """Import/sync endpoints: shared secret header or admin session. Never anonymous."""
+    if not settings.kolky_import_secret:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Import is not configured. Set KOLKY_IMPORT_SECRET.",
+        )
+    supplied = request.headers.get(IMPORT_SECRET_HEADER)
+    if supplied and hmac.compare_digest(supplied, settings.kolky_import_secret):
+        return
+    require_admin(request)
+
+
+def _validate_manual_import_url(url: str | None) -> None:
+    if not url:
+        return
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid import URL")
+    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_IMPORT_HOSTS or not parsed.path.startswith("/match/detail/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only vysledky.kolky.sk match detail URLs can be imported",
+        )
+
+
+def _validate_import_id_range(id_from: int | None, id_to: int | None) -> None:
+    if id_from is None or id_to is None:
+        return
+    if id_from > id_to or (id_to - id_from) > MAX_IMPORT_ID_RANGE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid match ID range")
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+async def _verify_supabase_user(email: str, provider_token: str) -> bool:
+    """Confirm the e-mail against Supabase Auth instead of trusting the browser."""
+    if not provider_token or not settings.supabase_configured:
+        return False
+    import httpx
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{settings.supabase_url}/auth/v1/user",
+                headers={
+                    "apikey": settings.supabase_service_role_key,
+                    "Authorization": f"Bearer {provider_token}",
+                },
+            )
+    except Exception:
+        return False
+    if response.status_code != 200:
+        return False
+    try:
+        return str(response.json().get("email", "")).lower() == email.lower()
+    except ValueError:
+        return False
 
 
 @app.get("/health")
@@ -161,7 +241,10 @@ def put_admin_live_data(body: dict[str, LiveClubData], _: dict[str, Any] = Depen
 
 
 @app.get("/api/tournament-registrations")
-def get_tournament_registrations(tournamentId: int | None = Query(default=None)) -> dict[str, Any]:
+def get_tournament_registrations(
+    tournamentId: int | None = Query(default=None),
+    _: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
     rows = read_registrations()
     if tournamentId:
         rows = [row for row in rows if row.tournamentId == tournamentId]
@@ -194,10 +277,10 @@ def create_tournament_registration(body: RegistrationCreate) -> dict[str, Any]:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Player is already registered")
 
     registration = TournamentRegistration(
-        **body.model_dump(),
+        **{**body.model_dump(), "paymentStatus": "free" if tournament.entryType == "free" else "pending"},
         id=int(datetime.utcnow().timestamp() * 1000),
         createdAt=datetime.utcnow().isoformat(),
-        userEmail=body.userEmail or str(body.email).lower(),
+        userEmail=str(body.userEmail or body.email).lower(),
     )
     write_registrations([registration, *rows])
     return {"ok": True, "data": registration}
@@ -215,8 +298,11 @@ def cancel_own_tournament_registration(
     if not current:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Registration not found")
 
-    requester_email = str(session.get("email", "")).lower() if session else str(body.email if body else "").lower()
-    if not requester_email or requester_email not in {current.email.lower(), current.userEmail.lower()}:
+    # Only the owner (authenticated session) or an admin can cancel.
+    # The e-mail in the request body is not trusted.
+    requester_email = str(session.get("email", "")).lower() if session else ""
+    is_admin = bool(session and session.get("role") == "admin")
+    if not is_admin and (not requester_email or requester_email not in {current.email.lower(), current.userEmail.lower()}):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can cancel only your own registration")
 
     data = read_club_data()
@@ -259,8 +345,15 @@ def get_admin_tournament_registration_detail(tournament_id: int, _: dict[str, An
 
 
 @app.post("/api/auth/login")
-def login(body: LoginBody, response: Response) -> dict[str, Any]:
+def login(body: LoginBody, request: Request, response: Response) -> dict[str, Any]:
+    client_ip = _client_ip(request)
+    if is_login_blocked(client_ip, str(body.email)):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Príliš veľa pokusov. Skús to znova o chvíľu.",
+        )
     user = authenticate(body.email, body.password)
+    record_login_attempt(client_ip, str(body.email), success=user is not None)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Nesprávny e-mail alebo heslo.")
 
@@ -287,9 +380,11 @@ def auth_session(request: Request) -> dict[str, Any]:
 
 
 @app.post("/api/members/ensure")
-def ensure_member(body: MemberEnsureBody) -> dict[str, Any]:
+async def ensure_member(body: MemberEnsureBody) -> dict[str, Any]:
     data = read_club_data()
     email = str(body.email).lower()
+    if not await _verify_supabase_user(email, body.providerToken):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google prihlásenie sa nepodarilo overiť.")
     existing = next((member for member in data.members if member.email.lower() == email), None)
 
     if existing:
@@ -405,8 +500,8 @@ def checkout(body: CheckoutBody) -> dict[str, Any]:
             }
         ],
         metadata={"source": "kkhc-fastapi", "mode": body.mode, **body.metadata},
-        success_url=f"{settings.frontend_origin}/profilepayment=success",
-        cancel_url=f"{settings.frontend_origin}/profilepayment=cancelled",
+        success_url=f"{settings.frontend_origin}/profile?payment=success",
+        cancel_url=f"{settings.frontend_origin}/profile?payment=cancelled",
     )
     return {"ok": True, "url": session.url}
 
@@ -425,9 +520,9 @@ async def import_kolky(
     fallback: str | None = Query(default=None),
     full_refresh: bool = Query(default=False),
 ) -> dict[str, Any]:
-    supplied_secret = request.query_params.get("secret") or request.headers.get("x-kkhc-import-secret")
-    if settings.kolky_import_secret and supplied_secret != settings.kolky_import_secret:
-        require_admin(request)
+    _require_import_auth(request)
+    _validate_manual_import_url(url)
+    _validate_import_id_range(idFrom, idTo)
 
     data = read_club_data()
     selected_mode = mode if mode in {"live", "cache", "fixture"} else "live"
@@ -481,9 +576,8 @@ async def admin_sync(
     idTo: int | None = Query(default=None),
     full_refresh: bool = Query(default=False),
 ) -> dict[str, Any]:
-    supplied_secret = request.query_params.get("secret") or request.headers.get("x-kkhc-import-secret")
-    if settings.kolky_import_secret and supplied_secret != settings.kolky_import_secret:
-        require_admin(request)
+    _require_import_auth(request)
+    _validate_import_id_range(idFrom, idTo)
 
     selected_mode = mode if mode in {"live", "cache", "fixture"} else "live"
     result = await sync_hlohovec_club_data(
@@ -526,35 +620,6 @@ async def admin_sync(
         "checkedUrls": result["checkedUrls"],
         "message": "Live crawler failed. No real matches were imported." if not result["ok"] and selected_mode == "live" else "Synchronizácia KKZ Hlohovec dokončená.",
     }
-
-
-@app.get("/api/import/kolky")
-async def import_kolky_get(
-    request: Request,
-    url: str | None = Query(default=None),
-    from_date: str | None = Query(default=None, alias="from"),
-    to_date: str | None = Query(default=None, alias="to"),
-    query: str | None = Query(default=None),
-    mode: str = Query(default="live"),
-    cacheFile: str | None = Query(default=None),
-    idFrom: int | None = Query(default=None),
-    idTo: int | None = Query(default=None),
-    fallback: str | None = Query(default=None),
-    full_refresh: bool = Query(default=False),
-) -> dict[str, Any]:
-    return await import_kolky(
-        request,
-        url=url,
-        from_date=from_date,
-        to_date=to_date,
-        query=query,
-        mode=mode,
-        cacheFile=cacheFile,
-        idFrom=idFrom,
-        idTo=idTo,
-        fallback=fallback,
-        full_refresh=full_refresh,
-    )
 
 
 async def kolky_auto_import_loop() -> None:

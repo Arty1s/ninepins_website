@@ -196,7 +196,14 @@ async def import_hlohovec_matches(
         schedule_matches, schedule_checked_urls = await discover_complete_hlohovec_schedule(client, start, end, logs)
         imported.extend(schedule_matches)
         if manual_urls:
-            urls = unique(manual_urls)
+            urls = unique([url for url in manual_urls if is_allowed_manual_import_url(url)])
+            rejected = len(unique(manual_urls)) - len(urls)
+            if rejected:
+                logs.append({
+                    "level": "warning",
+                    "type": "blocked_url",
+                    "message": f"Rejected {rejected} manual URL(s) outside vysledky.kolky.sk.",
+                })
         elif schedule_matches:
             urls = unique([
                 match.sourceUrl
@@ -1313,6 +1320,22 @@ def extract_match_id(url: str) -> int | None:
         return None
     raw = match.group(1) or match.group(2)
     return int(raw) if raw else None
+
+
+ALLOWED_MANUAL_IMPORT_HOSTS = {"vysledky.kolky.sk", "www.vysledky.kolky.sk"}
+
+
+def is_allowed_manual_import_url(url: str) -> bool:
+    """SSRF guard: manual import URLs must point at kolky.sk match detail pages."""
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
+    return (
+        parsed.scheme == "https"
+        and parsed.hostname in ALLOWED_MANUAL_IMPORT_HOSTS
+        and parsed.path.startswith("/match/detail/")
+    )
 
 
 def chunks(values: list[str], size: int):
